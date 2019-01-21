@@ -1,18 +1,8 @@
 #!/usr/bin python
 from urllib import request
-import os
-from contextlib import contextmanager
 from zipfile import ZipFile
-
-# function for changing directory 
-@contextmanager
-def working_directory(directory):
-    owd = os.getcwd()
-    try:
-        os.chdir(directory)
-        yield directory
-    finally:
-        os.chdir(owd)
+from utils.utils import working_directory
+import os
 
 def download_data():
     print("Beginning data download...")
