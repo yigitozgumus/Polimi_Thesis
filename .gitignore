@@ -7,6 +7,7 @@ __pycache__/
 *.so
 # Pycharm ones
 .idea/
+.vscode
 # Auxilary
 Logs/
 # Distribution / packaging
