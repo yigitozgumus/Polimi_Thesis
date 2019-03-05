@@ -15,8 +15,11 @@ class DataLoader(object):
         self.images_orig = self.create_image_array(self.merged)
         self.dataset_list = []
 
-    def show_image(self,image):
+    def show_image_from_memory(self,image):
         plt.imshow(image, cmap="gray")
+    
+    def show_image_from_path(self,image):
+        plt.imshow(io.imread(image),cmap="gray")
 
     def create_image_array(self,img_names):
         img_array = []
