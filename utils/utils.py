@@ -1,8 +1,8 @@
 import os
 from contextlib import contextmanager
 import json
-from bunch import Bunch
 import argparse
+from argparse import Namespace
 
 
 def get_config_from_json(json_file):
@@ -16,7 +16,7 @@ def get_config_from_json(json_file):
         config_dict = json.load(config_file)
 
     # convert the dictionary to a namespace using bunch lib
-    config = Bunch(config_dict)
+    config = Namespace(**config_dict)
 
     return config, config_dict
 
