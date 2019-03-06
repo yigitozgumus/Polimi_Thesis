@@ -58,7 +58,7 @@ class DataLoader():
                 folder = folder_name + str(size)
                 self.dataset_list.append(folder)
                 self.generate_sub_dataset(self.norm_img_array, size=size, num_images=num_images, save=True,
-                                          folder_name=folder, )
+                                          folder_name=folder)
 
     def create_image_array(self, img_names,save=True,file_name="Dataset",size=28,progress=False):
         """
@@ -101,7 +101,7 @@ class DataLoader():
             print("{} images generated".format(num_images * (ind + 1)))
         if save:
             with working_directory("./data"):
-                if os.path.exists(folder_name):
+                if not os.path.exists(folder_name):
                     os.mkdir(folder_name)
                     with working_directory("./data/" + folder_name):
                         for idx, img in enumerate(imgs):
