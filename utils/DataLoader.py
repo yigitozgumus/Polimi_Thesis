@@ -103,12 +103,14 @@ class DataLoader():
             with working_directory("./data"):
                 if not os.path.exists(folder_name):
                     os.mkdir(folder_name)
-                    with working_directory("./data/" + folder_name):
+                    with working_directory(folder_name):
                         for idx, img in enumerate(imgs):
                             im = Image.fromarray(img)
                             im.save("img-" + str(idx) + ".tif")
                 else:
                     print("{} exists".format(folder_name))
+
+
         return imgs
 
     def get_sub_dataset(self, size):
