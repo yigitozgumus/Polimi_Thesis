@@ -1,11 +1,11 @@
 import tensorflow as tf
 
-tf.enable_eager_execution()
+
 
 from base.base_model import BaseModel
 
 
-class Gan(BaseModel):
+class GAN(BaseModel):
 
     def __init__(self, config):
         self.config = config

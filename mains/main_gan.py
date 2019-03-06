@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 from data_loader.data_generator import DataGenerator
-from models.example_model import ExampleModel
-from trainers.example_trainer import ExampleTrainer
+from models.gan_model import GAN
+from trainers.gan_trainer import GANTrainer
 from utils.config import process_config
 from utils.logger import Logger
 from utils.utils import get_args
@@ -28,11 +28,11 @@ def main():
     data = DataGenerator(config)
 
     # create an instance of the model you want
-    model = ExampleModel(config)
+    model = GAN(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = ExampleTrainer(sess, model, data, config, logger)
+    trainer = GANTrainer(sess, model, data, config, logger)
     #load model if exists
     model.load(sess)
     # here you train your model
