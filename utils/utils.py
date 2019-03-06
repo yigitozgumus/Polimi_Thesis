@@ -4,6 +4,7 @@ import json
 from bunch import Bunch
 import argparse
 
+
 def get_config_from_json(json_file):
     """
     Get the config from a json file
@@ -52,7 +53,6 @@ def create_dirs(dirs):
     except Exception as err:
         print("Creating directories error: {0}".format(err))
         exit(-1)
-
 
 
 def get_args():
