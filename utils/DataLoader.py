@@ -1,8 +1,11 @@
 import os
 import numpy as np
 from skimage import io
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from PIL import Image
+from tqdm import tqdm
+
 from utils.utils import working_directory
 from utils.download_data import download_data
 
@@ -31,6 +34,7 @@ class DataLoader():
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.data_dir = data_dir
+        self.dataset_name= ""
         # Download the data if it is not downloaded
         if not os.path.exists(self.data_dir):
             download_data(self.data_dir)
@@ -39,8 +43,8 @@ class DataLoader():
         norm_img_nms = [normal_imgs + x for x in os.listdir(normal_imgs)]
         anorm_img_nms = [anorm_imgs + x for x in os.listdir(anorm_imgs)]
 
-        self.norm_img_array = self.create_image_array(norm_img_nms)
-        self.anorm_img_array = self.create_image_array(anorm_img_nms)
+        self.norm_img_array = self.create_image_array(norm_img_nms,save=False)
+        self.anorm_img_array = self.create_image_array(anorm_img_nms,save=False)
         # this is to list all the folders
         self.dir_names = os.listdir(self.data_dir)
         # If the cropped subsets are not present create them
@@ -56,15 +60,23 @@ class DataLoader():
                 self.generate_sub_dataset(self.norm_img_array, size=size, num_images=num_images, save=True,
                                           folder_name=folder, )
 
-    def create_image_array(self, img_names):
+    def create_image_array(self, img_names,save=True,file_name="Dataset",size=28,progress=False):
         """
         Args:
             img_names:
         """
+        self.dataset_name = self.data_dir + "/" + file_name + "-" + str(size)
         img_array = []
-        for img in img_names:
-            im2arr = io.imread(img)
-            img_array.append(im2arr)
+        if progress:
+            for img in tqdm(img_names):
+                im2arr = io.imread(img)
+                img_array.append(im2arr)
+        else:
+            for img in img_names:
+                im2arr = io.imread(img)
+                img_array.append(im2arr)
+        if save:
+            np.save(self.dataset_name,img_array)
         return np.array(img_array)
 
     def generate_sub_dataset(self, image_array, size, num_images, save=False, folder_name="cropped"):
@@ -107,7 +119,13 @@ class DataLoader():
         """
         folder_name = self.data_dir + "/cropped" + str(size) + "/"
         img_list = os.listdir(folder_name)
-        img_names = [folder_name + x for x in img_list]
-        labels = [x[4:-4] for x in img_list]
-        images = self.create_image_array(img_names)
-        return [images, labels]
+        img_names = tf.constant([folder_name + x for x in img_list])
+        labels = tf.constant([x[4:-4] for x in img_list])
+        #dataset = self.dataset_name+".npy"
+        # if os.path.exists(dataset):
+        #     print("DataLoader: Dataset is present, will be imported")
+        #     images = np.load(dataset)
+        # else:
+        #     print("DataLoader:Dataset is not present. Images are being converted..")
+        #     images = self.create_image_array(img_names,progress=True)
+        return [img_names, labels]
