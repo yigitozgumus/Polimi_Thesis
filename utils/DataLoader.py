@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from utils.utils import working_directory
 from utils.download_data import download_data
+from utils.dirs import listdir_nohidden
 
 
 def show_image_from_path(image):
@@ -34,23 +35,26 @@ class DataLoader():
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.data_dir = data_dir
-        self.dataset_name= ""
+        self.dataset_name= None
+        # this is to list all the folders
+        self.dir_names =listdir_nohidden(self.data_dir)
+        # If the cropped subsets are not present create them
+        self.dataset_list = []
         # Download the data if it is not downloaded
         if not os.path.exists(self.data_dir):
+            print("DataLoader: dataset is not present. Download is started.")
             download_data(self.data_dir)
         normal_imgs = self.data_dir + "/Normal/"
         anorm_imgs = self.data_dir + "/Anomalous/images/"
         norm_img_nms = [normal_imgs + x for x in os.listdir(normal_imgs)]
         anorm_img_nms = [anorm_imgs + x for x in os.listdir(anorm_imgs)]
-
         self.norm_img_array = self.create_image_array(norm_img_nms,save=False)
         self.anorm_img_array = self.create_image_array(anorm_img_nms,save=False)
-        # this is to list all the folders
-        self.dir_names = os.listdir(self.data_dir)
-        # If the cropped subsets are not present create them
-        self.dataset_list = []
+        self.populate()
+    
+    def populate(self):
         if len(self.dir_names) == 2:
-            print("Cropped subsets will be created")
+            print("DataLoader: Cropped subsets will be populated")
             size_list = [16, 28, 32, 64, 128]
             folder_name = "cropped"
             num_images = 5000
@@ -59,6 +63,8 @@ class DataLoader():
                 self.dataset_list.append(folder)
                 self.generate_sub_dataset(self.norm_img_array, size=size, num_images=num_images, save=True,
                                           folder_name=folder)
+        else:
+            print("DataLoader: Subsets are already populated.")
 
     def create_image_array(self, img_names,save=True,file_name="Dataset",size=28,progress=False):
         """
@@ -88,7 +94,7 @@ class DataLoader():
             save: whether to save the generated subset or not
             folder_name: output folder name
         """
-        print("DataLoader: generating new dataset")
+        print("DataLoader: generating new dataset with size:{}".format(size))
         imgs = []
         for ind, img in enumerate(image_array):
             h, w = img.shape[:2]
@@ -106,7 +112,7 @@ class DataLoader():
                     with working_directory(folder_name):
                         for idx, img in enumerate(imgs):
                             im = Image.fromarray(img)
-                            im.save("img-" + str(idx) + ".tif")
+                            im.save("img-" + str(idx) + ".jpg")
                 else:
                     print("{} exists".format(folder_name))
 
@@ -120,14 +126,12 @@ class DataLoader():
         :return: numpy array of images and corresponding labels
         """
         folder_name = self.data_dir + "/cropped" + str(size) + "/"
-        img_list = os.listdir(folder_name)
-        img_names = tf.constant([folder_name + x for x in img_list])
-        labels = tf.constant([x[4:-4] for x in img_list])
-        #dataset = self.dataset_name+".npy"
-        # if os.path.exists(dataset):
-        #     print("DataLoader: Dataset is present, will be imported")
-        #     images = np.load(dataset)
-        # else:
-        #     print("DataLoader:Dataset is not present. Images are being converted..")
-        #     images = self.create_image_array(img_names,progress=True)
+        img_names = []
+        labels = []
+        if os.path.exists(folder_name):
+            img_list = os.listdir(folder_name)
+            img_names = tf.constant([folder_name + x for x in img_list])
+            labels = tf.constant([x[4:-4] for x in img_list])
+        else:
+            print("DataLoader: subset doesn't exist")
         return [img_names, labels]

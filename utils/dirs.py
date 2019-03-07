@@ -14,3 +14,7 @@ def create_dirs(dirs):
     except Exception as err:
         print("Creating directories error: {0}".format(err))
         exit(-1)
+        
+def listdir_nohidden(path):
+    return sorted([f for f in os.listdir(path) if not f.startswith('.')], key=str.lower)
+

@@ -10,12 +10,13 @@ class DataGenerator():
         d = DataLoader(self.config.data_folder)
         # Get the filenames and labels
         self.filenames, self.labels = d.get_sub_dataset(self.config.image_size)
+        assert len(self.filenames) == len(self.labels)
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices((self.filenames, self.labels))
         # Apply parse function to get the numpy array of the images
         self.dataset = self.dataset.map(self._parse_function)
         # Apply batching
-        self.dataset.batch(config.batch_size)
+        self.dataset = self.dataset.batch(config.batch_size)
         # Create the iterator
         self.iterator = self.dataset.make_initializable_iterator()
         # Create the next element
