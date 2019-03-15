@@ -46,8 +46,8 @@ class DataLoader():
             download_data(self.data_dir)
         normal_imgs = self.data_dir + "/Normal/"
         anorm_imgs = self.data_dir + "/Anomalous/images/"
-        norm_img_nms = [normal_imgs + x for x in os.listdir(normal_imgs)]
-        anorm_img_nms = [anorm_imgs + x for x in os.listdir(anorm_imgs)]
+        norm_img_nms = [normal_imgs + x for x in listdir_nohidden(normal_imgs)]
+        anorm_img_nms = [anorm_imgs + x for x in listdir_nohidden(anorm_imgs)]
         self.norm_img_array = self.create_image_array(norm_img_nms,save=False)
         self.anorm_img_array = self.create_image_array(anorm_img_nms,save=False)
         self.populate()
@@ -129,7 +129,7 @@ class DataLoader():
         img_names = []
         labels = []
         if os.path.exists(folder_name):
-            img_list = os.listdir(folder_name)
+            img_list = listdir_nohidden(folder_name)
             img_names = tf.constant([folder_name + x for x in img_list])
             labels = tf.constant([x[4:-4] for x in img_list])
         else:
