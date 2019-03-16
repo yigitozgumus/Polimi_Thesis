@@ -63,42 +63,42 @@ class DataGenerator():
 
 def make_generator_model():
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(7*7*256, use_bias=False, input_shape=(28,28,1)))
+    model.add(tf.keras.layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.LeakyReLU())
-      
+
     model.add(tf.keras.layers.Reshape((7, 7, 256)))
     assert model.output_shape == (None, 7, 7, 256) # Note: None is the batch size
-    
+
     model.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-    assert model.output_shape == (None, 7, 7, 128)  
+    assert model.output_shape == (None, 7, 7, 128)
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.LeakyReLU())
 
     model.add(tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-    assert model.output_shape == (None, 14, 14, 64)    
+    assert model.output_shape == (None, 14, 14, 64)
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.LeakyReLU())
 
     model.add(tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, 28, 28, 1)
-  
+
     return model
 
-    
+
 def make_discriminator_model():
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same'))
     model.add(tf.keras.layers.LeakyReLU())
     model.add(tf.keras.layers.Dropout(0.3))
-      
+
     model.add(tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
     model.add(tf.keras.layers.LeakyReLU())
     model.add(tf.keras.layers.Dropout(0.3))
-       
+
     model.add(tf.keras.layers.Flatten())
     model.add(tf.keras.layers.Dense(1))
-     
+
     return model
 
 def generator_loss(generated_output):
@@ -120,19 +120,19 @@ def discriminator_loss(real_output, generated_output):
 def train_step(images):
     # generating noise from a normal distribution
     noise = tf.random_normal([BATCH_SIZE, noise_dim])
-      
+
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         generated_images = generator(noise, training=True)
-      
+
         real_output = discriminator(images, training=True)
         generated_output = discriminator(generated_images, training=True)
-         
+
         gen_loss = generator_loss(generated_output)
         disc_loss = discriminator_loss(real_output, generated_output)
-        
+
     gradients_of_generator = gen_tape.gradient(gen_loss, generator.variables)
     gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.variables)
-      
+
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator,discriminator.variables))
 
@@ -153,10 +153,10 @@ def generate_and_save_images(model, epoch, test_input):
 
 
 
-def train(dataset, epochs):  
+def train(dataset, epochs):
     for epoch in range(epochs):
         start = time.time()
-    
+
     for images in dataset:
         train_step(images)
 
@@ -164,11 +164,11 @@ def train(dataset, epochs):
     generate_and_save_images(generator,
                                epoch + 1,
                                random_vector_for_generation)
-    
+
     # saving (checkpoint) the model every 15 epochs
     if (epoch + 1) % 15 == 0:
         checkpoint.save(file_prefix = checkpoint_prefix)
-    
+
     print ('Time taken for epoch {} is {} sec'.format(epoch + 1,
                                                       time.time()-start))
   # generating after the final epoch
@@ -179,7 +179,7 @@ def train(dataset, epochs):
 
 
 
-    
+
 dataset = DataGenerator()
 generator = make_generator_model()
 discriminator = make_discriminator_model()
@@ -197,11 +197,11 @@ checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
     # it will be easier to see the improvement over time.
 random_vector_for_generation = tf.random_normal([num_examples_to_generate,
                                                      noise_dim])
-    
+
     #train_step = tf.contrib.eager.defun(train_step)
 train(dataset.dataset, EPOCHS)
 
-    
 
 
-    
+
+
