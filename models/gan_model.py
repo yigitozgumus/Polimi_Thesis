@@ -19,3 +19,4 @@ class GAN(BaseModel):
 
     def build_model(self):
         pass
+

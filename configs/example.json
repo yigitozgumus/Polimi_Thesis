@@ -1,6 +1,6 @@
 {
   "exp_name": "example",
-  "output_folder": "./../experiments/",
+  "output_folder": "./experiments/",
   "data_folder": "data",
   "image_size": 28,
   "num_epochs": 10,
