@@ -1,7 +1,9 @@
 import numpy as np
 from utils.DataLoader import DataLoader
 import tensorflow as tf
-
+import os.path
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class DataGenerator():
     def __init__(self, config):
