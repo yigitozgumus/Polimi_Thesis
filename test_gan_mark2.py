@@ -157,20 +157,20 @@ def train(dataset, epochs):
     for epoch in range(epochs):
         start = time.time()
 
-    for images in dataset:
-        train_step(images)
+        for images in dataset:
+            train_step(images)
 
-    display.clear_output(wait=True)
-    generate_and_save_images(generator,
-                               epoch + 1,
-                               random_vector_for_generation)
+        display.clear_output(wait=True)
+        generate_and_save_images(generator,
+                                epoch + 1,
+                                random_vector_for_generation)
 
-    # saving (checkpoint) the model every 15 epochs
-    if (epoch + 1) % 15 == 0:
-        checkpoint.save(file_prefix = checkpoint_prefix)
+        # saving (checkpoint) the model every 15 epochs
+        if (epoch + 1) % 15 == 0:
+            checkpoint.save(file_prefix = checkpoint_prefix)
 
-    print ('Time taken for epoch {} is {} sec'.format(epoch + 1,
-                                                      time.time()-start))
+        print ('Time taken for epoch {} is {} sec'.format(epoch + 1,
+                                                        time.time()-start))
   # generating after the final epoch
     display.clear_output(wait=True)
     generate_and_save_images(generator,
