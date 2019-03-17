@@ -2,6 +2,7 @@ from base.base_train import BaseTrain
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+#tf.enable_eager_execution()
 import time
 
 class GANTrainer(BaseTrain):
@@ -21,14 +22,14 @@ class GANTrainer(BaseTrain):
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-        gen_loss = np.mean(gen_losses, dtype=np.float64)
-        disc_loss = np.mean(disc_losses, dtype=np.float64)
-        current = self.sess.run(self.model.cur_epoch_tensor)
-        if (current % self.config.show_steps == 0 or current == 1):
-                print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
-                    current, gen_loss, disc_loss))
-        
+        gen_loss = tf.math.reduce_mean(gen_losses)
+        disc_loss = tf.math.reduce_mean(disc_losses)
+#         current = self.sess.run(self.model.cur_epoch_tensor)
         cur_it = self.model.global_step_tensor.eval(self.sess)
+        if (cur_it % self.config.show_steps == 0 or cur_it == 1):
+                print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
+                    cur_it, gen_loss, disc_loss))
+        
         summaries_dict = {
             "gen_loss": gen_loss,
             "disc_loss": disc_loss,
@@ -36,7 +37,7 @@ class GANTrainer(BaseTrain):
         self.logger.summarize(cur_it, summaries_dict=summaries_dict)
         self.model.save(self.sess)
 
-
+    #@tf.contrib.eager.defun
     def train_step(self):
         """
        implement the logic of the train step

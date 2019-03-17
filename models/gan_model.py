@@ -11,9 +11,7 @@ class GAN(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        self.is_training = tf.placeholder(tf.bool)
-        #image placeholder
-        self.X = tf.placeholder(tf.float32, shape=[None]+ self.config.state_size)
+
 
         # Make the Generator model
         with tf.name_scope("Generator"):
