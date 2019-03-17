@@ -17,16 +17,16 @@ class GANTrainer(BaseTrain):
         loop = tqdm(range(self.config.num_iter_per_epoch))
         gen_losses = []
         disc_losses = []
-        for epoch in loop:
-            start = time.time()
+        for _ in loop:
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-        gen_loss = tf.reduce_mean(gen_losses)
-        disc_loss = tf.reduce_mean(disc_losses)
-        if (self.model.cur_epoch_tensor % self.config.show_steps == 0 or self.model.cur_epoch_tensor == 1):
+        gen_loss = np.mean(gen_losses, dtype=np.float64)
+        disc_loss = np.mean(disc_losses, dtype=np.float64)
+        current = self.sess.run(self.model.cur_epoch_tensor)
+        if (current % self.config.show_steps == 0 or current == 1):
                 print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
-                    self.model.cur_epoch_tensor, gen_loss, disc_loss))
+                    current, gen_loss, disc_loss))
         
         cur_it = self.model.global_step_tensor.eval(self.sess)
         summaries_dict = {
