@@ -2,6 +2,7 @@ from base.base_train import BaseTrain
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+import time
 
 class GANTrainer(BaseTrain):
     def __init__(self, sess, model, data, config, logger):
@@ -17,9 +18,12 @@ class GANTrainer(BaseTrain):
         gen_losses = []
         disc_losses = []
         for _ in loop:
+            start = time.time()
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
+            print('Time taken for epoch {} is {} sec'.format(epoch + 1,
+                                                             time.time()-start))
         gen_loss = np.mean(gen_losses)
         disc_loss = np.mean(disc_losses)
         
