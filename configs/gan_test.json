@@ -3,7 +3,8 @@
     "output_folder": "Logs",
     "data_folder": "data",
     "image_size": 28,
-    "num_epochs": 50,
+    "show_steps":50,
+    "num_epochs": 4000,
     "noise_dim" : 784,
     "state_size": [
         28,

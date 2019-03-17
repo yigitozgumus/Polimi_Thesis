@@ -14,7 +14,7 @@ class GANTrainer(BaseTrain):
        -loop on the number of iterations in the config and call the train step
        -add any summaries you want using the summary
         """
-        loop = tqdm(range(self.config.num_iter_per_epoch))
+        loop = range(self.config.num_iter_per_epoch)
         gen_losses = []
         disc_losses = []
         for epoch in loop:
@@ -22,10 +22,8 @@ class GANTrainer(BaseTrain):
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-            print('Time taken for epoch {} is {} sec'.format(epoch + 1,
-                                                             time.time()-start))
-        gen_loss = np.mean(gen_losses)
-        disc_loss = np.mean(disc_losses)
+        gen_loss = tf.reduce_mean(gen_losses)
+        disc_loss = tf.reduce_mean(disc_losses)
         
         cur_it = self.model.global_step_tensor.eval(self.sess)
         summaries_dict = {
@@ -34,6 +32,7 @@ class GANTrainer(BaseTrain):
         }
         self.logger.summarize(cur_it, summaries_dict=summaries_dict)
         self.model.save(self.sess)
+        return gen_loss,disc_loss
 
     def train_step(self):
         """
