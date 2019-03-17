@@ -17,7 +17,7 @@ class GAN(BaseModel):
 
         # Make the Generator model
         with tf.name_scope("Generator"):
-            inputs_g = tf.keras.layers.Input(shape=self.config.noise_dim)
+            inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             x = tf.keras.layers.Dense(7*7*256, use_bias=False)(inputs_g)
             x = tf.keras.layers.BatchNormalization()(x)
             x = tf.keras.layers.LeakyReLU()(x)

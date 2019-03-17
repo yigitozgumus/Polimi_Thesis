@@ -1,11 +1,10 @@
 {
     "exp_name": "gan_test",
-    "output_folder": "./experiments/",
+    "output_folder": "Logs",
     "data_folder": "data",
-    "summary_dir": 
     "image_size": 28,
     "num_epochs": 50,
-    "noise_dim" : [784],
+    "noise_dim" : 784,
     "state_size": [
         28,
         28,
