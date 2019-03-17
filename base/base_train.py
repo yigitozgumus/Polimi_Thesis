@@ -12,10 +12,8 @@ class BaseTrain:
         self.sess.run(self.init)
 
     def train(self):
-        for cur_epoch in tqdm(range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs + 1, 1)):
-            gl, dl = self.train_epoch()
-            if (cur_epoch % self.config.show_steps == 0 or cur_epoch == 1):
-                print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(cur_epoch, gl, dl))
+        for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs + 1, 1):
+            self.train_epoch()
             self.sess.run(self.model.increment_cur_epoch_tensor)
 
     def train_epoch(self):
