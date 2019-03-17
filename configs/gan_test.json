@@ -1,0 +1,17 @@
+{
+    "exp_name": "gan_test",
+    "output_folder": "./experiments/",
+    "data_folder": "data",
+    "image_size": 28,
+    "num_epochs": 50,
+    "noise_dim" : 784,
+    "state_size": [
+        28,
+        28,
+        1
+    ],
+    "num_iter_per_epoch": 50,
+    "learning_rate": 0.001,
+    "batch_size": 256,
+    "max_to_keep": 5
+}
