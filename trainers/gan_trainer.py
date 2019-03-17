@@ -17,7 +17,7 @@ class GANTrainer(BaseTrain):
         loop = tqdm(range(self.config.num_iter_per_epoch))
         gen_losses = []
         disc_losses = []
-        for _ in loop:
+        for epoch in loop:
             start = time.time()
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
