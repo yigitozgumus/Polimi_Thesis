@@ -12,7 +12,9 @@ class GAN(BaseModel):
 
     def build_model(self):
 
-
+        # Placeholders
+        self.noise_input = tf.placeholder(tf.float32, shape=[None, self.config.noise_dim])
+        self.real_image_input = tf.placeholder(tf.float32, shape=[None] + self.config.state_size)
         # Make the Generator model
         with tf.name_scope("Generator"):
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
@@ -52,10 +54,52 @@ class GAN(BaseModel):
             x = tf.keras.layers.Flatten()(x)
             x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d,outputs=x)
+        
+        generated_image = self.generator(self.noise_input, training=True)
+        real_output = self.discriminator(self.real_image_input, training=True)
+        generated_output = self.discriminator(generated_image, training=True)
 
+        # For the Tensorboard
+        with tf.name_scope("Generator_model"):
+            image_gen = self.generator(self.noise_input, training=True)
+        with tf.name_scope("Discriminator_model"):
+            image_disc = self.discriminator(image_gen, training=True)
+
+        with tf.name_scope('Generator_Loss'):
+            self.gen_loss = self.generator_loss(generated_output)
+        with tf.name_scope('Discriminator_Loss'):
+            self.disc_loss = self.discriminator_loss(real_output, generated_output)
+
+        # Store the loss values for the Tensorboard
+        tf.summary.scalar("Generator_Loss", self.gen_loss)
+        tf.summary.scalar("Discriminator_Loss", self.disc_loss)
+        x_image = tf.summary.image('FromNoise', tf.reshape(image_gen, [-1, 28, 28, 1]), 4)
+        x_image2 = tf.summary.image('FromGen', tf.reshape(image_disc, [-1, 28, 28, 1]), 4)
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Initialization of Optimizers
-        self.generator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
-        self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
+        with tf.control_dependencies(update_ops):
+            self.generator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
+            self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
+        
+        gen_vars = tf.get_collection(
+            tf.GraphKeys.TRAINABLE_VARIABLES, scope='Generator')
+        disc_vars = tf.get_collection(
+        tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
+
+        with tf.name_scope('SGDdisc'):
+            self.train_disc = self.generator_optimizer.minimize(self.disc_loss,global_step=self.global_step_tensor)
+
+        with tf.name_scope('SGDgen'):
+            self.train_gen = self.discriminator_optimizer.minimize(self.gen_loss,global_step=self.global_step_tensor)
+
+        for i in range(0, 11):
+            with tf.name_scope('layer' + str(i)):
+                pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+                tf.summary.histogram('pesos' + str(i), pesos[i])
+
+        self.summary = tf.summary.merge_all()
+
+        
 
     # Implementation of losses
     def generator_loss(self,generated_output):
