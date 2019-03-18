@@ -21,6 +21,7 @@ class GANTrainer(BaseTrain):
         disc_losses = []
         cur_it = self.model.global_step_tensor.eval(self.sess)
         self.sess.run(self.iterator.initializer)
+        next_element = self.iterator.get_next()
         for epoch in loop:
             gen_loss, disc_loss = self.train_step()
             gen_losses.append(gen_loss)
@@ -38,7 +39,7 @@ class GANTrainer(BaseTrain):
         self.model.save(self.sess)
 
     #@tf.contrib.eager.defun
-    def train_step(self):
+    def train_step(self,image):
         """
         implement the logic of the train step
         - run the tensorflow session
@@ -47,7 +48,7 @@ class GANTrainer(BaseTrain):
         # Generate noise from normal distribution
         noise = tf.random_normal([self.config.batch_size,self.config.noise_dim])
         noise_gen = self.sess.run(noise)
-        image = self.sess.run(self.iterator.get_next())
+        # image = self.sess.run(self.iterator.get_next())
         feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image}
         gen_loss, disc_loss = self.sess.run([self.model.train_gen,self.model.train_disc],feed_dict=feed_dict)
 
