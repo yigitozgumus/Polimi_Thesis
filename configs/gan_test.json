@@ -2,6 +2,7 @@
     "exp_name": "gan_test",
     "output_folder": "Logs",
     "data_folder": "data",
+    "buffer_size":25000,
     "image_size": 28,
     "show_steps":5,
     "num_epochs": 100,

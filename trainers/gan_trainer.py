@@ -20,8 +20,9 @@ class GANTrainer(BaseTrain):
         gen_losses = []
         disc_losses = []
         cur_it = self.model.global_step_tensor.eval(self.sess)
+        iterator = self.iterator.make_initializable_iterator()
+        next_element = iterator.get_next()
         self.sess.run(self.iterator.initializer)
-        next_element = self.iterator.get_next()
         for epoch in loop:
             gen_loss, disc_loss = self.train_step(next_element)
             gen_losses.append(gen_loss)

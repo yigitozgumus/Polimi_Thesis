@@ -15,6 +15,8 @@ class DataGenerator():
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
         # Apply parse function to get the numpy array of the images
         self.dataset = self.dataset.map(self._parse_function)
+        # Shuffle the dataset
+        self.dataset = self.dataset.shuffle(self.config.buffer_size)
         # Repeat the dataset indefinitely
         self.dataset = self.dataset.repeat()
         # Apply batching
