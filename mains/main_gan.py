@@ -1,4 +1,4 @@
-
+import tensorflow as tf
 
 from utils.data_generator import DataGenerator
 from models.gan_model import GAN
