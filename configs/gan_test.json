@@ -3,7 +3,7 @@
     "output_folder": "Logs",
     "data_folder": "data",
     "image_size": 28,
-    "show_steps":50,
+    "show_steps":5,
     "num_epochs": 100,
     "noise_dim" : 784,
     "state_size": [
@@ -11,9 +11,9 @@
         28,
         1
     ],
-    "num_iter_per_epoch": 50,
+    "num_iter_per_epoch": 100,
     "learning_rate": 0.001,
     "optimizer_learning_rate": 1e-4,
-    "batch_size": 256,
+    "batch_size": 250,
     "max_to_keep": 5
 }
