@@ -73,8 +73,8 @@ class GAN(BaseModel):
         # Store the loss values for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Loss", self.disc_loss)
-        x_image = tf.summary.image('FromNoise', tf.reshape(image_gen, [-1, 28, 28, 1]), 4)
-        x_image2 = tf.summary.image('FromGen', tf.reshape(image_disc, [-1, 28, 28, 1]), 4)
+        x_image = tf.summary.image('FromNoise', tf.reshape(image_gen, [-1, 28, 28, 1]))
+        #x_image2 = tf.summary.image('FromGen', tf.reshape(image_disc, [-1, 28, 28, 1]))
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):

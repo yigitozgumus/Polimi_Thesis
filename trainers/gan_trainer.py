@@ -25,13 +25,13 @@ class GANTrainer(BaseTrain):
         next_element = iterator.get_next()
         self.sess.run(iterator.initializer)
         for epoch in loop:
-            gen_loss, disc_loss,_,_,summary = self.train_step(next_element)
+            gen_loss, disc_loss,summary = self.train_step(next_element)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
             summaries.append(summary)
         self.logger.summarize(cur_it, summaries=summaries)
-        #gen_loss = tf.math.reduce_mean(gen_losses)
-        #disc_loss = tf.math.reduce_mean(disc_losses)
+        gen_loss = tf.math.reduce_mean(gen_losses)
+        disc_loss = tf.math.reduce_mean(disc_losses)
         
         if (cur_it % self.config.show_steps == 0 or cur_it == 1):
                 print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
@@ -55,7 +55,7 @@ class GANTrainer(BaseTrain):
         gen_loss, disc_loss,_,_,summary = self.sess.run(
             [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc,self.model.summary], feed_dict=feed_dict)
 
-        return gen_loss, disc_loss
+        return gen_loss, disc_loss, summary,
 
         
 
