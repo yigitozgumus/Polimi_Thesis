@@ -50,7 +50,8 @@ class GANTrainer(BaseTrain):
         noise_gen = self.sess.run(noise)
         image_eval = self.sess.run(image)
         feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image}
-        _,_,gen_loss, disc_loss = self.sess.run([self.model.train_gen,self.model.train_disc,self.model.gen_loss,self.model.disc_loss],feed_dict=feed_dict)
+        gen_loss, disc_loss,_,_ = self.sess.run(
+            [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc], feed_dict=feed_dict)
 
         return gen_loss, disc_loss
 
