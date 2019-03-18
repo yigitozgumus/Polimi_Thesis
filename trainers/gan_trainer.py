@@ -23,7 +23,7 @@ class GANTrainer(BaseTrain):
         self.sess.run(self.iterator.initializer)
         next_element = self.iterator.get_next()
         for epoch in loop:
-            gen_loss, disc_loss = self.train_step()
+            gen_loss, disc_loss = self.train_step(next_element)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
         summaries = self.sess.run([self.model.summary])
