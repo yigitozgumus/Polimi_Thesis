@@ -9,16 +9,9 @@ from utils.utils import get_args
 from utils.dirs import create_dirs
 
 
-def main():
+def main(config):
     # capture the config path from the run arguments
     # then process the json configuration file
-    try:
-        args = get_args()
-        config = process_config(args.config)
-
-    except:
-        print("missing or invalid arguments")
-        exit(0)
 
     # create the experiments dirs
     create_dirs([config.summary_dir, config.checkpoint_dir])
@@ -26,14 +19,14 @@ def main():
     sess = tf.Session()
     # create your data generator
     data = DataGenerator(config)
-    iterator = data.dataset.make_one_shot_iterator()
+    iterator = data.dataset.make_initializable_iterator()
     image_data = iterator.get_next()
     # create an instance of the model you want
     model = GAN(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer(sess, model, image_data, config, logger)
+    trainer = GANTrainer(sess, model, iterator, image_data, config, logger)
     #load model if exists
     model.load(sess)
     # here you train your model
