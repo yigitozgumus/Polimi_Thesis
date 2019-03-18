@@ -22,7 +22,7 @@ class Logger:
         """
         summary_writer = self.train_summary_writer if summarizer == "train" else self.test_summary_writer
         with tf.variable_scope(scope):
-
-            summary_writer.add_summary(summaries, step)
+            for summary in summaries:
+                summary_writer.add_summary(summary, step)
             summary_writer.flush()
 

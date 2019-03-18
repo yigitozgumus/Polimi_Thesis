@@ -19,15 +19,16 @@ class GANTrainer(BaseTrain):
         loop = tqdm(range(self.config.num_iter_per_epoch))
         gen_losses = []
         disc_losses = []
+        summaries = []
         cur_it = self.model.global_step_tensor.eval(self.sess)
         iterator = self.iterator.make_initializable_iterator()
         next_element = iterator.get_next()
-        self.sess.run(self.iterator.initializer)
+        self.sess.run(iterator.initializer)
         for epoch in loop:
-            gen_loss, disc_loss = self.train_step(next_element)
+            gen_loss, disc_loss,_,_,summary = self.train_step(next_element)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-        summaries = self.sess.run([self.model.summary])
+            summaries.append(summary)
         self.logger.summarize(cur_it, summaries=summaries)
         #gen_loss = tf.math.reduce_mean(gen_losses)
         #disc_loss = tf.math.reduce_mean(disc_losses)
@@ -51,8 +52,8 @@ class GANTrainer(BaseTrain):
         noise_gen = self.sess.run(noise)
         image_eval = self.sess.run(image)
         feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image_eval}
-        gen_loss, disc_loss,_,_ = self.sess.run(
-            [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc], feed_dict=feed_dict)
+        gen_loss, disc_loss,_,_,summary = self.sess.run(
+            [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc,self.model.summary], feed_dict=feed_dict)
 
         return gen_loss, disc_loss
 
