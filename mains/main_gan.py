@@ -20,13 +20,12 @@ def main(config):
     # create your data generator
     data = DataGenerator(config)
     iterator = data.dataset.make_initializable_iterator()
-    image_data = iterator.get_next()
     # create an instance of the model you want
     model = GAN(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer(sess, model, iterator, image_data, config, logger)
+    trainer = GANTrainer(sess, model, iterator, config, logger)
     #load model if exists
     model.load(sess)
     # here you train your model

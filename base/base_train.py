@@ -2,13 +2,12 @@ import tensorflow as tf
 from tqdm import tqdm
 
 class BaseTrain:
-    def __init__(self, sess, model,iterator, data, config, logger):
+    def __init__(self, sess, model,iterator, config, logger):
         self.model = model
         self.logger = logger
         self.config = config
         self.sess = sess
         self.iterator = iterator
-        self.data = data
         self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         self.sess.run(self.init)
 

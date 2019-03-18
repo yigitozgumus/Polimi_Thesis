@@ -7,8 +7,8 @@ import tensorflow as tf
 import time
 
 class GANTrainer(BaseTrain):
-    def __init__(self, sess, model,iterator, data, config, logger):
-        super(GANTrainer, self).__init__(sess, model,iterator, data, config, logger)
+    def __init__(self, sess, model,iterator, config, logger):
+        super(GANTrainer, self).__init__(sess, model,iterator, config, logger)
 
     def train_epoch(self):
         """
