@@ -29,7 +29,7 @@ class GANTrainer(BaseTrain):
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
             summaries.append(summary)
-        self.logger.summarize(cur_it, summaries=summaries)
+        self.logger.summarize(cur_epoch, summaries=summaries)
         gen_loss = tf.math.reduce_mean(gen_losses).eval(session=self.sess)
         disc_loss = tf.math.reduce_mean(disc_losses).eval(session=self.sess)
         
