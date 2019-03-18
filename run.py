@@ -1,8 +1,10 @@
-from utils.utils import get_args
-from utils.config import process_config
+import tensorflow as tf
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
+
+from utils.utils import get_args
+from utils.config import process_config
+
 
 from mains.main_gan import main
 
