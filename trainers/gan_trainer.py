@@ -49,7 +49,7 @@ class GANTrainer(BaseTrain):
         noise = tf.random_normal([self.config.batch_size,self.config.noise_dim])
         noise_gen = self.sess.run(noise)
         image_eval = self.sess.run(image)
-        feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image}
+        feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image_eval}
         gen_loss, disc_loss,_,_ = self.sess.run(
             [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc], feed_dict=feed_dict)
 
