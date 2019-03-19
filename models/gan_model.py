@@ -82,7 +82,7 @@ class GAN(BaseModel):
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
             self.generator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
-            self.discriminator_optimizer = tf.train.AdamOptimi(self.config.optimizer_learning_rate)
+            self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
         
         gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Generator')
         disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
