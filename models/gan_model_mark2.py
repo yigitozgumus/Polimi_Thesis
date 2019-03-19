@@ -79,16 +79,20 @@ class GAN_mark2(BaseModel):
         real_image_input = tf.placeholder(tf.float32, shape=[None] + self.config.image_dims)
         # Feed the Real image to the Discriminator and obtain the result
         with tf.name_scope("Real_From_Disc"):
-            real_img_vals = self.discriminator(real_image_input, training=True)
+            real_img_vals = self.discriminator(self.real_image_input, training=True)
         # Feed the Generated image to the Discriminator and obtain the result
         with tf.name_scope("Gen_From_Disc"):
-            generated_img_vals = self.discriminator(generated_images,training=False)
+            generated_img_vals = self.discriminator(generated_images,training=True)
         # Define the loss function of Discriminator
         with tf.name_scope("Discriminator_Loss"):
-            self.disc_loss = self.discriminator_loss(self.real_img_vals,self.generated_img_vals)
+            self.disc_loss = self.discriminator_loss(real_img_vals,generated_img_vals)
         # Define the loss function of Generator
         with tf.name_scope("Generator_Loss"):
-            self.gen_loss = self.generator_loss(self.generated_images)
+            self.gen_loss = self.generator_loss(generated_images)
+        
+        # Define the operation to generate the test images from the current Generator Network
+        with tf.name_scope("Generator_Progress"):
+            self.progress_images = self.generator(self.noise_input,training=False)
 
         # Initialize and Connect the Optimizers
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -102,15 +106,17 @@ class GAN_mark2(BaseModel):
         # If there needs to be proprocessing for the gradients before applying them, use
         # Compute_gradients then apply_gradients
         with tf.name_scope('SGD_Gen'):
-            self.train_gen = self.gen_optimizer.minimize(self.gen_loss)
+            self.train_gen = self.gen_optimizer.minimize(
+                self.gen_loss,global_step=self.global_step_tensor)
         with tf.name_scope('SGD_Disc'):
-            self.train_disc = self.disc_optimizer.minimize(self.disc_loss)
+            self.train_disc = self.disc_optimizer.minimize(
+                self.disc_loss,global_step=self.global_step_tensor)
 
         # Variable Saving for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Loss", self.disc_loss)
         x_image = tf.summary.image('From_Noise', tf.reshape(
-            self.generated_images, [-1, 28, 28, 1]))
+            generated_images, [-1, 28, 28, 1]))
         x_image2 = tf.summary.image('Real_Image', tf.reshape(
             self.real_image_input, [-1, 28, 28, 1]))
 

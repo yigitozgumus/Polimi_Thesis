@@ -23,6 +23,7 @@ def process_config(json_file):
     config, _ = get_config_from_json(json_file)
     config.summary_dir = os.path.join(config.output_folder, config.exp_name, "summary/")
     config.checkpoint_dir = os.path.join(config.output_folder, config.exp_name, "checkpoint/")
+    config.step_generation_dir = os.path.join(config.output_folder, config.exp_name, "generated/")
     return config
 
 def create_dirs(dirs):
