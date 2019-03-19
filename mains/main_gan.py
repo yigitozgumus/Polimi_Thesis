@@ -19,7 +19,6 @@ def main(config):
     sess = tf.Session()
     # create your data generator
     data = DataGenerator(config)
-    iterator = data.dataset.make_initializable_iterator()
     # create an instance of the model you want
     model = GAN(config)
     # create tensorboard logger

@@ -7,6 +7,7 @@ from utils.config import process_config
 
 
 from mains.main_gan import main
+from mains.main_gan_mark2 import main as main_mark2
 
 def run():
     try:
@@ -16,8 +17,8 @@ def run():
     except:
         print("missing or invalid arguments")
         exit(0)
-    
-    main(config)
+
+    main_mark2(config)
 
 
 if __name__ == '__main__':
