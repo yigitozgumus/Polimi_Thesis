@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-
+import numpy as np
 class BaseTrain:
     def __init__(self, sess, model,data, config, logger):
         self.model = model
@@ -36,8 +36,8 @@ class BaseTrain:
     def save_generated_images(self,predictions, epoch):
         # make sure the training parameter is set to False because we
         # don't want to train the batchnorm layer when doing inference.
+        predictions = np.array(predictions)
         fig = plt.figure(figsize=(4, 4))
-
         for i in range(predictions.shape[0]):
             plt.subplot(4, 4, i+1)
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')

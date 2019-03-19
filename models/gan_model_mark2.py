@@ -33,7 +33,7 @@ class GAN_mark2(BaseModel):
             model_g.add(Activation("relu"))
             model_g.add(Conv2D(1, kernel_size=3,padding='same'))
             model_g.add(Activation("tanh"))
-
+            assert model_g.output_shape == (None, 28, 28, 1)
             model_g.summary()
             input_g = Input(shape=[self.config.noise_dim])
             output_img_g = model_g(input_g)
