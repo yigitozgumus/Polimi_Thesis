@@ -5,7 +5,7 @@
   "buffer_size": 25000,
   "image_size": 28,
   "show_steps": 2,
-  "num_epochs": 250,
+  "num_epochs": 500,
   "noise_dim": 100,
   "image_dims": [28, 28, 1],
   "num_iter_per_epoch": 100,
@@ -14,7 +14,7 @@
   "optimizer_adam_beta1": 0.5,
   "batch_size": 250,
   "max_to_keep": 5,
-  "num_parallel_calls": 4,
+  "num_parallel_calls": 8,
   "batch_momentum": 0.8,
   "leakyReLU_alpha": 0.2,
   "dropout_rate": 0.25
