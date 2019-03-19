@@ -1,6 +1,7 @@
 from base.base_train import BaseTrain
 from tqdm import tqdm
 import numpy as np
+import tensorflow as tf
 
 
 class GANTrainer_mark2(BaseTrain):
