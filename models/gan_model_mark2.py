@@ -89,7 +89,7 @@ class GAN_mark2(BaseModel):
         # Define the loss function of Generator
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = self.generator_loss(generated_images)
-            
+
         # Variable Saving for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Loss", self.disc_loss)
@@ -109,6 +109,8 @@ class GAN_mark2(BaseModel):
             self.disc_optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.config.discriminator_l_rate,beta1=self.config.optimizer_adam_beta1)
         
+        gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Generator')
+        disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
         # Make the minimization of the Models
         # If there needs to be proprocessing for the gradients before applying them, use
         # Compute_gradients then apply_gradients
