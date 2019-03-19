@@ -55,12 +55,14 @@ class GAN(BaseModel):
             x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d,outputs=x)
 
-            
+
         with tf.name_scope("Generator_model"):
             generated_image = self.generator(self.noise_input, training=True)
+
         real_output = self.discriminator(self.real_image_input, training=True)
+
         with tf.name_scope("Discriminator_model"):
-            generated_output = self.discriminator(generated_image, training=True)
+            generated_output = self.discriminator(generated_image, training=False)
 
         # For the Tensorboard
             #image_gen = self.generator(self.noise_input, training=True)
@@ -86,10 +88,10 @@ class GAN(BaseModel):
         disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
 
         with tf.name_scope('SGDdisc'):
-            self.train_disc = self.generator_optimizer.minimize(self.disc_loss,global_step=self.global_step_tensor)
+            self.train_disc = self.discriminator_optimizer.minimize(self.disc_loss,global_step=self.global_step_tensor)
 
         with tf.name_scope('SGDgen'):
-            self.train_gen = self.discriminator_optimizer.minimize(self.gen_loss,global_step=self.global_step_tensor)
+            self.train_gen = self.generator_optimizer.minimize(self.gen_loss,global_step=self.global_step_tensor)
 
         for i in range(0, 11):
             with tf.name_scope('layer' + str(i)):
