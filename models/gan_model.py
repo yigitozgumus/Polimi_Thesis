@@ -112,7 +112,7 @@ class GAN(BaseModel):
         generated_loss = tf.losses.sigmoid_cross_entropy(
         multi_class_labels=tf.zeros_like(generated_output), logits=generated_output)
 
-        total_loss (real_loss,generated_loss)
+        total_loss =  (real_loss,generated_loss)
 
         return total_loss
 
