@@ -42,7 +42,7 @@ class DataGenerator():
         # Read the image file
         image_file = tf.read_file(filename)
         # Decode the image
-        image_decoded = tf.image.decode_image(image_file, channels=1)
+        image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
         # TODO
         image_resized = tf.image.resize_images(image_decoded, [28, 28])
