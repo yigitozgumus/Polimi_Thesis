@@ -7,8 +7,8 @@ import tensorflow as tf
 import time
 
 class GANTrainer(BaseTrain):
-    def __init__(self, sess, model,iterator, config, logger):
-        super(GANTrainer, self).__init__(sess, model,iterator, config, logger)
+    def __init__(self, sess, model,data, config, logger):
+        super(GANTrainer, self).__init__(sess, model, data, config, logger)
 
     def train_epoch(self):
         """
@@ -21,6 +21,7 @@ class GANTrainer(BaseTrain):
         disc_losses = []
         summaries = []
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
+        # Make the iterator initializor
         iterator = self.iterator.make_initializable_iterator()
         next_element = iterator.get_next()
         self.sess.run(iterator.initializer)
