@@ -82,7 +82,7 @@ class GAN(BaseModel):
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
             self.generator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
-            self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
+            self.discriminator_optimizer = tf.train.AdamOptimi(self.config.optimizer_learning_rate)
         
         gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Generator')
         disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
@@ -112,7 +112,7 @@ class GAN(BaseModel):
         generated_loss = tf.losses.sigmoid_cross_entropy(
         multi_class_labels=tf.zeros_like(generated_output), logits=generated_output)
 
-        total_loss =  (real_loss,generated_loss)
+        total_loss =  (real_loss + generated_loss)
 
         return total_loss
 
