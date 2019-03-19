@@ -22,7 +22,7 @@ class GANTrainer(BaseTrain):
         summaries = []
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         # Make the iterator initializor
-        iterator = self.iterator.make_initializable_iterator()
+        iterator = self.data.make_initializable_iterator()
         next_element = iterator.get_next()
         self.sess.run(iterator.initializer)
         for epoch in loop:

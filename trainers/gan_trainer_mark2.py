@@ -22,7 +22,7 @@ class GANTrainer_mark2(BaseTrain):
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         # Make the iterator
-        iterator = self.iterator.make_initializable_iterator()
+        iterator = self.data.make_initializable_iterator()
         # initialize the image batch
         next_element = iterator.get_next()
         # initialize the iterator
