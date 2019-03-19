@@ -1,12 +1,12 @@
 {
-    "exp_name": "gan_test_long",
+    "exp_name": "gan_test_new_noise",
     "output_folder": "Logs",
     "data_folder": "data",
     "buffer_size":25000,
     "image_size": 28,
     "show_steps":2,
     "num_epochs": 250,
-    "noise_dim" : 784,
+    "noise_dim" : 100,
     "state_size": [
         28,
         28,
