@@ -76,7 +76,7 @@ class GAN_mark2(BaseModel):
         with tf.name_scope("Generated_Image"):
             generated_images = self.generator(self.noise_input,training=True)
         # Get the images from the batch
-        real_image_input = tf.placeholder(tf.float32, shape=[None] + self.config.image_dims)
+        self.real_image_input = tf.placeholder(tf.float32, shape=[None] + self.config.image_dims)
         # Feed the Real image to the Discriminator and obtain the result
         with tf.name_scope("Real_From_Disc"):
             real_img_vals = self.discriminator(self.real_image_input, training=True)
