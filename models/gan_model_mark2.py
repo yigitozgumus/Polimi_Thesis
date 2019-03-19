@@ -89,7 +89,14 @@ class GAN_mark2(BaseModel):
         # Define the loss function of Generator
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = self.generator_loss(generated_images)
-        
+            
+        # Variable Saving for the Tensorboard
+        tf.summary.scalar("Generator_Loss", self.gen_loss)
+        tf.summary.scalar("Discriminator_Loss", self.disc_loss)
+        x_image = tf.summary.image('From_Noise', tf.reshape(
+            generated_images, [-1, 28, 28, 1]))
+        x_image2 = tf.summary.image('Real_Image', tf.reshape(
+            self.real_image_input, [-1, 28, 28, 1]))
         # Define the operation to generate the test images from the current Generator Network
         with tf.name_scope("Generator_Progress"):
             self.progress_images = self.generator(self.noise_input,training=False)
@@ -112,14 +119,7 @@ class GAN_mark2(BaseModel):
             self.train_disc = self.disc_optimizer.minimize(
                 self.disc_loss,global_step=self.global_step_tensor)
 
-        # Variable Saving for the Tensorboard
-        tf.summary.scalar("Generator_Loss", self.gen_loss)
-        tf.summary.scalar("Discriminator_Loss", self.disc_loss)
-        x_image = tf.summary.image('From_Noise', tf.reshape(
-            generated_images, [-1, 28, 28, 1]))
-        x_image2 = tf.summary.image('Real_Image', tf.reshape(
-            self.real_image_input, [-1, 28, 28, 1]))
-
+        
         # Histogram for the Discriminator Network
         for i in range(0, 18):
             with tf.name_scope('Disc_layer' + str(i)):
