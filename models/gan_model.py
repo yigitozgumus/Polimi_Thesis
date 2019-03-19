@@ -54,6 +54,8 @@ class GAN(BaseModel):
             x = tf.keras.layers.Flatten()(x)
             x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d,outputs=x)
+
+            
         with tf.name_scope("Generator_model"):
             generated_image = self.generator(self.noise_input, training=True)
         real_output = self.discriminator(self.real_image_input, training=True)
@@ -108,7 +110,7 @@ class GAN(BaseModel):
         generated_loss = tf.losses.sigmoid_cross_entropy(
         multi_class_labels=tf.zeros_like(generated_output), logits=generated_output)
 
-        total_loss = real_loss + generated_loss
+        total_loss =tf.matmul(0.5 * tf.add(real_loss,generated_loss))
 
         return total_loss
 
