@@ -18,15 +18,15 @@ class DataGenerator():
        # assert len(self.filenames) == len(self.labels)
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
+        # Apply batching
+        self.dataset = self.dataset.batch(config.batch_size)
         # Apply parse function to get the numpy array of the images
-        self.dataset = self.dataset.map(self._parse_function,
-                                        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        self.dataset = self.dataset.map(map_func=self._parse_function,
+                                        num_parallel_calls=self.config.num_parallel_calls)
         # Shuffle the dataset
         self.dataset = self.dataset.shuffle(self.config.buffer_size)
         # Repeat the dataset indefinitely
-        self.dataset = self.dataset.repeat()
-        # Apply batching
-        self.dataset = self.dataset.batch(config.batch_size)
+        self.dataset = self.dataset.repeat(self.config.num_epochs)
         # Applying prefetch to increase the performance
         # Prefetch the next 10 batches
         self.dataset = self.dataset.prefetch(
