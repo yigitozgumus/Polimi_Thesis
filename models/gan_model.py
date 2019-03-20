@@ -46,10 +46,10 @@ class GAN(BaseModel):
             x = tf.keras.layers.Conv2D(32, (5,5),strides=(2, 2),padding='same')(inputs_d)
             x = tf.keras.layers.LeakyReLU()(x)
             #x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
-            x = tf.keras.layers.Dropout(rate=0.3)(x)
+            x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
             x = tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same')(x)
             x = tf.keras.layers.LeakyReLU()(x)
-            x = tf.keras.layers.Dropout(rate=0.3)(x)
+            x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
 
             x = tf.keras.layers.Flatten()(x)
             x = tf.keras.layers.Dense(1)(x)
@@ -81,17 +81,17 @@ class GAN(BaseModel):
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
-            self.generator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
-            self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.optimizer_learning_rate)
+            self.generator_optimizer = tf.train.AdamOptimizer(self.config.generator_l_rate)
+            self.discriminator_optimizer = tf.train.AdamOptimizer(self.config.discriminator_l_rate)
         
         gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Generator')
         disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Discriminator')
 
         with tf.name_scope('SGDdisc'):
-            self.train_disc = self.discriminator_optimizer.minimize(self.disc_loss,global_step=self.global_step_tensor)
+            self.train_disc = self.discriminator_optimizer.minimize(self.disc_loss)
 
         with tf.name_scope('SGDgen'):
-            self.train_gen = self.generator_optimizer.minimize(self.gen_loss,global_step=self.global_step_tensor)
+            self.train_gen = self.generator_optimizer.minimize(self.gen_loss)
 
         for i in range(0, 11):
             with tf.name_scope('layer' + str(i)):
