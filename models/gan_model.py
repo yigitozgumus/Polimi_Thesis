@@ -62,7 +62,7 @@ class GAN(BaseModel):
         real_output = self.discriminator(self.real_image_input, training=True)
 
         with tf.name_scope("Discriminator_model"):
-            generated_output = self.discriminator(generated_image, training=False)
+            generated_output = self.discriminator(generated_image, training=True)
 
         # For the Tensorboard
             #image_gen = self.generator(self.noise_input, training=True)
