@@ -19,12 +19,12 @@ class DataGenerator():
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
         # Apply parse function to get the numpy array of the images
-        self.dataset = self.dataset.map(self._parse_function,
-                                        num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        self.dataset = self.dataset.map(map_func=self._parse_function,
+                                        num_parallel_calls=self.config.num_parallel_calls)
         # Shuffle the dataset
         self.dataset = self.dataset.shuffle(self.config.buffer_size)
         # Repeat the dataset indefinitely
-        self.dataset = self.dataset.repeat()
+        self.dataset = self.dataset.repeat(self.config.num_epochs)
         # Apply batching
         self.dataset = self.dataset.batch(config.batch_size)
         # Applying prefetch to increase the performance
@@ -42,7 +42,7 @@ class DataGenerator():
         # Read the image file
         image_file = tf.read_file(filename)
         # Decode the image
-        image_decoded = tf.image.decode_image(image_file, channels=1)
+        image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
         # TODO
         image_resized = tf.image.resize_images(image_decoded, [28, 28])

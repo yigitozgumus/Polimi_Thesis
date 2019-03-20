@@ -17,8 +17,8 @@ def run():
     except:
         print("missing or invalid arguments")
         exit(0)
-
-    main_mark2(config)
+    
+    main(config)
 
 
 if __name__ == '__main__':

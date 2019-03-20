@@ -14,7 +14,7 @@ def main(config):
     # then process the json configuration file
 
     # create the experiments dirs
-    create_dirs([config.summary_dir, config.checkpoint_dir])
+    create_dirs([config.summary_dir, config.checkpoint_dir, config.step_generation_dir])
     # create tensorflow session
     sess = tf.Session()
     # create your data generator
