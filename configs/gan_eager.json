@@ -1,4 +1,6 @@
+
 {
+    "model_class": "gan_eager",
     "exp_name": "gan_eager",
     "output_folder": "Logs",
     "data_folder": "data",

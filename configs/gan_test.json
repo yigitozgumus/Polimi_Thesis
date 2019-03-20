@@ -1,4 +1,5 @@
-{
+{   
+    "model_class": "gan",
     "exp_name": "gan_test_new_noise",
     "output_folder": "Logs",
     "data_folder": "data",
@@ -25,4 +26,5 @@
     "num_example_imgs_to_generate": 16,
     "num_epochs_to_test": 10
     
+
 }

@@ -1,4 +1,6 @@
-{
+
+{ 
+  "model_class":"gan_mark2",
   "exp_name": "gan_mark2",
   "output_folder": "Logs",
   "data_folder": "data",
