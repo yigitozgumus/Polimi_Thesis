@@ -78,6 +78,9 @@ class GAN(BaseModel):
         tf.summary.scalar("Discriminator_Loss", self.disc_loss)
         x_image = tf.summary.image('FromNoise', tf.reshape(generated_image, [-1, 28, 28, 1]))
         x_image2 = tf.summary.image('RealImage', tf.reshape(self.real_image_input, [-1, 28, 28, 1]))
+        with tf.name_scope("Generator_Progress"):
+            self.progress_images = self.generator(
+                self.noise_input, training=False)
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
