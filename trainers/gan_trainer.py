@@ -49,6 +49,7 @@ class GANTrainer(BaseTrain):
             generator_predictions = self.sess.run(
                 [self.model.progress_images], feed_dict=feed_dict)
             self.save_generated_images(generator_predictions, cur_epoch)
+
         if (cur_epoch % self.config.show_steps == 0 or cur_epoch == 1):
                 print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
                     cur_epoch, gen_loss, disc_loss))
