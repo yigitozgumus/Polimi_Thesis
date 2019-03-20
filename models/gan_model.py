@@ -19,21 +19,24 @@ class GAN(BaseModel):
         with tf.name_scope("Generator"):
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             x = tf.keras.layers.Dense(7*7*256, use_bias=False)(inputs_g)
-            x = tf.keras.layers.BatchNormalization()(x)
-            x = tf.keras.layers.LeakyReLU()(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             x = tf.keras.layers.Reshape((7, 7, 256))(x)
-
             assert x.get_shape().as_list() == [None, 7, 7, 256]
+
             x = tf.keras.layers.Conv2DTranspose(
                 128, (5, 5), strides=(1, 1), padding='same', use_bias=False)(x)
             assert x.get_shape().as_list() == [None, 7, 7, 128]
-            x = tf.keras.layers.BatchNormalization()(x)
-            x = tf.keras.layers.LeakyReLU()(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False)(x)
             assert x.get_shape().as_list() == [None, 14, 14, 64]
-            x = tf.keras.layers.BatchNormalization()(x)
-            x = tf.keras.layers.LeakyReLU()(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(
                 2, 2), padding='same', use_bias=False, activation='tanh')(x)
@@ -44,13 +47,12 @@ class GAN(BaseModel):
         with tf.name_scope("Discriminator"):
             inputs_d = tf.keras.layers.Input(shape=self.config.state_size)
             x = tf.keras.layers.Conv2D(32, (5,5),strides=(2, 2),padding='same')(inputs_d)
-            x = tf.keras.layers.LeakyReLU()(x)
+            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             #x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
             x = tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same')(x)
-            x = tf.keras.layers.LeakyReLU()(x)
+            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
-
             x = tf.keras.layers.Flatten()(x)
             x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d,outputs=x)
