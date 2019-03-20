@@ -1,0 +1,21 @@
+{
+    "exp_name": "gan_eager",
+    "output_folder": "Logs",
+    "data_folder": "data",
+    "buffer_size":25000,
+    "image_size": 28,
+    "show_steps":2,
+    "num_epochs": 250,
+    "noise_dim" : 784,
+    "state_size": [
+        28,
+        28,
+        1
+    ],
+    "num_iter_per_epoch": 100,
+    "learning_rate": 0.001,
+    "optimizer_learning_rate": 1e-4,
+    "batch_size": 250,
+    "max_to_keep": 5,
+    "num_parallel_calls": 8
+}

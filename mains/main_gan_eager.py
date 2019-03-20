@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 from utils.data_generator import DataGenerator
-from models.gan_model import GAN
-from trainers.gan_trainer import GANTrainer
+from models.gan_model_eager import GAN_eager
+from trainers.gan_trainer_eager import GANTrainer_eager
 from utils.config import process_config
 from utils.logger import Logger
 from utils.utils import get_args
@@ -14,17 +14,17 @@ def main(config):
     # then process the json configuration file
 
     # create the experiments dirs
-    create_dirs([config.summary_dir, config.checkpoint_dir,config.step_generation_dir])
+    create_dirs([config.summary_dir, config.checkpoint_dir])
     # create tensorflow session
     sess = tf.Session()
     # create your data generator
     data = DataGenerator(config)
     # create an instance of the model you want
-    model = GAN(config)
+    model = GAN_eager(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer(sess, model, data.dataset, config, logger)
+    trainer = GANTrainer_eager(sess, model, data.dataset, config, logger)
     #load model if exists
     model.load(sess)
     # here you train your model
