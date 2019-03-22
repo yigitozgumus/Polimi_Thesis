@@ -29,12 +29,15 @@ def show_image_from_memory(image):
 
 class DataLoader():
 
-    def __init__(self, data_dir):
+    def __init__(self, config):
         """
         Args:
             data_dir: this folder path should contain both Anomalous and Normal images
         """
-        self.data_dir = data_dir
+        self.config = config
+        self.data_dir = self.config.data_dir
+        self.data_dir_normal = self.config.data_dir_normal
+        self.data_dir_anomalous = self.config.data_dir_anomalous
         self.dataset_name= None
         # this is to list all the folders
         self.dir_names =listdir_nohidden(self.data_dir)
@@ -44,8 +47,8 @@ class DataLoader():
         if not os.path.exists(self.data_dir):
             print("DataLoader: dataset is not present. Download is started.")
             download_data(self.data_dir)
-        normal_imgs = self.data_dir + "/Normal/"
-        anorm_imgs = self.data_dir + "/Anomalous/images/"
+        normal_imgs = self.data_dir_normal
+        anorm_imgs = self.data_dir_anomalous + "/images/"
         norm_img_nms = [normal_imgs + x for x in listdir_nohidden(normal_imgs)]
         anorm_img_nms = [anorm_imgs + x for x in listdir_nohidden(anorm_imgs)]
         self.norm_img_array = self.create_image_array(norm_img_nms,save=False)
@@ -57,7 +60,7 @@ class DataLoader():
             print("DataLoader: Cropped subsets will be populated")
             size_list = [28]
             folder_name = "cropped"
-            num_images = 5000
+            num_images = 10240
             for size in size_list:
                 folder = folder_name + str(size)
                 self.dataset_list.append(folder)

@@ -12,7 +12,7 @@ class DataGenerator():
 
         self.config = config
         # load data here
-        d = DataLoader(self.config.data_folder)
+        d = DataLoader(self.config)
         # Get the filenames and labels
         self.filenames, self.labels = d.get_sub_dataset(self.config.image_size)
        # assert len(self.filenames) == len(self.labels)
@@ -44,11 +44,11 @@ class DataGenerator():
         # Decode the image
         image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
-        # TODO
-        image_resized = tf.image.resize_images(image_decoded, [28, 28])
-        # Normalize the values of the pixels
-        image_normalized = tf.image.convert_image_dtype(
-            image_resized, dtype=float, name="scaling")
+        image_resized = tf.image.resize_images(image_decoded, [self.config.image_size, self.config.image_size])
+        # Normalize the values of the pixels. The function that is applied is below
+        # (x - mean) / adjusted_stddev
+        # adjusted_stddev = max(stddev, 1.0/sqrt(image.NumElements()))
+        image_normalized = tf.image.per_image_standardization(image_resized)
         # Random image flip left-right
         image_random_flip_lr = tf.image.random_flip_left_right(
             image_normalized, seed=tf.random.set_random_seed(1234))

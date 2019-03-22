@@ -18,7 +18,10 @@ def run():
         print("missing or invalid arguments")
         exit(0)
     
-    main(config)
+    if (config.model_class == "gan"):
+        main(config)
+    if (config.model_class == "gan_mark2"):
+        main_mark2(config)
 
 
 if __name__ == '__main__':
