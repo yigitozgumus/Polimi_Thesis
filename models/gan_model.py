@@ -22,7 +22,11 @@ class GAN(BaseModel):
             # Input layer creates the entry point to the model
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
-            x = tf.keras.layers.Dense(7 * 7 * 256, use_bias=False)(inputs_g)
+            x = tf.keras.layers.Dense(
+                7 * 7 * 256, 
+                use_bias=False,
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0,stddev=0.02))(inputs_g)
             # Normalize the output of the Layer
             x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
@@ -40,9 +44,20 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(1, 1),
                 padding="same",
-                use_bias=False)(x)
+                use_bias=False, 
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 7, 7, 128]
-            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum,
+                gamma_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                beta_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                moving_mean_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                moving_variance_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
@@ -50,9 +65,20 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(2, 2),
                 padding="same",
-                use_bias=False)(x)
+                use_bias=False, 
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 14, 14, 64]
-            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum,
+                gamma_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                beta_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                moving_mean_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02),
+                moving_variance_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
@@ -61,7 +87,9 @@ class GAN(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                activation="tanh",)(x)
+                activation="tanh",
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 28, 28, 1]
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x)
 
@@ -72,8 +100,9 @@ class GAN(BaseModel):
                 32,
                 (5, 5),
                 strides=(2, 2),
-                padding="same"
-            )(inputs_d)
+                padding="same", 
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(inputs_d)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             # x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
@@ -81,13 +110,17 @@ class GAN(BaseModel):
                 64,
                 (5, 5),
                 strides=(2, 2),
-                padding="same"
-            )(x)
+                padding="same", 
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
 
             x = tf.keras.layers.Flatten()(x)
-            x = tf.keras.layers.Dense(1)(x)
+            x = tf.keras.layers.Dense(
+                1, 
+                kernel_initializer=tf.random_normal_initializer(
+                    mean=0.0, stddev=0.02))(x)
             self.discriminator = tf.keras.models.Model(
                 inputs=inputs_d,
                 outputs=x
