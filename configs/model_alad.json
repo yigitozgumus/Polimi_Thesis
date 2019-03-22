@@ -1,9 +1,10 @@
-
-{ 
-  "model_class":"model_alad",
+{
+  "model_class": "model_alad",
   "exp_name": "model_alad",
   "output_folder": "Logs",
-  "data_folder": "data",
+  "data_dir": "data",
+  "data_dir_normal": "data/Normal/",
+  "data_dir_anomalous": "data/Anomalous/",
   "buffer_size": 25000,
   "image_size": 28,
   "show_steps": 2,
@@ -22,5 +23,4 @@
   "dropout_rate": 0.25,
   "num_example_imgs_to_generate": 16,
   "num_epochs_to_test": 10
-  
 }

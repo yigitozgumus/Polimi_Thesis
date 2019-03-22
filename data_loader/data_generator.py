@@ -12,7 +12,7 @@ class DataGenerator():
 
         self.config = config
         # load data here
-        d = DataLoader(self.config.data_folder)
+        d = DataLoader(self.config)
         # Get the filenames and labels
         self.filenames, self.labels = d.get_sub_dataset(self.config.image_size)
        # assert len(self.filenames) == len(self.labels)
