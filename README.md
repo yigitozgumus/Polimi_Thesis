@@ -1,6 +1,10 @@
 # Polimi Thesis
 This is the repository for the Master's thesis titled "Anomaly Detection using Generative Adversarial Networks"
 
+# Project Structure
+
+The project and the hierarchy of the files are structured using [this](https://github.com/MrGemy95/Tensorflow-Project-Template) Github Project.
+
 # How to run the models
 
 Every configuration file has a value for the implemented class name. You can use 
