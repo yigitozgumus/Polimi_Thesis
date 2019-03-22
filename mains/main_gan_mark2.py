@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from utils.data_generator import DataGenerator
+from data_loader.data_generator import DataGenerator
 from models.gan_model_mark2 import GAN_mark2
 from trainers.gan_trainer_mark2 import GANTrainer_mark2
 from utils.config import process_config

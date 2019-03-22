@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils.utils import get_args
 from utils.config import process_config
 
