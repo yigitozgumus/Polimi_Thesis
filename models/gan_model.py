@@ -24,9 +24,7 @@ class GAN(BaseModel):
             # Densely connected Neural Network layer with 12544 Neurons.
             x = tf.keras.layers.Dense(7 * 7 * 256, use_bias=False)(inputs_g)
             # Normalize the output of the Layer
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x)
+            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             # Reshaping the output
@@ -38,21 +36,23 @@ class GAN(BaseModel):
             # new_cols=((cols - 1) * strides[1] + kernel_size[1]
             #               - 2 * padding[1] + output_padding[1])
             x = tf.keras.layers.Conv2DTranspose(
-                128, (5, 5), strides=(1, 1), padding="same", use_bias=False
-            )(x)
+                128,
+                (5, 5),
+                strides=(1, 1),
+                padding="same",
+                use_bias=False)(x)
             assert x.get_shape().as_list() == [None, 7, 7, 128]
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x)
+            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
-                64, (5, 5), strides=(2, 2), padding="same", use_bias=False
-            )(x)
+                64,
+                (5, 5),
+                strides=(2, 2),
+                padding="same",
+                use_bias=False)(x)
             assert x.get_shape().as_list() == [None, 14, 14, 64]
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x)
+            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
@@ -61,8 +61,7 @@ class GAN(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                activation="tanh",
-            )(x)
+                activation="tanh",)(x)
             assert x.get_shape().as_list() == [None, 28, 28, 1]
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x)
 
@@ -70,18 +69,18 @@ class GAN(BaseModel):
         with tf.name_scope("Discriminator"):
             inputs_d = tf.keras.layers.Input(shape=self.config.state_size)
             x = tf.keras.layers.Conv2D(
-                32, 
-                (5, 5), 
-                strides=(2, 2), 
+                32,
+                (5, 5),
+                strides=(2, 2),
                 padding="same"
             )(inputs_d)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             # x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
             x = tf.keras.layers.Conv2D(
-                64, 
-                (5, 5), 
-                strides=(2, 2), 
+                64,
+                (5, 5),
+                strides=(2, 2),
                 padding="same"
             )(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
@@ -90,7 +89,7 @@ class GAN(BaseModel):
             x = tf.keras.layers.Flatten()(x)
             x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(
-                inputs=inputs_d, 
+                inputs=inputs_d,
                 outputs=x
             )
         with tf.name_scope("Generator_model"):
@@ -115,7 +114,7 @@ class GAN(BaseModel):
             self.gen_loss = self.generator_loss(generated_output)
         with tf.name_scope("Discriminator_Loss"):
             self.disc_loss = self.discriminator_loss(
-                real_output, 
+                real_output,
                 generated_output
             )
 
@@ -130,7 +129,7 @@ class GAN(BaseModel):
         )
         with tf.name_scope("Generator_Progress"):
             self.progress_images = self.generator(
-                self.noise_input, 
+                self.noise_input,
                 training=False
             )
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -178,7 +177,7 @@ class GAN(BaseModel):
         )
         generated_loss = tf.losses.sigmoid_cross_entropy(
             multi_class_labels=tf.zeros_like(
-                generated_output), 
+                generated_output),
                 logits=generated_output
         )
         total_loss = real_loss + generated_loss
