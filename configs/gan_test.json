@@ -10,7 +10,7 @@
   "show_steps": 2,
   "num_epochs": 250,
   "noise_dim": 100,
-  "state_size": [28, 28, 1],
+  "image_dims": [28, 28, 1],
   "num_iter_per_epoch": 200,
   "discriminator_l_rate": 0.00005,
   "generator_l_rate": 0.0002,

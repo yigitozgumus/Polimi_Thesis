@@ -15,7 +15,7 @@ class GAN(BaseModel):
             tf.float32, shape=[None, self.config.noise_dim]
         )
         self.real_image_input = tf.placeholder(
-            tf.float32, shape=[None] + self.config.state_size
+            tf.float32, shape=[None] + self.config.image_dims
         )
         # Make the Generator model
         with tf.name_scope("Generator"):
@@ -25,39 +25,28 @@ class GAN(BaseModel):
             x = tf.keras.layers.Dense(
                 7 * 7 * 256, 
                 use_bias=False,
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0,stddev=0.02))(inputs_g)
             # Normalize the output of the Layer
-            x = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x)
+            x = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x)
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             # Reshaping the output
             x = tf.keras.layers.Reshape((7, 7, 256))(x)
             # Check the size of the current output just in case
             assert x.get_shape().as_list() == [None, 7, 7, 256]
-            # new_rows = ((rows - 1) * strides[0] + kernel_size[0]
-            #               - 2 * padding[0] + output_padding[0])
-            # new_cols=((cols - 1) * strides[1] + kernel_size[1]
-            #               - 2 * padding[1] + output_padding[1])
             x = tf.keras.layers.Conv2DTranspose(
                 128,
                 (5, 5),
                 strides=(1, 1),
                 padding="same",
                 use_bias=False, 
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 7, 7, 128]
             x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum,
-                gamma_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                beta_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                moving_mean_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                moving_variance_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
+                momentum=self.config.batch_momentum)(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
@@ -66,19 +55,11 @@ class GAN(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False, 
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 14, 14, 64]
             x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum,
-                gamma_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                beta_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                moving_mean_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02),
-                moving_variance_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
+                momentum=self.config.batch_momentum)(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
 
             x = tf.keras.layers.Conv2DTranspose(
@@ -88,20 +69,20 @@ class GAN(BaseModel):
                 padding="same",
                 use_bias=False,
                 activation="tanh",
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(x)
             assert x.get_shape().as_list() == [None, 28, 28, 1]
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x)
 
         # Make the discriminator model
         with tf.name_scope("Discriminator"):
-            inputs_d = tf.keras.layers.Input(shape=self.config.state_size)
+            inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
             x = tf.keras.layers.Conv2D(
                 32,
                 (5, 5),
                 strides=(2, 2),
                 padding="same", 
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(inputs_d)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             # x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
@@ -111,16 +92,12 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(2, 2),
                 padding="same", 
-                kernel_initializer=tf.random_normal_initializer(
+                kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(x)
             x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
             x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
-
             x = tf.keras.layers.Flatten()(x)
-            x = tf.keras.layers.Dense(
-                1, 
-                kernel_initializer=tf.random_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
+            x = tf.keras.layers.Dense(1)(x)
             self.discriminator = tf.keras.models.Model(
                 inputs=inputs_d,
                 outputs=x
