@@ -36,6 +36,9 @@ class DataLoader():
         """
         self.config = config
         self.data_dir = self.config.data_dir
+        if not os.path.exists(self.data_dir):
+            print("DataLoader: dataset is not present. Download is started.")
+            download_data(self.data_dir)
         self.data_dir_normal = self.config.data_dir_normal
         self.data_dir_anomalous = self.config.data_dir_anomalous
         self.dataset_name= None
@@ -44,9 +47,7 @@ class DataLoader():
         # If the cropped subsets are not present create them
         self.dataset_list = []
         # Download the data if it is not downloaded
-        if not os.path.exists(self.data_dir):
-            print("DataLoader: dataset is not present. Download is started.")
-            download_data(self.data_dir)
+
         normal_imgs = self.data_dir_normal
         anorm_imgs = self.data_dir_anomalous + "/images/"
         norm_img_nms = [normal_imgs + x for x in listdir_nohidden(normal_imgs)]
