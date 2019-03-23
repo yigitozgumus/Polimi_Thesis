@@ -22,47 +22,47 @@ class GAN(BaseModel):
             # Input layer creates the entry point to the model
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
-            x = tf.keras.layers.Dense(
+            x_g = tf.keras.layers.Dense(
                 7 * 7 * 256, 
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0,stddev=0.02))(inputs_g)
             # Normalize the output of the Layer
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum)(x)
+            x_g = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x_g)
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
-            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
+            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
             # Reshaping the output
-            x = tf.keras.layers.Reshape((7, 7, 256))(x)
+            x_g = tf.keras.layers.Reshape((7, 7, 256))(x_g)
             # Check the size of the current output just in case
-            assert x.get_shape().as_list() == [None, 7, 7, 256]
-            x = tf.keras.layers.Conv2DTranspose(
+            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
+            x_g = tf.keras.layers.Conv2DTranspose(
                 128,
                 (5, 5),
                 strides=(1, 1),
                 padding="same",
                 use_bias=False, 
                 kernel_initializer=tf.truncated_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
-            assert x.get_shape().as_list() == [None, 7, 7, 128]
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum)(x)
-            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
+                    mean=0.0, stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
+            x_g = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x_g)
+            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
 
-            x = tf.keras.layers.Conv2DTranspose(
+            x_g = tf.keras.layers.Conv2DTranspose(
                 64,
                 (5, 5),
                 strides=(2, 2),
                 padding="same",
                 use_bias=False, 
                 kernel_initializer=tf.truncated_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
-            assert x.get_shape().as_list() == [None, 14, 14, 64]
-            x = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum)(x)
-            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
+                    mean=0.0, stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 14, 14, 64]
+            x_g = tf.keras.layers.BatchNormalization(
+                momentum=self.config.batch_momentum)(x_g)
+            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
 
-            x = tf.keras.layers.Conv2DTranspose(
+            x_g = tf.keras.layers.Conv2DTranspose(
                 1,
                 (5, 5),
                 strides=(2, 2),
@@ -70,56 +70,46 @@ class GAN(BaseModel):
                 use_bias=False,
                 activation="tanh",
                 kernel_initializer=tf.truncated_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
-            assert x.get_shape().as_list() == [None, 28, 28, 1]
-            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x)
+                    mean=0.0, stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
 
         # Make the discriminator model
         with tf.name_scope("Discriminator"):
-            inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
-            x = tf.keras.layers.Conv2D(
+            inputs_d = tf.keras.layers.Input(shape=self.config.image_dims
+            )
+            x_d = tf.keras.layers.Conv2D(
                 32,
                 (5, 5),
                 strides=(2, 2),
                 padding="same", 
                 kernel_initializer=tf.truncated_normal_initializer(
                     mean=0.0, stddev=0.02))(inputs_d)
-            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
-            # x = tf.keras.layers.AveragePooling2D(pool_size=(2 ,2),padding='same')(x)
-            x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
-            x = tf.keras.layers.Conv2D(
+            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            x_d = tf.keras.layers.Conv2D(
                 64,
                 (5, 5),
                 strides=(2, 2),
                 padding="same", 
                 kernel_initializer=tf.truncated_normal_initializer(
-                    mean=0.0, stddev=0.02))(x)
-            x = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x)
-            x = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x)
-            x = tf.keras.layers.Flatten()(x)
-            x = tf.keras.layers.Dense(1)(x)
+                    mean=0.0, stddev=0.02))(x_d)
+            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            x_d = tf.keras.layers.Flatten()(x_d)
+            x_d = tf.keras.layers.Dense(1)(x_d)
             self.discriminator = tf.keras.models.Model(
                 inputs=inputs_d,
-                outputs=x
-            )
-        with tf.name_scope("Generator_model"):
-            generated_image = self.generator(
-                self.noise_input, training=True
-            )
-
-        real_output = self.discriminator(
-            self.real_image_input, training=True
-        )
-
-        with tf.name_scope("Discriminator_model"):
-            generated_output = self.discriminator(
-                generated_image, training=True
-            )
+                outputs=x_d)
+        # Evaluations for the training
+        generated_image = self.generator(self.noise_input, training=True)
+        real_output = self.discriminator(self.real_image_input, training=True)
+        generated_output = self.discriminator(generated_image, training=True)
 
         # For the Tensorboard
         # image_gen = self.generator(self.noise_input, training=True)
         # image_disc = self.discriminator(image_gen, training=True)
-
+        # Losses of the training of Generator and Discriminator
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = self.generator_loss(generated_output)
         with tf.name_scope("Discriminator_Loss"):
@@ -131,11 +121,12 @@ class GAN(BaseModel):
         # Store the loss values for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Loss", self.disc_loss)
+
         x_image = tf.summary.image(
-            "FromNoise", tf.reshape(generated_image, [-1, 28, 28, 1])
+            "From_Noise", tf.reshape(generated_image, [-1, 28, 28, 1])
         )
         x_image2 = tf.summary.image(
-            "RealImage", tf.reshape(self.real_image_input, [-1, 28, 28, 1])
+            "Real_Image", tf.reshape(self.real_image_input, [-1, 28, 28, 1])
         )
         with tf.name_scope("Generator_Progress"):
             self.progress_images = self.generator(
@@ -152,24 +143,17 @@ class GAN(BaseModel):
                 self.config.discriminator_l_rate
             )
 
-        gen_vars = tf.get_collection(
-            tf.GraphKeys.TRAINABLE_VARIABLES, scope="Generator"
-        )
-        disc_vars = tf.get_collection(
-            tf.GraphKeys.TRAINABLE_VARIABLES, scope="Discriminator"
-        )
-
-        with tf.name_scope("SGDdisc"):
+        with tf.name_scope("SGD_Discriminator"):
             self.train_disc = self.discriminator_optimizer.minimize(
                 self.disc_loss
             )
 
-        with tf.name_scope("SGDgen"):
+        with tf.name_scope("SGD_Generator"):
             self.train_gen = self.generator_optimizer.minimize(
                 self.gen_loss
             )
 
-        for i in range(0, 11):
+        for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
                 pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
                 tf.summary.histogram("pesos" + str(i), pesos[i])

@@ -38,23 +38,21 @@ class GANTrainer(BaseTrain):
         # write the summaries
         self.logger.summarize(cur_epoch, summaries=summaries)
         # Compute the means of the losses
-        gen_loss = tf.math.reduce_mean(gen_losses).eval(session=self.sess)
-        disc_loss = tf.math.reduce_mean(disc_losses).eval(session=self.sess)
+        gen_loss = np.mean(gen_losses)
+        disc_loss = np.mean(disc_losses)
+        # Generate images between epochs to evaluate
         random_vector_for_generation = tf.random_normal(
             [self.config.num_example_imgs_to_generate, self.config.noise_dim])
-        # Generate images between epochs to evaluate
-        if (cur_epoch % self.config.num_epochs_to_test == 0 or cur_epoch == 1):
-            rand_noise = self.sess.run(random_vector_for_generation)
-            feed_dict = {self.model.noise_input: rand_noise}
-            generator_predictions = self.sess.run(
+        rand_noise = self.sess.run(random_vector_for_generation)
+        feed_dict = {self.model.noise_input: rand_noise}
+        generator_predictions = self.sess.run(
                 [self.model.progress_images], feed_dict=feed_dict)
-            self.save_generated_images(generator_predictions, cur_epoch)
+        self.save_generated_images(generator_predictions, cur_epoch)
 
         if (cur_epoch % self.config.show_steps == 0 or cur_epoch == 1):
                 print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
                     cur_epoch+1, gen_loss, disc_loss))
-
-        
+  
         self.model.save(self.sess)
 
     #@tf.contrib.eager.defun
