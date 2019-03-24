@@ -17,6 +17,8 @@ class GAN(BaseModel):
         self.real_image_input = tf.placeholder(
             tf.float32, shape=[None] + self.config.image_dims
         )
+        self.random_vector_for_generation = tf.random_normal(
+            [self.config.num_example_imgs_to_generate, self.config.noise_dim])
         # Make the Generator model
         with tf.name_scope("Generator"):
             # Input layer creates the entry point to the model

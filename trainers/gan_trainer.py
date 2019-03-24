@@ -40,10 +40,8 @@ class GANTrainer(BaseTrain):
         # Compute the means of the losses
         gen_loss = np.mean(gen_losses)
         disc_loss = np.mean(disc_losses)
-        # Generate images between epochs to evaluate
-        random_vector_for_generation = tf.random_normal(
-            [self.config.num_example_imgs_to_generate, self.config.noise_dim])
-        rand_noise = self.sess.run(random_vector_for_generation)
+        # Generate images between epochs to evaluate   
+        rand_noise = self.sess.run(self.model.random_vector_for_generation)
         feed_dict = {self.model.noise_input: rand_noise}
         generator_predictions = self.sess.run(
                 [self.model.progress_images], feed_dict=feed_dict)
@@ -63,10 +61,9 @@ class GANTrainer(BaseTrain):
         - return any metrics you need to summarize
         """
         # Generate noise from normal distribution
-        noise = tf.random_normal([self.config.batch_size,self.config.noise_dim])
-        noise_gen = self.sess.run(noise)
+        noise = np.random.randn(self.config.batch_size,self.config.noise_dim)
         image_eval = self.sess.run(image)
-        feed_dict = {self.model.noise_input: noise_gen, self.model.real_image_input: image_eval}
+        feed_dict = {self.model.noise_input: noise, self.model.real_image_input: image_eval}
         gen_loss, disc_loss,_,_,summary = self.sess.run(
             [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc,self.model.summary], feed_dict=feed_dict)
 
