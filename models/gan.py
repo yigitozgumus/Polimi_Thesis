@@ -76,8 +76,7 @@ class GAN(BaseModel):
 
         # Make the discriminator model
         with tf.name_scope("Discriminator"):
-            inputs_d = tf.keras.layers.Input(shape=self.config.image_dims
-            )
+            inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
             x_d = tf.keras.layers.Conv2D(
                 32,
                 (5, 5),
