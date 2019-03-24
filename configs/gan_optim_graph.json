@@ -1,6 +1,6 @@
 {
   "model_class": "gan",
-  "exp_name": "gan_test_optim_graph",
+  "exp_name": "gan_optim_graph",
   "output_folder": "Logs",
   "data_dir": "data",
   "data_dir_normal": "data/Normal/",
