@@ -24,7 +24,7 @@ def main(config):
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer(sess, model, data.dataset, config, logger)
+    trainer = GANTrainer(sess, model, data, config, logger)
     #load model if exists
     model.load(sess)
     # here you train your model

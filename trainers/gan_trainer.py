@@ -25,13 +25,13 @@ class GANTrainer(BaseTrain):
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         # Make the iterator
-        iterator = self.data.make_initializable_iterator()
+        #iterator = self.data.make_initializable_iterator()
         # initialize the image batch
-        next_element = iterator.get_next()
-        self.sess.run(iterator.initializer)
+        #next_element = iterator.get_next()
+        self.sess.run(self.data.iterator.initializer)
         for epoch in loop:
             # Calculate the losses and obtain the summaries to write
-            gen_loss, disc_loss,summary = self.train_step(next_element)
+            gen_loss, disc_loss,summary = self.train_step(self.data.next_element)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
             summaries.append(summary)
