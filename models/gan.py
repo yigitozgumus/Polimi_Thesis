@@ -126,7 +126,9 @@ class GAN(BaseModel):
 
         # Store the loss values for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
-        tf.summary.scalar("Discriminator_Loss", self.disc_loss)
+        tf.summary.scalar("Discriminator_Real_Loss", self.disc_real_loss)
+        tf.summary.scalar("Discriminator_Gen_Loss",self.disc_gen_loss)
+        tf.summary.scalar("Discriminator_Total_Loss",self.total_disc_loss)
 
         x_image = tf.summary.image(
             "From_Noise", tf.reshape(generated_image, [-1, 28, 28, 1])
