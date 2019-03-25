@@ -60,8 +60,8 @@ class GANTrainer(BaseTrain):
         - run the tensorflow session
         - return any metrics you need to summarize
         """
-        # Generate noise from normal distribution
-        noise = np.random.randn(self.config.batch_size,self.config.noise_dim)
+        # Generate noise from uniform  distribution between -1 and 1
+        noise = np.random.uniform(-1.,1.,size=[self.config.batch_size,self.config.noise_dim])
         image_eval = self.sess.run(image)
         feed_dict = {self.model.noise_input: noise, self.model.real_image_input: image_eval}
         gen_loss, disc_loss,_,_,summary = self.sess.run(
