@@ -111,7 +111,7 @@ class GAN(BaseModel):
         # Losses of the training of Generator and Discriminator
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = tf.losses.sigmoid_cross_entropy(
-                tf.ones_like(generated_image), generated_image)
+                tf.ones_like(generated_output), generated_output)
         with tf.name_scope("Discriminator_Loss"):
             self.disc_real_loss = tf.losses.sigmoid_cross_entropy(
                 multi_class_labels=tf.ones_like(real_output), logits=real_output
