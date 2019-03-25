@@ -153,7 +153,7 @@ class GAN(BaseModel):
 
         with tf.name_scope("SGD_Discriminator"):
             self.train_disc = self.discriminator_optimizer.minimize(
-                self.disc_loss
+                self.total_disc_loss
             )
 
         with tf.name_scope("SGD_Generator"):
