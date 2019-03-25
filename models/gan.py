@@ -104,7 +104,7 @@ class GAN(BaseModel):
                 outputs=x_d)
         # Evaluations for the training
         generated_image = self.generator(self.noise_input, training=True)
-        real_output = self.discriminator(self.real_image_input, training=True)
+        real_output = self.discriminator(self.real_image_input, training=False)
         generated_output = self.discriminator(generated_image, training=True)
 
         # For the Tensorboard
