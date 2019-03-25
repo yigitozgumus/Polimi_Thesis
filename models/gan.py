@@ -108,16 +108,21 @@ class GAN(BaseModel):
         generated_output = self.discriminator(generated_image, training=True)
 
         # For the Tensorboard
-        # image_gen = self.generator(self.noise_input, training=True)
-        # image_disc = self.discriminator(image_gen, training=True)
         # Losses of the training of Generator and Discriminator
         with tf.name_scope("Generator_Loss"):
-            self.gen_loss = self.generator_loss(generated_output)
+            self.gen_loss = tf.losses.sigmoid_cross_entropy(
+                tf.ones_like(generated_image), generated_image)
         with tf.name_scope("Discriminator_Loss"):
-            self.disc_loss = self.discriminator_loss(
-                real_output,
-                generated_output
+            self.disc_real_loss = tf.losses.sigmoid_cross_entropy(
+                multi_class_labels=tf.ones_like(real_output), logits=real_output
             )
+            self.disc_gen_loss = tf.losses.sigmoid_cross_entropy(
+                multi_class_labels=tf.zeros_like(
+                    generated_output),
+                logits=generated_output
+            )
+            self.total_disc_loss = self.disc_real_loss + self.disc_gen_loss
+
 
         # Store the loss values for the Tensorboard
         tf.summary.scalar("Generator_Loss", self.gen_loss)
@@ -160,23 +165,6 @@ class GAN(BaseModel):
                 tf.summary.histogram("pesos" + str(i), pesos[i])
         self.summary = tf.summary.merge_all()
 
-    # Implementation of losses
-    def generator_loss(self, generated_output):
-        return tf.losses.sigmoid_cross_entropy(
-            tf.ones_like(generated_output), generated_output
-        )
-
-    def discriminator_loss(self, real_output, generated_output):
-        real_loss = tf.losses.sigmoid_cross_entropy(
-            multi_class_labels=tf.ones_like(real_output), logits=real_output
-        )
-        generated_loss = tf.losses.sigmoid_cross_entropy(
-            multi_class_labels=tf.zeros_like(
-                generated_output),
-                logits=generated_output
-        )
-        total_loss = real_loss + generated_loss
-        return total_loss
 
     def init_saver(self):
         self.saver = tf.train.Saver(max_to_keep=self.config.max_to_keep)
