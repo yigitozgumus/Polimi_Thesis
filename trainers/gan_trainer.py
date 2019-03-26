@@ -32,7 +32,8 @@ class GANTrainer(BaseTrain):
         for epoch in loop:
             # Calculate the losses and obtain the summaries to write
             gen_loss, disc_loss, fake_acc, true_acc, tot_acc, summary = self.train_step(
-                self.data.next_element
+                self.data.next_element,
+                cur_epoch=cur_epoch
             )
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
@@ -67,7 +68,7 @@ class GANTrainer(BaseTrain):
         self.model.save(self.sess)
 
     # @tf.contrib.eager.defun
-    def train_step(self, image):
+    def train_step(self, image,cur_epoch):
         """
         implement the logic of the train step
         - run the tensorflow session
@@ -76,7 +77,7 @@ class GANTrainer(BaseTrain):
         # Generate noise from uniform  distribution between -1 and 1
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
-        sigma = max(0.75*(10. - self.cur_epoch) / (10), 0.05)
+        sigma = max(0.75*(10. - cur_epoch) / (10), 0.05)
         noise = np.random.normal(
             loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
         )
@@ -93,7 +94,7 @@ class GANTrainer(BaseTrain):
             self.real_noise: real_noise,
             self.fake_noise: fake_noise,
         }
-        
+
         gen_loss, disc_loss, fake_acc, true_acc, tot_acc, _, _, summary = self.sess.run(
             [
                 self.model.gen_loss,
