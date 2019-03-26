@@ -20,7 +20,7 @@ class GAN(BaseModel):
         self.random_vector_for_generation = tf.random_normal(
             [self.config.num_example_imgs_to_generate, self.config.noise_dim]
         )
-        self.initializer = tf.truncated_normal_self.initializer(stddev=0.02)
+        self.initializer = tf.truncated_normal_initializer(stddev=0.02)
         # Make the Generator model
         with tf.name_scope("Generator"):
             # Input layer creates the entry point to the model
