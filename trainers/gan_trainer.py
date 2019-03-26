@@ -76,14 +76,15 @@ class GANTrainer(BaseTrain):
         # Generate noise from uniform  distribution between -1 and 1
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
+        sigma = max(0.75*(10. - self.cur_epoch) / (10), 0.05)
         noise = np.random.normal(
             loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
         )
         real_noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
+            scale=sigma, size=[self.config.batch_size, self.config.noise_dim]
         )
         fake_noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
+            scale=sigma, size=[self.config.batch_size, self.config.noise_dim]
         )
         image_eval = self.sess.run(image)
         feed_dict = {
@@ -92,6 +93,7 @@ class GANTrainer(BaseTrain):
             self.real_noise: real_noise,
             self.fake_noise: fake_noise,
         }
+        
         gen_loss, disc_loss, fake_acc, true_acc, tot_acc, _, _, summary = self.sess.run(
             [
                 self.model.gen_loss,
