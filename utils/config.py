@@ -20,14 +20,36 @@ def get_config_from_json(json_file):
     return config, config_dict
 
 
-def process_config(json_file):
+def create_parameter_file(config: object) -> None:
+    location = config.parameter_dir
+    # If the folder is present then already the experiment values are created
+    if not os.path.exists(location):
+        os.makedirs(location)
+        name = "parameters.txt"
+        f = open(os.path.join(location,name),"w+")
+        f.write("----------------------------------------------------------\n")
+        f.write("Experiment: {}\n".format(config.exp_name))
+        f.write("----------------------------------------------------------\n")
+        parameters = config._get_kwargs()
+        for param in parameters:
+            f.write("{} : {}\n".format(param[0],param[1]))
+        f.close()
+    else:
+        print("Experiment parameters are already stored")
+
+
+def process_config(json_file: str, exp_name: str) -> object:
     config, _ = get_config_from_json(json_file)
+    config.exp_name = exp_name
     config.summary_dir = os.path.join(config.output_folder, config.exp_name, "summary/")
     config.checkpoint_dir = os.path.join(config.output_folder, config.exp_name, "checkpoint/")
     config.step_generation_dir = os.path.join(config.output_folder, config.exp_name, "generated/")
+    config.parameter_dir = os.path.join(config.output_folder,config.exp_name, "parameters/")
+    create_parameter_file(config)
     return config
 
-def create_dirs(dirs):
+
+def create_dirs(dirs: list) -> None:
     """
     dirs - a list of directories to create if these directories are not found
     :param dirs:
@@ -41,4 +63,5 @@ def create_dirs(dirs):
     except Exception as err:
         print("Creating directories error: {0}".format(err))
         exit(-1)
+
 

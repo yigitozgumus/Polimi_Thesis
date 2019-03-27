@@ -52,9 +52,11 @@ def create_dirs(dirs):
 def get_args():
     argparser = argparse.ArgumentParser(description=__doc__)
     argparser.add_argument(
-        '-c', '--config',
-        metavar='C',
-        default='None',
+        '-c', dest='config',
         help='The Configuration file')
+    argparser.add_argument(
+        '-e', dest='experiment',
+        help='Experiment name of the model')
+
     args = argparser.parse_args()
     return args
