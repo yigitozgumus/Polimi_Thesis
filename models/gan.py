@@ -163,7 +163,7 @@ class GAN(BaseModel):
                     tf.float32,
                 )
             )
-            self.total_accuracy = 0.5 * (self.accuracy_fake + self.accuracy_real)
+            self.accuracy_total = 0.5 * (self.accuracy_fake + self.accuracy_real)
 
         # Store the loss values for the Tensorboard
         ########################################################################
