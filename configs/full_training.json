@@ -1,6 +1,6 @@
 {
   "model_class": "gan",
-  "exp_name": "full_training_nlr",
+  "include_noise": true,
   "output_folder": "Logs",
   "data_dir": "data",
   "data_dir_normal": "data/Normal/",
