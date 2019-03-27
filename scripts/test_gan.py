@@ -114,7 +114,6 @@ def GAN(sample_size):
             x = tf.layers.conv2d(x, 64, 5, padding='same')
             x = tf.nn.relu(x)
             x = tf.layers.average_pooling2d(x, 8, 8)
-            
             x = tf.contrib.layers.flatten(x)
             x = tf.layers.dense(x, 784)
             x = tf.nn.sigmoid(x)

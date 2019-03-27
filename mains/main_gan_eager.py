@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from utils.data_generator import DataGenerator
-from models.gan_model_eager import GAN_eager
+from models.gan_eager import GAN_eager
 from trainers.gan_trainer_eager import GANTrainer_eager
 from utils.config import process_config
 from utils.logger import Logger

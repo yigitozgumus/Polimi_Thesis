@@ -4,8 +4,8 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from utils.config import process_config
-from models.gan_model import GAN
-from models.gan_model_mark2 import GAN_mark2
+from models.gan import GAN
+from models.gan_mark2 import GAN_mark2
 
 
 def main():
