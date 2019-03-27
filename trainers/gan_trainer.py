@@ -81,8 +81,8 @@ class GANTrainer(BaseTrain):
             fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
         else:
             # Otherwise we are just going to add zeros which will not break anything
-            real_noise = np.zeros((self.config.batch_size, self.config.image_dims))
-            fake_noise = np.zeros((self.config.batch_size, self.config.image_dims))
+            real_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
+            fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
         # Evaluation of the image
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
@@ -93,21 +93,29 @@ class GANTrainer(BaseTrain):
                 self.model.accuracy_fake,
                 self.model.accuracy_real,
                 self.model.accuracy_total,
-                self.model.train_disc,
+                self.model.train_disc
             ],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
                 self.model.real_noise: real_noise,
-                self.model.fake_noise: fake_noise,
+                self.model.fake_noise: fake_noise
             }
         )
-        # Train the Generator
+        # Train the Generator and get the summaries
         # Re create the noise for the generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        gen_loss, _ = self.sess.run([self.model.gen_loss, self.model.train_gen],
-                                    feed_dict={self.model.noise_tensor: noise,self.model.fake_noise: fake_noise}
-                                    )
-        # Get the Summary information
-        summary = self.sess.run([self.model.summary])
+        gen_loss, _,summary = self.sess.run(
+            [self.model.gen_loss,
+             self.model.train_gen,
+             self.model.summary],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise
+            }
+            )
+
+
         return gen_loss, disc_loss, fake_acc, true_acc, tot_acc, summary
