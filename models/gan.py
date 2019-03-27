@@ -1,4 +1,5 @@
 import tensorflow as tf
+
 from base.base_model import BaseModel
 
 
@@ -126,7 +127,7 @@ class GAN(BaseModel):
         generated_image = (
             self.generator(self.noise_tensor, training=True) + self.fake_noise
         )
-        real_output = self.discriminator(self.image_input, training=True)
+        real_output = self.discriminator(self.real_image, training=True)
         generated_output = self.discriminator(generated_image, training=True)
 
         # Losses of the training of Generator and Discriminator
@@ -172,7 +173,7 @@ class GAN(BaseModel):
         tf.summary.scalar("Discriminator_Real_Loss", self.disc_real_loss)
         tf.summary.scalar("Real_Accuracy", self.accuracy_real)
         tf.summary.scalar("Fake_Accuracy", self.accuracy_fake)
-        tf.summary.scalar("Total_Accuracy", self.total_accuracy)
+        tf.summary.scalar("Total_Accuracy", self.accuracy_total)
         tf.summary.scalar("Discriminator_Gen_Loss", self.disc_gen_loss)
         tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         # Images for the Tensorboard

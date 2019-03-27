@@ -51,7 +51,7 @@ class GANTrainer(BaseTrain):
         total_acc_m = np.mean(tot_accuracies)
         # Generate images between epochs to evaluate
         rand_noise = self.sess.run(self.model.random_vector_for_generation)
-        feed_dict = {self.model.noise_input: rand_noise}
+        feed_dict = {self.model.noise_tensor: rand_noise}
         generator_predictions = self.sess.run(
             [self.model.progress_images], feed_dict=feed_dict
         )
@@ -82,21 +82,21 @@ class GANTrainer(BaseTrain):
             loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
         )
         real_noise = np.random.normal(
-            scale=sigma, size=[self.config.batch_size, self.config.noise_dim]
+            scale=sigma, size=[self.config.batch_size] + self.config.image_dims
         )
         fake_noise = np.random.normal(
-            scale=sigma, size=[self.config.batch_size, self.config.noise_dim]
+            scale=sigma, size=[self.config.batch_size] + self.config.image_dims
         )
         image_eval = self.sess.run(image)
         feed_dict = {
-            self.model.noise_input: noise,
-            self.model.real_image_input: image_eval,
-            self.real_noise: real_noise,
-            self.fake_noise: fake_noise,
+            self.model.noise_tensor: noise,
+            self.model.image_input: image_eval,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
         }
 
         gen_loss, disc_loss, fake_acc, true_acc, tot_acc, _, _, summary = self.sess.run(
-            [
+            [ 
                 self.model.gen_loss,
                 self.model.total_disc_loss,
                 self.model.accuracy_fake,
