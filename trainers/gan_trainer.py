@@ -78,23 +78,26 @@ class GANTrainer(BaseTrain):
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
         sigma = max(0.75*(10. - cur_epoch) / (10), 0.05)
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]
-        )
-        real_noise = np.random.normal(
-            scale=sigma, size=[self.config.batch_size] + self.config.image_dims
-        )
-        fake_noise = np.random.normal(
-            scale=sigma, size=[self.config.batch_size] + self.config.image_dims
-        )
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        # Instance noise additions
+        if self.config.include_noise:
+            # If we want to add this is will add the noises
+            real_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
+            fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
+        else:
+            # Otherwise we are just going to add zeros which will not break anything
+            real_noise = np.zeros((self.config.batch_size , self.config.image_dims))
+            fake_noise = np.zeros((self.config.batch_size , self.config.image_dims))
+        # Evaluation of the image
         image_eval = self.sess.run(image)
+        # Construction of the Feed Dictionary
         feed_dict = {
             self.model.noise_tensor: noise,
             self.model.image_input: image_eval,
             self.model.real_noise: real_noise,
             self.model.fake_noise: fake_noise,
         }
-
+        # Run everything at once
         gen_loss, disc_loss, fake_acc, true_acc, tot_acc, _, _, summary = self.sess.run(
             [ 
                 self.model.gen_loss,
