@@ -1,5 +1,6 @@
 {
   "model_class": "gan",
+  "include_noise": true,
   "output_folder": "Logs",
   "data_dir": "data",
   "data_dir_normal": "data/Normal/",
