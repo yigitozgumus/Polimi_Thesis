@@ -135,17 +135,17 @@ class GAN(BaseModel):
         # METRICS
         ########################################################################
         with tf.name_scope("Generator_Loss"):
-            self.gen_loss = tf.losses.sigmoid_cross_entropy(
+            self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
                 tf.ones_like(generated_output), generated_output
-            )
+            ))
         with tf.name_scope("Discriminator_Loss"):
-            self.disc_real_loss = tf.losses.sigmoid_cross_entropy(
+            self.disc_real_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
                 multi_class_labels=tf.ones_like(real_output), logits=real_output
-            )
-            self.disc_gen_loss = tf.losses.sigmoid_cross_entropy(
+            ))
+            self.disc_gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
                 multi_class_labels=tf.zeros_like(generated_output),
                 logits=generated_output,
-            )
+            ))
             self.total_disc_loss = self.disc_real_loss + self.disc_gen_loss
         # Accuracy of the model
         with tf.name_scope("Accuracy"):
@@ -163,7 +163,7 @@ class GAN(BaseModel):
                     tf.float32,
                 )
             )
-            self.total_accuracy = 0.5 * (self.accuracy_fake + self.accuracy_real)
+            self.accuracy_total = 0.5 * (self.accuracy_fake + self.accuracy_real)
 
         # Store the loss values for the Tensorboard
         ########################################################################
@@ -186,6 +186,9 @@ class GAN(BaseModel):
         ########################################################################
         # OPTIMIZATION
         ########################################################################
+        all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        self.generator_vars = [v for v in all_variables if v.name.startswith("Generator")]
+        self.discriminator_vars = [v for v in all_variables if v.name.startswith("Discriminator")]
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
@@ -196,15 +199,19 @@ class GAN(BaseModel):
                 self.config.discriminator_l_rate
             )
 
-        with tf.name_scope("SGD_Discriminator"):
-            self.train_disc = self.discriminator_optimizer.minimize(
-                self.total_disc_loss, global_step=self.global_step_tensor
-            )
-
         with tf.name_scope("SGD_Generator"):
             self.train_gen = self.generator_optimizer.minimize(
-                self.gen_loss, global_step=self.global_step_tensor
+                self.gen_loss, global_step=self.global_step_tensor,
+                var_list=self.generator_vars
             )
+
+        with tf.name_scope("SGD_Discriminator"):
+            self.train_disc = self.discriminator_optimizer.minimize(
+                self.total_disc_loss, global_step=self.global_step_tensor,
+                var_list=self.discriminator_vars
+            )
+
+
 
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
