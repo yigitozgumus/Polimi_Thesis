@@ -17,12 +17,12 @@ def create_gif(folder_name, output_name):
 
 def main():
     argparser = argparse.ArgumentParser(description=__doc__)
-    argparser.add_argument("-c", "--config", metavar="C", help="The Configuration file")
+    argparser.add_argument("-e", "--experiment", metavar="C", help="Experiment Name")
     argparser.add_argument("-n", "--name", metavar="N", help="Name of the gif")
     args = argparser.parse_args()
 
-    config = process_config(args.config)
-    folder = os.path.join("Logs", config.exp_name, "generated")
+    #config = process_config(args.config)
+    folder = os.path.join("Logs", args.experiment, "generated")
     create_gif(folder, args.name)
 
 

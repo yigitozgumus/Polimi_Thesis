@@ -59,8 +59,8 @@ class GANTrainer(BaseTrain):
 
         if cur_epoch % self.config.show_steps == 0 or cur_epoch == 1:
             print(
-                "Epoch {}: Generator Loss: {}, Discriminator Loss: {},\
-                    Fake Accuracy: {}, True Accuracy: {}, Total Accuracy: {}".format(
+                "Epoch {} --\nGenerator Loss: {}\nDiscriminator Loss: {}\n\
+                    Fake Accuracy: {}\nTrue Accuracy: {}\nTotal Accuracy: {}".format(
                     cur_epoch + 1, gen_loss_m, disc_loss_m, fake_acc_m, true_acc_m, total_acc_m
                 )
             )
