@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Sleep for 5 seconds. If you are starting more than one tmux session
+#   "at the same time", then make sure they all sleep for different periods
+#   or you can experience problems
+sleep 5
+# Ensure the environment is available
+#source $HOME/.zshrc
+# Check if the program is running
+var=`ps aux | grep "[p]ython run.py"`
+
+if [ -z "$var" ]
+then
+    cd ~/dev/Polimi_Thesis
+    load_env school
+    python check_training_process.py -c $1 -e $2
+fi
