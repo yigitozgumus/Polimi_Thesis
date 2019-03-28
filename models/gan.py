@@ -64,11 +64,6 @@ class GAN(BaseModel):
             x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
             x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
 
-            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
-            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
-
             x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 128]
             x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
@@ -98,12 +93,6 @@ class GAN(BaseModel):
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
             # Third Convolutional Layer
-            x_d = tf.keras.layers.Conv2D(64, (5, 5), strides=(1, 1), padding="same",
-                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
-            x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
-            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
-            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
-            # Fourth Convolutional Layer
             x_d = tf.keras.layers.Conv2D(32, (5, 5), strides=(2, 2), padding="same",
                                          kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
             x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
