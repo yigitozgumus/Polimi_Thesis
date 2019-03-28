@@ -38,7 +38,6 @@ class GAN_mark2(BaseModel):
 
         self.real_image = self.image_input + self.real_noise
 
-        self.initializer = tf.truncated_normal_initializer(stddev=0.02)
         # Make the Generator Model
         with tf.name_scope("Generator"):
             # Keras Model Object is Defined
@@ -47,7 +46,7 @@ class GAN_mark2(BaseModel):
                 Dense(
                     128 * 7 * 7,
                     activation="relu",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                     input_shape=[self.config.noise_dim],
                 )
             )
@@ -59,7 +58,7 @@ class GAN_mark2(BaseModel):
                     kernel_size=5,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_g.add(BatchNormalization(momentum=self.config.batch_momentum))
@@ -71,7 +70,7 @@ class GAN_mark2(BaseModel):
                     kernel_size=5,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_g.add(BatchNormalization(momentum=self.config.batch_momentum))
@@ -81,7 +80,7 @@ class GAN_mark2(BaseModel):
                     1,
                     kernel_size=5,
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_g.add(Activation("tanh"))
@@ -103,7 +102,7 @@ class GAN_mark2(BaseModel):
                     strides=(2, 2),
                     input_shape=self.config.image_dims,
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_d.add(LeakyReLU(alpha=self.config.leakyReLU_alpha))
@@ -114,7 +113,7 @@ class GAN_mark2(BaseModel):
                     kernel_size=3,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_d.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
@@ -127,7 +126,7 @@ class GAN_mark2(BaseModel):
                     kernel_size=3,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_d.add(BatchNormalization(momentum=self.config.batch_momentum))
@@ -139,7 +138,7 @@ class GAN_mark2(BaseModel):
                     kernel_size=3,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=self.initializer,
+                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 )
             )
             model_d.add(BatchNormalization(momentum=self.config.batch_momentum))

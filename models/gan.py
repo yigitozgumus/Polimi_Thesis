@@ -33,17 +33,19 @@ class GAN(BaseModel):
 
         self.real_image = self.image_input + self.real_noise
 
-        self.initializer = tf.truncated_normal_initializer(stddev=0.02)
+        
         # Make the Generator model
         ########################################################################
         # GENERATOR
         ########################################################################
-        with tf.name_scope("Generator"):
+        with tf.variable_scope("Generator"):
             # Input layer creates the entry point to the model
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.keras.layers.Dense(
-                7 * 7 * 256, use_bias=False, kernel_initializer=self.initializer
+                7 * 7 * 256, 
+                use_bias=False, 
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)
             )(inputs_g)
             # Normalize the output of the Layer
             x_g = tf.keras.layers.BatchNormalization(
@@ -61,7 +63,7 @@ class GAN(BaseModel):
                 strides=(1, 1),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=self.initializer,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 7, 7, 128]
             x_g = tf.keras.layers.BatchNormalization(
@@ -75,7 +77,7 @@ class GAN(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=self.initializer,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 14, 14, 64]
             x_g = tf.keras.layers.BatchNormalization(
@@ -90,7 +92,7 @@ class GAN(BaseModel):
                 padding="same",
                 use_bias=False,
                 activation="tanh",
-                kernel_initializer=self.initializer,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
@@ -99,14 +101,14 @@ class GAN(BaseModel):
         ########################################################################
         # DISCRIMINATOR
         ########################################################################
-        with tf.name_scope("Discriminator"):
+        with tf.variable_scope("Discriminator"):
             inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
             x_d = tf.keras.layers.Conv2D(
                 32,
                 (5, 5),
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=self.initializer,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
             )(inputs_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
@@ -115,7 +117,7 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=self.initializer,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
             )(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
@@ -124,42 +126,48 @@ class GAN(BaseModel):
             self.discriminator = tf.keras.models.Model(inputs=inputs_d, outputs=x_d)
         # Evaluations for the training
         # Adding noise part is new
-        generated_image = (
+        # Build the generator Network
+        generated_sample = (
             self.generator(self.noise_tensor, training=True) + self.fake_noise
         )
-        real_output = self.discriminator(self.real_image, training=True)
-        generated_output = self.discriminator(generated_image, training=True)
-
+        # Build 2 Discriminator Networks
+        disc_real = self.discriminator(self.real_image, training=True)
+        disc_fake = self.discriminator(generated_sample, training=True)
+        # Build the stacked Generator/Discriminator
+        stacked_gan = self.discriminator(generated_sample,training=True)
         # Losses of the training of Generator and Discriminator
         ########################################################################
         # METRICS
         ########################################################################
+
+        with tf.name_scope("Discriminator_Loss"):
+            self.disc_loss_real = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
+                multi_class_labels=tf.ones_like(disc_real), logits=disc_real
+            ))
+            self.disc_loss_fake = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
+                multi_class_labels=tf.zeros_like(disc_fake),
+                logits=disc_fake,
+            ))
+            # Sum the both losses
+            self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
+
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                tf.ones_like(generated_output), generated_output
-            ))
-        with tf.name_scope("Discriminator_Loss"):
-            self.disc_real_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.ones_like(real_output), logits=real_output
-            ))
-            self.disc_gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.zeros_like(generated_output),
-                logits=generated_output,
-            ))
-            self.total_disc_loss = self.disc_real_loss + self.disc_gen_loss
+                tf.ones_like(stacked_gan), stacked_gan))
+
         # Accuracy of the model
         with tf.name_scope("Accuracy"):
             self.accuracy_fake = tf.reduce_mean(
                 tf.cast(
                     tf.equal(
-                        tf.round(generated_output), tf.zeros_like(generated_output)
+                        tf.round(disc_fake), tf.zeros_like(disc_fake)
                     ),
                     tf.float32,
                 )
             )
             self.accuracy_real = tf.reduce_mean(
                 tf.cast(
-                    tf.equal(tf.round(real_output), tf.ones_like(real_output)),
+                    tf.equal(tf.round(disc_real), tf.ones_like(disc_real)),
                     tf.float32,
                 )
             )
@@ -170,14 +178,14 @@ class GAN(BaseModel):
         # TENSORBOARD
         ########################################################################
         tf.summary.scalar("Generator_Loss", self.gen_loss)
-        tf.summary.scalar("Discriminator_Real_Loss", self.disc_real_loss)
+        tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
         tf.summary.scalar("Real_Accuracy", self.accuracy_real)
         tf.summary.scalar("Fake_Accuracy", self.accuracy_fake)
         tf.summary.scalar("Total_Accuracy", self.accuracy_total)
-        tf.summary.scalar("Discriminator_Gen_Loss", self.disc_gen_loss)
+        tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
         tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         # Images for the Tensorboard
-        tf.summary.image("From_Noise", tf.reshape(generated_image, [-1, 28, 28, 1]))
+        tf.summary.image("From_Noise", tf.reshape(generated_sample, [-1, 28, 28, 1]))
         tf.summary.image("Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1]))
         # Sample Operation
         with tf.name_scope("Generator_Progress"):
@@ -186,26 +194,36 @@ class GAN(BaseModel):
         ########################################################################
         # OPTIMIZATION
         ########################################################################
+        # Build the Optimizers
+        self.generator_optimizer = tf.train.AdamOptimizer(
+            self.config.generator_l_rate,
+            beta1=self.config.optimizer_adam_beta1,
+            beta2=self.config.optimizer_adam_beta2
+        )
+        self.discriminator_optimizer = tf.train.AdamOptimizer(
+            self.config.discriminator_l_rate,
+            beta1=self.config.optimizer_adam_beta1,
+            beta2=self.config.optimizer_adam_beta2
+        )
+        # Collect all the variables
         all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        self.all_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        # Generator Network Variables
         self.generator_vars = [v for v in all_variables if v.name.startswith("Generator")]
+        # Discriminator Network Variables
         self.discriminator_vars = [v for v in all_variables if v.name.startswith("Discriminator")]
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        # Create Training Operations
+        # Generator Network Operations
+        self.gen_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Generator")
+        # Discriminator Network Operations
+        self.disc_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Discriminator")
         # Initialization of Optimizers
-        with tf.control_dependencies(update_ops):
-            self.generator_optimizer = tf.train.AdamOptimizer(
-                self.config.generator_l_rate, beta1=self.config.optimizer_adam_beta1
-            )
-            self.discriminator_optimizer = tf.train.AdamOptimizer(
-                self.config.discriminator_l_rate, beta1=self.config.optimizer_adam_beta1
-            )
-
-        with tf.name_scope("SGD_Generator"):
+        with tf.control_dependencies(self.gen_update_ops):
             self.train_gen = self.generator_optimizer.minimize(
                 self.gen_loss, global_step=self.global_step_tensor,
                 var_list=self.generator_vars
             )
-
-        with tf.name_scope("SGD_Discriminator"):
+        with tf.control_dependencies(self.disc_update_ops):
             self.train_disc = self.discriminator_optimizer.minimize(
                 self.total_disc_loss, global_step=self.global_step_tensor,
                 var_list=self.discriminator_vars
