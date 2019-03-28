@@ -60,8 +60,8 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(1, 1),
                 padding="same",
-                use_bias=False   ,
-                 kernel_initializer=self.initializer,
+                use_bias=False,
+                kernel_initializer=self.initializer,
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 7, 7, 128]
             x_g = tf.keras.layers.BatchNormalization(
@@ -74,8 +74,8 @@ class GAN(BaseModel):
                 (5, 5),
                 strides=(2, 2),
                 padding="same",
-                use_bias=False   ,
-                 kernel_initializer=self.initializer,
+                use_bias=False,
+                kernel_initializer=self.initializer,
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 14, 14, 64]
             x_g = tf.keras.layers.BatchNormalization(
@@ -89,8 +89,8 @@ class GAN(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                activation="tanh"   ,
-                 kernel_initializer=self.initializer,
+                activation="tanh",
+                kernel_initializer=self.initializer,
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
@@ -105,8 +105,8 @@ class GAN(BaseModel):
                 32,
                 (5, 5),
                 strides=(2, 2),
-                padding="same"   ,
-                 kernel_initializer=self.initializer,
+                padding="same",
+                kernel_initializer=self.initializer,
             )(inputs_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
@@ -114,8 +114,8 @@ class GAN(BaseModel):
                 64,
                 (5, 5),
                 strides=(2, 2),
-                padding="same"   ,
-                 kernel_initializer=self.initializer,
+                padding="same",
+                kernel_initializer=self.initializer,
             )(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
@@ -193,10 +193,10 @@ class GAN(BaseModel):
         # Initialization of Optimizers
         with tf.control_dependencies(update_ops):
             self.generator_optimizer = tf.train.AdamOptimizer(
-                self.config.generator_l_rate
+                self.config.generator_l_rate, beta1=self.config.optimizer_adam_beta1
             )
             self.discriminator_optimizer = tf.train.AdamOptimizer(
-                self.config.discriminator_l_rate
+                self.config.discriminator_l_rate, beta1=self.config.optimizer_adam_beta1
             )
 
         with tf.name_scope("SGD_Generator"):

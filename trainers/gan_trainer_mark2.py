@@ -22,51 +22,81 @@ class GANTrainer_mark2(BaseTrain):
         summaries = []
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
-        # Make the iterator
-        iterator = self.data.make_initializable_iterator()
-        # initialize the image batch
-        next_element = iterator.get_next()
         # initialize the iterator
-        self.sess.run(iterator.initializer)
+        self.sess.run(self.data.iterator.initializer)
         for epoch in loop:
             # Calculate the losses and obtain the summaries to write
-            gen_loss, disc_loss, summary = self.train_step(next_element)
+            gen_loss, disc_loss, summary = self.train_step(
+                self.data.next_element,
+                cur_epoch=cur_epoch)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
             summaries.append(summary)
         # write the summaries
         self.logger.summarize(cur_epoch, summaries=summaries)
         # Compute the means of the losses
-        gen_loss = tf.math.reduce_mean(gen_losses).eval(session=self.sess)
-        disc_loss = tf.math.reduce_mean(disc_losses).eval(session=self.sess)
-        random_vector_for_generation = tf.random_normal(
-            [self.config.num_example_imgs_to_generate,self.config.noise_dim])
+        gen_loss = np.mean(gen_losses)
+        disc_loss = np.mean(disc_losses)
+
         # Generate images between epochs to evaluate
-        if (cur_epoch % self.config.num_epochs_to_test == 0 or cur_epoch == 1):
-            rand_noise = self.sess.run(random_vector_for_generation)
-            feed_dict = {self.model.noise_input : rand_noise}
-            generator_predictions = self.sess.run([self.model.progress_images],feed_dict=feed_dict)
-            self.save_generated_images(generator_predictions,cur_epoch)
+        rand_noise = self.sess.run(self.model.random_vector_for_generation)
+        feed_dict = {self.model.noise_tensor: rand_noise}
+        generator_predictions = self.sess.run(
+            [self.model.progress_images], feed_dict=feed_dict
+        )
+        self.save_generated_images(generator_predictions, cur_epoch)
         if (cur_epoch % self.config.show_steps == 0 or cur_epoch == 1):
-                print('Epoch {}: Generator Loss: {}, Discriminator Loss: {}'.format(
-                    cur_epoch, gen_loss, disc_loss))
+                print('Epoch {} --\nGenerator Loss: {}\nDiscriminator Loss: {}\n'.format(
+                    cur_epoch + 1, gen_loss, disc_loss))
 
         self.model.save(self.sess)
 
-    def train_step(self,image):
+    def train_step(self,image, cur_epoch):
         """
        implement the logic of the train step
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        noise = tf.random_normal(
-            [self.config.batch_size, self.config.noise_dim])
-        noise_gen = self.sess.run(noise)
+        sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        # Instance noise additions
+        if self.config.include_noise:
+            # If we want to add this is will add the noises
+            real_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
+            fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
+        else:
+            # Otherwise we are just going to add zeros which will not break anything
+            real_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
+            fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
+
+        # Evaluation of the image
         image_eval = self.sess.run(image)
-        feed_dict = {self.model.noise_input: noise_gen,
-                     self.model.real_image_input: image_eval}
-        gen_loss, disc_loss,_,_,summary = self.sess.run(
-            [self.model.gen_loss, self.model.disc_loss, self.model.train_gen, self.model.train_disc,self.model.summary], feed_dict=feed_dict)
+        # Construct the Feed Dictionary
+        # Train the Discriminator on both real and fake images
+        disc_loss,  _ = self.sess.run(
+            [self.model.total_disc_loss,
+             self.model.train_disc],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise
+            }
+        )
+        # Train the Generator and get the summaries
+        # Re create the noise for the generator
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        gen_loss, _, summary = self.sess.run(
+            [self.model.gen_loss,
+             self.model.train_gen,
+             self.model.summary],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise
+            }
+        )
 
         return gen_loss, disc_loss, summary
 
