@@ -25,14 +25,16 @@ class GAN(BaseModel):
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
         self.real_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="real_noise"
+            dtype=tf.float32, shape=[None] + self.config.image_dims, name="real_noise"
         )
         self.fake_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="fake_noise"
+            dtype=tf.float32, shape=[None] + self.config.image_dims, name="fake_noise"
         )
 
         self.real_image = self.image_input + self.real_noise
-
+        # Placeholders for the true and fake labels
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1],name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1],name="gen_labels")
         
         # Make the Generator model
         ########################################################################
@@ -42,60 +44,40 @@ class GAN(BaseModel):
             # Input layer creates the entry point to the model
             inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
-            x_g = tf.keras.layers.Dense(
-                7 * 7 * 256, 
-                use_bias=False, 
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)
-            )(inputs_g)
+            x_g = tf.keras.layers.Dense(7 * 7 * 256, activation="relu",use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(inputs_g)
             # Normalize the output of the Layer
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
+            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
             x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
             # Reshaping the output
             x_g = tf.keras.layers.Reshape((7, 7, 256))(x_g)
             # Check the size of the current output just in case
             assert x_g.get_shape().as_list() == [None, 7, 7, 256]
-            x_g = tf.keras.layers.Conv2DTranspose(
-                128,
-                (5, 5),
-                strides=(1, 1),
-                padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
+
+            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
             assert x_g.get_shape().as_list() == [None, 7, 7, 128]
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
+            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
             x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
 
-            x_g = tf.keras.layers.Conv2DTranspose(
-                64,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 64]
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
+            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
             x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
 
-            x_g = tf.keras.layers.Conv2DTranspose(
-                1,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                use_bias=False,
-                activation="tanh",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
+            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
+            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+
+            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
+            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+
+            x_g = tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),)(x_g)
+            out = tf.keras.layers.Activation("tanh")(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
-            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
+            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=out)
 
         # Make the discriminator model
         ########################################################################
@@ -103,25 +85,32 @@ class GAN(BaseModel):
         ########################################################################
         with tf.variable_scope("Discriminator"):
             inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
-            x_d = tf.keras.layers.Conv2D(
-                32,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(inputs_d)
+            # First Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(128, (5, 5), strides=(1, 1), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(inputs_d)
+            x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
-            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
-            x_d = tf.keras.layers.Conv2D(
-                64,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_d)
+            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            # Second Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+            x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
-            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            # Third Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(64, (5, 5), strides=(1, 1), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+            x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
+            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            # Fourth Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(32, (5, 5), strides=(2, 2), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+            x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
+            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
             x_d = tf.keras.layers.Flatten()(x_d)
+            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
             x_d = tf.keras.layers.Dense(1)(x_d)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d, outputs=x_d)
         # Evaluations for the training
@@ -142,10 +131,10 @@ class GAN(BaseModel):
 
         with tf.name_scope("Discriminator_Loss"):
             self.disc_loss_real = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.ones_like(disc_real), logits=disc_real
+                multi_class_labels=self.true_labels, logits=disc_real
             ))
             self.disc_loss_fake = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.zeros_like(disc_fake),
+                multi_class_labels=self.generated_labels,
                 logits=disc_fake,
             ))
             # Sum the both losses
@@ -153,7 +142,7 @@ class GAN(BaseModel):
 
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                tf.ones_like(stacked_gan), stacked_gan))
+                tf.zeros_like(stacked_gan), stacked_gan))
 
         # Accuracy of the model
         with tf.name_scope("Accuracy"):

@@ -71,8 +71,15 @@ class GANTrainer(BaseTrain):
         # Generate noise from uniform  distribution between -1 and 1
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
+        noise_probability = self.config.noise_probability
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        true_labels = np.zeros((self.config.batch_size,1)) + np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(true_labels)), size= int(noise_probability * len(true_labels)))
+        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
+        generated_labels = np.ones((self.config.batch_size,1)) - np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(generated_labels)), size=int(noise_probability * len(generated_labels)))
+        generated_labels[flipped_idx] =  1 - generated_labels[flipped_idx]
         # Instance noise additions
         if self.config.include_noise:
             # If we want to add this is will add the noises
@@ -98,7 +105,9 @@ class GANTrainer(BaseTrain):
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
                 self.model.real_noise: real_noise,
-                self.model.fake_noise: fake_noise
+                self.model.fake_noise: fake_noise,
+                self.model.true_labels: true_labels,
+                self.model.generated_labels: generated_labels
             }
         )
         # Train the Generator and get the summaries
@@ -112,7 +121,9 @@ class GANTrainer(BaseTrain):
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
                 self.model.real_noise: real_noise,
-                self.model.fake_noise: fake_noise
+                self.model.fake_noise: fake_noise,
+                self.model.true_labels: true_labels,
+                self.model.generated_labels: generated_labels
             }
             )
 

@@ -16,6 +16,7 @@
   "generator_l_rate": 0.0002,
   "optimizer_adam_beta1": 0.5,
   "optimizer_adam_beta2": 0.999,
+  "noise_probability": 0.05,
   "batch_size": 128,
   "max_to_keep": 10,
   "num_parallel_calls": 8,
