@@ -207,7 +207,6 @@ class GAN(BaseModel):
         )
         # Collect all the variables
         all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        self.all_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # Generator Network Variables
         self.generator_vars = [v for v in all_variables if v.name.startswith("Generator")]
         # Discriminator Network Variables
@@ -228,8 +227,6 @@ class GAN(BaseModel):
                 self.total_disc_loss, global_step=self.global_step_tensor,
                 var_list=self.discriminator_vars
             )
-
-
 
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
