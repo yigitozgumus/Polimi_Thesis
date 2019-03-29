@@ -23,32 +23,23 @@ class GANTrainer(BaseTrain):
         gen_losses = []
         disc_losses = []
         summaries = []
-        true_accuracies = []
-        fake_accuracies = []
-        tot_accuracies = []
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
         for epoch in loop:
             # Calculate the losses and obtain the summaries to write
-            gen_loss, disc_loss, fake_acc, true_acc, tot_acc, summary = self.train_step(
+            gen_loss, disc_loss, summary = self.train_step(
                 self.data.next_element,
                 cur_epoch=cur_epoch
             )
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-            fake_accuracies.append(fake_acc)
-            true_accuracies.append(true_acc)
-            tot_accuracies.append(tot_acc)
             summaries.append(summary)
         # write the summaries
         self.logger.summarize(cur_epoch, summaries=summaries)
         # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
-        fake_acc_m = np.mean(fake_accuracies)
-        true_acc_m = np.mean(true_accuracies)
-        total_acc_m = np.mean(tot_accuracies)
         # Generate images between epochs to evaluate
         rand_noise = self.sess.run(self.model.random_vector_for_generation)
         feed_dict = {self.model.noise_tensor: rand_noise}
@@ -59,8 +50,8 @@ class GANTrainer(BaseTrain):
 
         if cur_epoch % self.config.show_steps == 0 or cur_epoch == 1:
             print(
-                "Epoch {} --\nGenerator Loss: {}\nDiscriminator Loss: {}\nFake Accuracy: {}\nTrue Accuracy: {}\nTotal Accuracy: {}".format(
-                    cur_epoch + 1, gen_loss_m, disc_loss_m, fake_acc_m, true_acc_m, total_acc_m
+                "Epoch {} --\nGenerator Loss: {}\nDiscriminator Loss: {}\n".format(
+                    cur_epoch + 1, gen_loss_m, disc_loss_m, 
                 )
             )
 
@@ -91,15 +82,13 @@ class GANTrainer(BaseTrain):
             fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
         # Evaluation of the image
         image_eval = self.sess.run(image)
+        summary = []
         # Construct the Feed Dictionary
         # Train the Discriminator on both real and fake images
-        disc_loss, fake_acc, true_acc, tot_acc, _ = self.sess.run(
+        _, summ = self.sess.run(
             [
-                self.model.total_disc_loss,
-                self.model.accuracy_fake,
-                self.model.accuracy_real,
-                self.model.accuracy_total,
-                self.model.train_disc
+                self.model.train_disc,
+                self.model.summary
             ],
             feed_dict={
                 self.model.noise_tensor: noise,
@@ -110,12 +99,12 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
         )
+        summary.append(summ)
         # Train the Generator and get the summaries
         # Re create the noise for the generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        gen_loss, _,summary = self.sess.run(
-            [self.model.gen_loss,
-             self.model.train_gen,
+        _, summ = self.sess.run(
+            [self.model.train_gen,
              self.model.summary],
             feed_dict={
                 self.model.noise_tensor: noise,
@@ -126,11 +115,25 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
             )
+        summary.append(summ)
         # Retrain the Generator
-        gen_loss, _, summary = self.sess.run(
-            [self.model.gen_loss,
-             self.model.train_gen,
+        _, summ = self.sess.run(
+            [self.model.train_gen,
              self.model.summary],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
+                self.model.true_labels: true_labels,
+                self.model.generated_labels: generated_labels
+            }
+        )
+        summary.append(summ)
+        # Calculate the losses
+        gen_loss, disc_loss = self.sess.run(
+            [self.model.gen_loss,
+            self.model.total_disc_loss],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -142,4 +145,4 @@ class GANTrainer(BaseTrain):
         )
 
 
-        return gen_loss, disc_loss, fake_acc, true_acc, tot_acc, summary
+        return gen_loss, disc_loss, summary

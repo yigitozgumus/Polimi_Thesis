@@ -133,33 +133,12 @@ class GAN(BaseModel):
             self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
                 tf.zeros_like(stacked_gan), stacked_gan))
 
-        # Accuracy of the model
-        with tf.name_scope("Accuracy"):
-            self.accuracy_fake = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(
-                        tf.round(disc_fake), tf.zeros_like(disc_fake)
-                    ),
-                    tf.float32,
-                )
-            )
-            self.accuracy_real = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(tf.round(disc_real), tf.ones_like(disc_real)),
-                    tf.float32,
-                )
-            )
-            self.accuracy_total = 0.5 * (self.accuracy_fake + self.accuracy_real)
-
         # Store the loss values for the Tensorboard
         ########################################################################
         # TENSORBOARD
         ########################################################################
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
-        tf.summary.scalar("Real_Accuracy", self.accuracy_real)
-        tf.summary.scalar("Fake_Accuracy", self.accuracy_fake)
-        tf.summary.scalar("Total_Accuracy", self.accuracy_total)
         tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
         tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         # Images for the Tensorboard
