@@ -170,9 +170,9 @@ class GAN(BaseModel):
         self.discriminator_vars = [v for v in all_variables if v.name.startswith("Discriminator")]
         # Create Training Operations
         # Generator Network Operations
-        self.gen_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Generator")
+        self.gen_update_ops = self.generator.updates
         # Discriminator Network Operations
-        self.disc_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Discriminator")
+        self.disc_update_ops = self.discriminator.updates
         # Initialization of Optimizers
         with tf.control_dependencies(self.gen_update_ops):
             self.train_gen = self.generator_optimizer.minimize(
