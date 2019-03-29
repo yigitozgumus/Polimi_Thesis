@@ -82,14 +82,9 @@ class GANTrainer(BaseTrain):
             fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
         # Evaluation of the image
         image_eval = self.sess.run(image)
-        summary = []
         # Construct the Feed Dictionary
         # Train the Discriminator on both real and fake images
-        _, summ = self.sess.run(
-            [
-                self.model.train_disc,
-                self.model.summary
-            ],
+        _ = self.sess.run([self.model.train_disc],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -99,13 +94,11 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
         )
-        summary.append(summ)
         # Train the Generator and get the summaries
         # Re create the noise for the generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        _, summ = self.sess.run(
-            [self.model.train_gen,
-             self.model.summary],
+        _ = self.sess.run(
+            [self.model.train_gen],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -115,11 +108,10 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
             )
-        summary.append(summ)
         # Retrain the Generator
-        _, summ = self.sess.run(
-            [self.model.train_gen,
-             self.model.summary],
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        _ = self.sess.run(
+            [self.model.train_gen],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -129,11 +121,12 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
         )
-        summary.append(summ)
+
         # Calculate the losses
-        gen_loss, disc_loss = self.sess.run(
+        gen_loss, disc_loss, summary = self.sess.run(
             [self.model.gen_loss,
-            self.model.total_disc_loss],
+             self.model.total_disc_loss,
+             self.model.summary],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
