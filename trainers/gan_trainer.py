@@ -126,6 +126,20 @@ class GANTrainer(BaseTrain):
                 self.model.generated_labels: generated_labels
             }
             )
+        # Retrain the Generator
+        gen_loss, _, summary = self.sess.run(
+            [self.model.gen_loss,
+             self.model.train_gen,
+             self.model.summary],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
+                self.model.true_labels: true_labels,
+                self.model.generated_labels: generated_labels
+            }
+        )
 
 
         return gen_loss, disc_loss, fake_acc, true_acc, tot_acc, summary
