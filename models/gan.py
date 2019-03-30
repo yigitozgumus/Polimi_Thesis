@@ -138,7 +138,7 @@ class GAN(BaseModel):
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
                 tf.zeros_like(stacked_gan), stacked_gan))
-
+                
         # Store the loss values for the Tensorboard
         ########################################################################
         # TENSORBOARD

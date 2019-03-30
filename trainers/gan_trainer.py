@@ -24,6 +24,7 @@ class GANTrainer(BaseTrain):
         gen_losses = []
         disc_losses = []
         summaries = []
+        
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
