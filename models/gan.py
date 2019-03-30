@@ -25,14 +25,16 @@ class GAN(BaseModel):
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
         self.real_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="real_noise"
+            dtype=tf.float32, shape=[None] + self.config.image_dims, name="real_noise"
         )
         self.fake_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="fake_noise"
+            dtype=tf.float32, shape=[None] + self.config.image_dims, name="fake_noise"
         )
 
         self.real_image = self.image_input + self.real_noise
-
+        # Placeholders for the true and fake labels
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1],name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1],name="gen_labels")
         
         # Make the Generator model
         ########################################################################
@@ -40,62 +42,43 @@ class GAN(BaseModel):
         ########################################################################
         with tf.variable_scope("Generator"):
             # Input layer creates the entry point to the model
-            inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
+            #inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
-            x_g = tf.keras.layers.Dense(
-                7 * 7 * 256, 
-                use_bias=False, 
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)
-            )(inputs_g)
+            self.generator = tf.keras.Sequential()
+            self.generator.add(tf.keras.layers.Dense(7 * 7 * 256, activation="relu",use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
             # Normalize the output of the Layer
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
             # Reshaping the output
-            x_g = tf.keras.layers.Reshape((7, 7, 256))(x_g)
+            self.generator.add(tf.keras.layers.Reshape((7, 7, 256)))
             # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
-            x_g = tf.keras.layers.Conv2DTranspose(
-                128,
-                (5, 5),
-                strides=(1, 1),
-                padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            #assert x_g.get_shape().as_list() == [None, 7, 7, 256]
 
-            x_g = tf.keras.layers.Conv2DTranspose(
-                64,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 64]
-            x_g = tf.keras.layers.BatchNormalization(
-                momentum=self.config.batch_momentum
-            )(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 7, 7, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
 
-            x_g = tf.keras.layers.Conv2DTranspose(
-                1,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                use_bias=False,
-                activation="tanh",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
-            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
+
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
+
+            self.generator.add(tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(1, 1), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),))
+            self.generator.add(tf.keras.layers.Activation("tanh"))
+            #assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            #self.generator = tf.keras.models.Model(inputs=x_g, outputs=out)
 
         # Make the discriminator model
         ########################################################################
@@ -103,25 +86,26 @@ class GAN(BaseModel):
         ########################################################################
         with tf.variable_scope("Discriminator"):
             inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
-            x_d = tf.keras.layers.Conv2D(
-                32,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(inputs_d)
+            # First Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(128, (5, 5), strides=(1, 1), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(inputs_d)
+            #x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
-            x_d = tf.keras.layers.Conv2D(
-                64,
-                (5, 5),
-                strides=(2, 2),
-                padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-            )(x_d)
+            # Second Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+            #x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
+            x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+            x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+            # Third Convolutional Layer
+            x_d = tf.keras.layers.Conv2D(32, (5, 5), strides=(2, 2), padding="same",
+                                         kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+            #x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
             x_d = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
             x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
             x_d = tf.keras.layers.Flatten()(x_d)
+            #x_d = tf.keras.layers.Dropout(rate=self.config.dropout_rate)(x_d)
             x_d = tf.keras.layers.Dense(1)(x_d)
             self.discriminator = tf.keras.models.Model(inputs=inputs_d, outputs=x_d)
         # Evaluations for the training
@@ -142,10 +126,10 @@ class GAN(BaseModel):
 
         with tf.name_scope("Discriminator_Loss"):
             self.disc_loss_real = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.ones_like(disc_real), logits=disc_real
+                multi_class_labels=self.true_labels, logits=disc_real
             ))
             self.disc_loss_fake = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                multi_class_labels=tf.zeros_like(disc_fake),
+                multi_class_labels=self.generated_labels,
                 logits=disc_fake,
             ))
             # Sum the both losses
@@ -153,35 +137,14 @@ class GAN(BaseModel):
 
         with tf.name_scope("Generator_Loss"):
             self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                tf.ones_like(stacked_gan), stacked_gan))
-
-        # Accuracy of the model
-        with tf.name_scope("Accuracy"):
-            self.accuracy_fake = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(
-                        tf.round(disc_fake), tf.zeros_like(disc_fake)
-                    ),
-                    tf.float32,
-                )
-            )
-            self.accuracy_real = tf.reduce_mean(
-                tf.cast(
-                    tf.equal(tf.round(disc_real), tf.ones_like(disc_real)),
-                    tf.float32,
-                )
-            )
-            self.accuracy_total = 0.5 * (self.accuracy_fake + self.accuracy_real)
-
+                tf.zeros_like(stacked_gan), stacked_gan))
+                
         # Store the loss values for the Tensorboard
         ########################################################################
         # TENSORBOARD
         ########################################################################
         tf.summary.scalar("Generator_Loss", self.gen_loss)
         tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
-        tf.summary.scalar("Real_Accuracy", self.accuracy_real)
-        tf.summary.scalar("Fake_Accuracy", self.accuracy_fake)
-        tf.summary.scalar("Total_Accuracy", self.accuracy_total)
         tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
         tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         # Images for the Tensorboard
@@ -205,17 +168,15 @@ class GAN(BaseModel):
             beta1=self.config.optimizer_adam_beta1,
             beta2=self.config.optimizer_adam_beta2
         )
-        # Collect all the variables
-        all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         # Generator Network Variables
-        self.generator_vars = [v for v in all_variables if v.name.startswith("Generator")]
+        self.generator_vars = self.generator.variables
         # Discriminator Network Variables
-        self.discriminator_vars = [v for v in all_variables if v.name.startswith("Discriminator")]
+        self.discriminator_vars = self.discriminator.variables
         # Create Training Operations
         # Generator Network Operations
-        self.gen_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Generator")
+        self.gen_update_ops = self.generator.updates
         # Discriminator Network Operations
-        self.disc_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="Discriminator")
+        self.disc_update_ops = self.discriminator.updates
         # Initialization of Optimizers
         with tf.control_dependencies(self.gen_update_ops):
             self.train_gen = self.generator_optimizer.minimize(

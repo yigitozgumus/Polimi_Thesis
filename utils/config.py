@@ -43,6 +43,7 @@ def process_config(json_file: str, exp_name: str) -> object:
     config.exp_name = exp_name
     config.summary_dir = os.path.join(config.output_folder, config.exp_name, "summary/")
     config.checkpoint_dir = os.path.join(config.output_folder, config.exp_name, "checkpoint/")
+    config.checkpoint_prefix = os.path.join(config.checkpoint_dir, "ckpt")
     config.step_generation_dir = os.path.join(config.output_folder, config.exp_name, "generated/")
     config.parameter_dir = os.path.join(config.output_folder,config.exp_name, "parameters/")
     create_parameter_file(config)
