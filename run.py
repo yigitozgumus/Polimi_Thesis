@@ -4,6 +4,8 @@ from utils.config import process_config
 from mains.main_gan import main
 from mains.main_gan_mark2 import main as main_mark2
 from mains.main_gan_eager import main as main_eager
+from mains.main_gan_keras import main as main_keras
+
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -22,8 +24,13 @@ def run():
         main(config)
     elif (config.model_class == "gan_mark2"):
         main_mark2(config)
+
     elif (config.model_class == "gan_eager"):
         main_eager(config)
+
+    elif (config.model_class == "gan_keras"):
+        main_keras(config)
+
 
 if __name__ == '__main__':
     run()

@@ -2,7 +2,9 @@ import tensorflow as tf
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
+
 class BaseTrain_eager:
+
     def __init__(self, model,data, config, logger):
         self.model = model
         self.logger = logger

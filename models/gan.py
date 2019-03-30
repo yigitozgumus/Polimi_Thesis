@@ -8,7 +8,7 @@ class GAN(BaseModel):
         super(GAN, self).__init__(config)
         self.build_model()
         self.init_saver()
-
+        
     def build_model(self):
         # Placeholders
         self.noise_tensor = tf.placeholder(

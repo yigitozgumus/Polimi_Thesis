@@ -3,7 +3,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
-class BaseTrainEager:
+class BaseTrain_keras:
     def __init__(self, sess, model,data, config, logger):
         self.model = model
         self.logger = logger
