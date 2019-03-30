@@ -2,6 +2,7 @@ from base.base_train import BaseTrain
 from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 # tf.enable_eager_execution()
 import time
@@ -42,7 +43,8 @@ class GANTrainer(BaseTrain):
         disc_loss_m = np.mean(disc_losses)
         # Generate images between epochs to evaluate
         rand_noise = self.sess.run(self.model.random_vector_for_generation)
-        feed_dict = {self.model.noise_tensor: rand_noise}
+        feed_dict = {self.model.noise_tensor: rand_noise,
+                     K.learning_phase(): 0}
         generator_predictions = self.sess.run(
             [self.model.progress_images], feed_dict=feed_dict
         )
@@ -91,7 +93,8 @@ class GANTrainer(BaseTrain):
                 self.model.real_noise: real_noise,
                 self.model.fake_noise: fake_noise,
                 self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels
+                self.model.generated_labels: generated_labels,
+                K.learning_phase(): 1
             }
         )
         # Train the Generator and get the summaries
@@ -105,22 +108,10 @@ class GANTrainer(BaseTrain):
                 self.model.real_noise: real_noise,
                 self.model.fake_noise: fake_noise,
                 self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels
+                self.model.generated_labels: generated_labels,
+                K.learning_phase(): 1
             }
             )
-        # Retrain the Generator
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        _ = self.sess.run(
-            [self.model.train_gen],
-            feed_dict={
-                self.model.noise_tensor: noise,
-                self.model.image_input: image_eval,
-                self.model.real_noise: real_noise,
-                self.model.fake_noise: fake_noise,
-                self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels
-            }
-        )
 
         # Calculate the losses
         gen_loss, disc_loss, summary = self.sess.run(
@@ -133,7 +124,8 @@ class GANTrainer(BaseTrain):
                 self.model.real_noise: real_noise,
                 self.model.fake_noise: fake_noise,
                 self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels
+                self.model.generated_labels: generated_labels,
+                K.learning_phase(): 1
             }
         )
 

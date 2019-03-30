@@ -42,37 +42,43 @@ class GAN(BaseModel):
         ########################################################################
         with tf.variable_scope("Generator"):
             # Input layer creates the entry point to the model
-            inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
+            #inputs_g = tf.keras.layers.Input(shape=[self.config.noise_dim])
             # Densely connected Neural Network layer with 12544 Neurons.
-            x_g = tf.keras.layers.Dense(7 * 7 * 256, activation="relu",use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(inputs_g)
+            self.generator = tf.keras.Sequential()
+            self.generator.add(tf.keras.layers.Dense(7 * 7 * 256, activation="relu",use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
             # Normalize the output of the Layer
-            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
             # Reshaping the output
-            x_g = tf.keras.layers.Reshape((7, 7, 256))(x_g)
+            self.generator.add(tf.keras.layers.Reshape((7, 7, 256)))
             # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
+            #assert x_g.get_shape().as_list() == [None, 7, 7, 256]
 
-            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
-            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 7, 7, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
 
-            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
-            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
 
-            x_g = tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
-            x_g = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_g)
-            x_g = tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_g)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02)))
+            #assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            self.generator.add(tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum))
+            self.generator.add(tf.keras.layers.LeakyReLU(alpha=self.config.leakyReLU_alpha))
 
-            x_g = tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(1, 1), padding="same", use_bias=False, kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),)(x_g)
-            out = tf.keras.layers.Activation("tanh")(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
-            self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=out)
+            self.generator.add(tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(1, 1), padding="same", use_bias=False, 
+            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),))
+            self.generator.add(tf.keras.layers.Activation("tanh"))
+            #assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            #self.generator = tf.keras.models.Model(inputs=x_g, outputs=out)
 
         # Make the discriminator model
         ########################################################################
@@ -162,12 +168,10 @@ class GAN(BaseModel):
             beta1=self.config.optimizer_adam_beta1,
             beta2=self.config.optimizer_adam_beta2
         )
-        # Collect all the variables
-        all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         # Generator Network Variables
-        self.generator_vars = [v for v in all_variables if v.name.startswith("Generator")]
+        self.generator_vars = self.generator.variables
         # Discriminator Network Variables
-        self.discriminator_vars = [v for v in all_variables if v.name.startswith("Discriminator")]
+        self.discriminator_vars = self.discriminator.variables
         # Create Training Operations
         # Generator Network Operations
         self.gen_update_ops = self.generator.updates
