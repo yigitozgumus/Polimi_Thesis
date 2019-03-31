@@ -17,29 +17,24 @@ class GANTrainer_eager(BaseTrain_eager):
         # Define the lists for summaries and losses
         gen_losses = []
         total_disc_losses = []
-        real_disc_losses = []
-        fake_disc_losses = []
+
 
         # Get the current epoch
         cur_epoch = self.model.cur_epoch_tensor.numpy()
         for image in self.data.dataset:
-            gen_loss, total_dl, real_dl, fake_dl, = self.train_step(image, cur_epoch=cur_epoch)
+            gen_loss, total_dl = self.train_step(image.numpy(), cur_epoch=cur_epoch)
             gen_losses.append(gen_loss)
             total_disc_losses.append(total_dl)
-            real_disc_losses.append(real_dl)
-            fake_disc_losses.append(fake_dl)
+
         # write the summaries
         #self.logger.summarize(cur_epoch, summaries=summaries)
         # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_t = np.mean(total_disc_losses)
-        disc_loss_r = np.mean(real_disc_losses)
-        disc_loss_f = np.mean(fake_disc_losses)
         with tf.contrib.summary.record_summaries_every_n_global_steps(1):
             tf.contrib.summary.scalar("Generator_Loss", gen_loss_m)
             tf.contrib.summary.scalar("Total_Discriminator_Loss", disc_loss_t)
-            tf.contrib.summary.scalar("Real_Discriminator_Loss", disc_loss_r)
-            tf.contrib.summary.scalar("Fake_Discriminator_Loss", disc_loss_f)
+
         # Generate images between epochs to evaluate
         rand_noise = np.random.normal(
             loc=0.0, scale=1.0,
@@ -78,45 +73,64 @@ class GANTrainer_eager(BaseTrain_eager):
         flipped_idx = np.random.choice(np.arange(len(generated_labels)),
                                        size=int(noise_probability * len(generated_labels)))
         generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
-        # Noise Inclusion
-        if self.config.include_noise:
-            # If we want to add this is will add the noises
-            real_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
-            fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
-        else:
-            # Otherwise we are just going to add zeros which will not break anything
-            real_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
-            fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
 
         # Train the Discriminator
-        with tf.GradientTape() as disc_tape:
-            real_image = image + real_noise
-            generated_sample = self.model.generator(noise, training=True) + fake_noise
-            disc_real = self.model.discriminator(real_image, training=True)
-            disc_fake = self.model.discriminator(generated_sample, training=True)
-            total_disc_loss, real_disc_loss, fake_disc_loss = self.model.discriminator_loss(
-                true_labels,generated_labels,disc_real,disc_fake)
-        discriminator_gradients = disc_tape.gradient(total_disc_loss,
-                                                     self.model.discriminator.variables)
-        self.model.discriminator_optimizer.apply_gradients(zip(discriminator_gradients,
-                                                    self.model.discriminator.variables))
+        gradients, disc_loss = self.disc_compute_gradients(
+            self.model.generator,
+            self.model.discriminator,
+            image,
+            noise,
+            true_labels,
+            generated_labels)
+        self.apply_gradients(self.model.discriminator_optimizer,
+                             gradients,
+                             self.model.discriminator.trainable_variables)
+        
 
         # Train the Generator
-        if self.config.include_noise:
-            # If we want to add this is will add the noises
-            fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
-        else:
-            # Otherwise we are just going to add zeros which will not break anything
-            fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
-
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        with tf.GradientTape() as gen_tape:
-            generated_sample = self.model.generator(noise, training=True) + fake_noise
-            stacked_gan = self.model.discriminator(generated_sample,training=True)
-            gen_loss = self.model.generator_loss(stacked_gan)
-        generator_gradients = gen_tape.gradient(gen_loss, self.model.generator.variables)
-        self.model.generator_optimizer.apply_gradients(zip(generator_gradients,
-                                                           self.model.generator.variables))
+        gradients, gen_loss = self.gen_compute_gradients(
+            self.model.generator,
+            self.model.discriminator,
+            noise)
+        self.apply_gradients(self.model.generator_optimizer,
+                             gradients,
+                             self.model.generator.trainable_variables)
 
-        return gen_loss, total_disc_loss, real_disc_loss, fake_disc_loss
+        return gen_loss, disc_loss
+
+    def gen_compute_loss(self,model_gen,model_disc, noise):
+        generated_sample = model_gen(noise, training=True)
+        stacked_gan = model_disc(generated_sample, training=True)
+        loss = tf.losses.sigmoid_cross_entropy(tf.zeros_like(stacked_gan), stacked_gan)
+        return loss
+
+    def disc_compute_loss(self,model_gen,model_disc, image, noise,true_labels, generated_labels):
+        generated_sample = model_gen(noise, training=True)
+        disc_real = model_disc(image, training=True)
+        disc_fake = model_disc(generated_sample, training=True)
+
+        disc_loss_real = tf.losses.sigmoid_cross_entropy(
+            multi_class_labels=true_labels, logits=disc_real)
+
+        disc_loss_fake = tf.losses.sigmoid_cross_entropy(
+            multi_class_labels=generated_labels,logits=disc_fake)
+
+        total_disc_loss = disc_loss_real + disc_loss_fake
+
+        return total_disc_loss
+
+    def gen_compute_gradients(self,model_gen, model_disc, noise):
+        with tf.GradientTape() as tape:
+            loss = self.gen_compute_loss(model_gen,model_disc,noise)
+        return tape.gradient(loss, model_gen.trainable_variables), loss
+
+    def disc_compute_gradients(self,model_gen, model_disc, image, noise,true_labels, generated_labels):
+        with tf.GradientTape() as tape:
+            loss = self.disc_compute_loss(model_gen,model_disc, image, noise,true_labels, generated_labels)
+        return tape.gradient(loss, model_disc.trainable_variables), loss
+
+    def apply_gradients(self,optimizer, gradients, variables):
+        optimizer.apply_gradients(zip(gradients, variables))
+
 

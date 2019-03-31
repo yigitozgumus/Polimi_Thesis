@@ -59,7 +59,7 @@ class DataLoader():
     def populate(self):
         if len(self.dir_names) == 2:
             print("DataLoader: Cropped subsets will be populated")
-            size_list = [28]
+            size_list = [self.config.image_size]
             folder_name = "cropped"
             num_images = 10240
             for size in size_list:
