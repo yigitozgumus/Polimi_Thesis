@@ -7,6 +7,7 @@ from time import sleep
 class GANTrainer_eager(BaseTrain_eager):
     def __init__(self, model, data, config, logger):
         super(GANTrainer_eager, self).__init__( model, data, config, logger)
+        self.logger.train_summary_writer.set_as_default()
 
     def train_epoch(self):
         """
@@ -40,9 +41,9 @@ class GANTrainer_eager(BaseTrain_eager):
             tf.contrib.summary.scalar("Total_Discriminator_Loss", disc_loss_t)
 
         # Generate images between epochs to evaluate
-        rand_noise = np.random.normal(
-            loc=0.0, scale=1.0,
-            size=[self.config.num_example_imgs_to_generate, self.config.noise_dim]).astype(np.float32)
+        rand_noise = tf.random_normal(
+            mean=0.0, stdev=1.0,
+            shape=[self.config.num_example_imgs_to_generate, self.config.noise_dim])
         progress_images = self.model.generator(rand_noise, training=False)
         self.save_generated_images(progress_images, cur_epoch)
 
@@ -64,7 +65,7 @@ class GANTrainer_eager(BaseTrain_eager):
         # Generate noise from uniform  distribution between -1 and 1
         noise_probability = self.config.noise_probability
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]).astype(np.float32)
+        noise = tf.random_normal(mean=0.0, stddev=1.0, shape=[self.config.batch_size, self.config.noise_dim])
         # Soft Label Generation
         true_labels = np.zeros((self.config.batch_size, 1)) + np.random.uniform(low=0.0, high=0.1,
                                                                 size=[self.config.batch_size, 1])
@@ -92,7 +93,7 @@ class GANTrainer_eager(BaseTrain_eager):
         
 
         # Train the Generator
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim]).astype(np.float32)
+        noise = tf.random_normal(mean=0.0, stddev=1.0, shape=[self.config.batch_size, self.config.noise_dim])
         gradients, gen_loss = self.gen_compute_gradients(
             self.model.generator,
             self.model.discriminator,
