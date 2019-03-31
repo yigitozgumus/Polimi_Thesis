@@ -19,7 +19,7 @@ class GAN_eager(BaseModel_eager):
         # GENERATOR
         ########################################################################
 
-        input_g = Input(shape=[self.config.noise_dim])
+        input_g = Input(shape=[self.config.noise_dim,])
         layer_g = Dense(7 * 7 * 256, activation="relu",use_bias=False,
         kernel_initializer=self.kernel_initializer)(input_g)
         layer_g = BatchNormalization(momentum=self.config.batch_momentum)(layer_g)

@@ -36,7 +36,7 @@ class BaseTrain_eager:
     def save_generated_images(self,predictions, epoch):
         # make sure the training parameter is set to False because we
         # don't want to train the batchnorm layer when doing inference.
-        predictions = np.asarray(predictions)[0]
+        predictions = np.asarray(predictions)
         fig = plt.figure(figsize=(self.rows, self.rows))
         for i in range(predictions.shape[0]):
             plt.subplot(self.rows, self.rows, i+1)

@@ -2,7 +2,7 @@ from base.base_train_eager import BaseTrain_eager
 import tensorflow as tf
 from tqdm import tqdm
 import numpy as np
-
+from time import sleep
 
 class GANTrainer_eager(BaseTrain_eager):
     def __init__(self, model, data, config, logger):
@@ -14,15 +14,19 @@ class GANTrainer_eager(BaseTrain_eager):
        -loop on the number of iterations in the config and call the train step
        -add any summaries you want using the summary
         """
+        loop = tqdm(range(self.config.num_iter_per_epoch))
         # Define the lists for summaries and losses
         gen_losses = []
         total_disc_losses = []
 
-
+        iterator = tf.contrib.eager.Iterator(self.data.dataset)
         # Get the current epoch
         cur_epoch = self.model.cur_epoch_tensor.numpy()
-        for image in self.data.dataset:
-            gen_loss, total_dl = self.train_step(image.numpy().astype(np.float32), cur_epoch=cur_epoch)
+        for iter in loop:
+            loop.set_description("Epoch:{} iteration:{}".format(cur_epoch, iter))
+            loop.refresh()  # to show immediately the update
+            sleep(0.01)
+            gen_loss, total_dl = self.train_step(iterator.get_next().numpy(), cur_epoch=cur_epoch)
             gen_losses.append(gen_loss)
             total_disc_losses.append(total_dl)
 
