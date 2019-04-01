@@ -56,7 +56,7 @@ class GANTrainer(BaseTrain):
 
         if cur_epoch % self.config.show_steps == 0 or cur_epoch == 1:
             print(
-                "Epoch {} --\nGenerator Loss: {}\nDiscriminator Loss: {}\n".format(
+                "Epoch {}, Generator Loss: {}, Discriminator Loss: {}".format(
                     cur_epoch + 1, gen_loss_m, disc_loss_m, 
                 )
             )
