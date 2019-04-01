@@ -46,7 +46,7 @@ class GANTrainer(BaseTrain):
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
         # Generate images between epochs to evaluate
-        rand_noise = self.sess.run(self.model.random_vector_for_generation)
+        rand_noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
         feed_dict = {self.model.noise_tensor: rand_noise,
                      self.model.is_training: False}
         generator_predictions = self.sess.run(
