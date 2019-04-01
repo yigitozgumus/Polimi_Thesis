@@ -13,29 +13,10 @@ class GAN_keras(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        # Placeholders
-        self.noise_tensor = tf.placeholder(
-            tf.float32, shape=[None, self.config.noise_dim], name="noise"
-        )
-        self.image_input = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="x"
-        )
-        self.random_vector_for_generation = tf.random_normal(
-            [self.config.num_example_imgs_to_generate, self.config.noise_dim],
-            name="sampler",
-        )
-        # Random Noise addition to both image and the noise
-        # This makes it harder for the discriminator to do it's job, preventing
-        # it from always "winning" the GAN min/max contest
-        self.real_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="real_noise"
-        )
-        self.fake_noise = tf.placeholder(
-            tf.float32, shape=[None] + self.config.image_dims, name="fake_noise"
-        )
 
-        self.real_image = self.image_input + self.real_noise
-
+        self.optimizer = tf.keras.optimizers.Adam(lr=self.config.discriminator_l_rate,
+                                                  beta_1=self.config.optimizer_adam_beta1,
+                                                  beta_2=self.config.optimizer_adam_beta2)
         # Make the Generator model
         ########################################################################
         # GENERATOR
@@ -70,6 +51,7 @@ class GAN_keras(BaseModel):
                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
             x_g = Activation("tanh")(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+
             self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
 
         # Make the discriminator model
@@ -90,24 +72,17 @@ class GAN_keras(BaseModel):
             x_d = Flatten()(x_d)
             x_d = Dense(1)(x_d)
             self.discriminator = Model(inputs=inputs_d, outputs=x_d)
+            self.discriminator.compile(loss='binary_crossentropy',
+                                       optimizer=self.optimizer,
+                                       metrics=['accuracy'])
+        with tf.variable_scope("Combined"):
+            z_input = Input(shape=[self.config.noise_dim])
+            img = self.generator(z_input)
+            self.discriminator.trainable = False
+            valid = self.discriminator(img)
 
-        # Store the loss values for the Tensorboard
-        ########################################################################
-        # TENSORBOARD
-        ########################################################################
-        tf.summary.scalar("Generator_Loss", self.gen_loss)
-        tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
-        tf.summary.scalar("Real_Accuracy", self.accuracy_real)
-        tf.summary.scalar("Fake_Accuracy", self.accuracy_fake)
-        tf.summary.scalar("Total_Accuracy", self.accuracy_total)
-        tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
-        tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
-        # Images for the Tensorboard
-        tf.summary.image("From_Noise", tf.reshape(generated_sample, [-1, 28, 28, 1]))
-        tf.summary.image("Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1]))
-        # Sample Operation
-        with tf.name_scope("Generator_Progress"):
-            self.progress_images = self.generator(self.noise_tensor, training=False)
+            self.combined = Model(z_input,valid)
+            self.combined.compile(loss='binary_crossentropy', optimizer=self.optimizer)
 
 
 
