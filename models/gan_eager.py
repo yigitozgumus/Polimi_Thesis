@@ -1,10 +1,10 @@
-from base.base_model_eager import BaseModel_eager
+from base.base_model_eager import BaseModelEager
 import tensorflow as tf
 from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization
 from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten
 from tensorflow.keras.models import Model
 
-class GAN_eager(BaseModel_eager):
+class GAN_eager(BaseModelEager):
     def __init__(self, config):
         super(GAN_eager, self).__init__(config)
         self.build_model()

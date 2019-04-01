@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 from data_loader.data_generator import DataGenerator
-from models.gan_keras import GAN_keras
-from trainers.gan_trainer_keras import GANTrainer_keras
+from models.gankeras import GanKeras
+from trainers.gan_trainer_keras import GANTrainerKeras
 from utils.logger import Logger
 from utils.dirs import create_dirs
 
@@ -19,11 +19,11 @@ def main(config):
     # create your data generator
     data = DataGenerator(config)
     # create an instance of the model you want
-    model = GAN_keras(config)
+    model = GanKeras(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer_keras(sess, model, data, config, logger)
+    trainer = GANTrainerKeras(sess, model, data, config, logger)
     # load model if exists
     model.load(sess)
     # here you train your model

@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.contrib.eager as tfe
 #tf.enable_eager_execution()
 
-class BaseModel_eager:
+class BaseModelEager:
     def __init__(self, config):
         self.config = config
         # init the global step

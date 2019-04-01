@@ -1,10 +1,10 @@
-from base.base_train_eager import BaseTrain_eager
+from base.base_train_eager import BaseTrainEager
 import tensorflow as tf
 from tqdm import tqdm
 import numpy as np
 from time import sleep
 
-class GANTrainer_eager(BaseTrain_eager):
+class GANTrainer_eager(BaseTrainEager):
     def __init__(self, model, data, config, logger):
         super(GANTrainer_eager, self).__init__( model, data, config, logger)
         self.logger.train_summary_writer.set_as_default()

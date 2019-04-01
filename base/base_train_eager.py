@@ -3,7 +3,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
-class BaseTrain_eager:
+class BaseTrainEager:
 
     def __init__(self, model,data, config, logger):
         self.model = model
