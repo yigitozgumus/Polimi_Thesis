@@ -1,6 +1,6 @@
 import tensorflow as tf
 import tensorflow.contrib.eager as tfe
-tf.enable_eager_execution()
+#tf.enable_eager_execution()
 
 class BaseModel_eager:
     def __init__(self, config):
