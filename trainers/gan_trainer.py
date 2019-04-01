@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
-
+from time import sleep
 # tf.enable_eager_execution()
 import time
 
@@ -29,6 +29,9 @@ class GANTrainer(BaseTrain):
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
         for epoch in loop:
+            loop.set_description("Epoch:{}".format(cur_epoch))
+            loop.refresh()  # to show immediately the update
+            sleep(0.01)
             # Calculate the losses and obtain the summaries to write
             gen_loss, disc_loss, summary = self.train_step(
                 self.data.next_element,
@@ -129,6 +132,5 @@ class GANTrainer(BaseTrain):
                 K.learning_phase(): 1
             }
         )
-
 
         return gen_loss, disc_loss, summary
