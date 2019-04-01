@@ -15,9 +15,28 @@ class GanKeras(BaseModelKeras):
 
     def build_model(self):
 
-        self.optimizer = tf.keras.optimizers.Adam(lr=self.config.discriminator_l_rate,
-                                                  beta_1=self.config.optimizer_adam_beta1,
-                                                  beta_2=self.config.optimizer_adam_beta2)
+        self.optimizer = tf.train.AdamOptimizer(self.config.discriminator_l_rate,
+                                                  beta1=self.config.optimizer_adam_beta1,
+                                                  beta2=self.config.optimizer_adam_beta2)
+        # Make the discriminator model
+        ########################################################################
+        # DISCRIMINATOR
+        ########################################################################
+
+        inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
+        x_d = Conv2D(32, (5, 5), strides=(2, 2), padding="same",
+                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.02), )(inputs_d)
+        x_d = LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+        x_d = Dropout(rate=self.config.dropout_rate)(x_d)
+
+        x_d = Conv2D(64, (5, 5), strides=(2, 2), padding="same",
+                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+        x_d = LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
+        x_d = Dropout(rate=self.config.dropout_rate)(x_d)
+        x_d = Flatten()(x_d)
+        x_d = Dense(1)(x_d)
+
+        base_discriminator = Model(inputs=inputs_d, outputs=x_d)
         # Make the Generator model
         ########################################################################
         # GENERATOR
@@ -53,36 +72,20 @@ class GanKeras(BaseModelKeras):
         x_g = Activation("tanh")(x_g)
         assert x_g.get_shape().as_list() == [None, 28, 28, 1]
 
-        self.generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
+        base_generator = tf.keras.models.Model(inputs=inputs_g, outputs=x_g)
 
-        # Make the discriminator model
-        ########################################################################
-        # DISCRIMINATOR
-        ########################################################################
-
-        inputs_d = tf.keras.layers.Input(shape=self.config.image_dims)
-        x_d = Conv2D(32, (5, 5), strides=(2, 2), padding="same",
-                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.02), )(inputs_d)
-        x_d = LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
-        x_d = Dropout(rate=self.config.dropout_rate)(x_d)
-
-        x_d = Conv2D(64, (5, 5), strides=(2, 2), padding="same",
-                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
-        x_d = LeakyReLU(alpha=self.config.leakyReLU_alpha)(x_d)
-        x_d = Dropout(rate=self.config.dropout_rate)(x_d)
-        x_d = Flatten()(x_d)
-        x_d = Dense(1)(x_d)
-
-        self.discriminator = Model(inputs=inputs_d, outputs=x_d)
+        self.discriminator = Model(inputs=base_discriminator.inputs,outputs=base_discriminator.outputs)
         self.discriminator.compile(loss='binary_crossentropy',
                                    optimizer=self.optimizer,
-                                   metrics=['loss'])
-
+                                   metrics=['accuracy'])
+        self.generator = Model(inputs=base_generator.inputs, outputs=base_generator.outputs)
+        frozen_D = Model(inputs=base_discriminator.inputs,outputs=base_discriminator.outputs)
+        frozen_D.trainable = False
 
         z_input = Input(shape=[self.config.noise_dim])
         img = self.generator(z_input)
-        self.discriminator.trainable = False
-        valid = self.discriminator(img)
+
+        valid = frozen_D(img)
 
         self.combined = Model(z_input,valid)
         self.combined.compile(loss='binary_crossentropy', optimizer=self.optimizer)

@@ -1,9 +1,10 @@
 import tensorflow as tf
 
-from data_loader.data_generator import DataGenerator
+
+from data_loader.data_generator_keras import DataGeneratorKeras
 from models.gankeras import GanKeras
 from trainers.gan_trainer_keras import GANTrainerKeras
-from utils.logger import Logger
+
 from utils.dirs import create_dirs
 
 
@@ -14,18 +15,16 @@ def main(config):
     # create the experiments dirs
     create_dirs([config.summary_dir, config.checkpoint_dir,
                  config.step_generation_dir])
-    # create tensorflow session
+    # Create a session
     sess = tf.Session()
     # create your data generator
-    data = DataGenerator(config)
+    data = DataGeneratorKeras(config)
     # create an instance of the model you want
     model = GanKeras(config)
-    # create tensorboard logger
-    logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = GANTrainerKeras(sess, model, data, config, logger)
+    trainer = GANTrainerKeras(sess,model, data, config)
     # load model if exists
-    model.load(sess)
+    #model.load()
     # here you train your model
     trainer.train()
 

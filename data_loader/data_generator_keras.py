@@ -2,7 +2,7 @@ from utils.DataLoader import DataLoader
 import tensorflow as tf
 
 
-class DataGeneratorEager():
+class DataGeneratorKeras():
     def __init__(self, config):
         """
         Args:
@@ -29,6 +29,8 @@ class DataGeneratorEager():
              buffer_size=10 * config.batch_size)
         # Apply batching
         self.dataset = self.dataset.batch(config.batch_size)
+        self.iterator = self.dataset.make_initializable_iterator()
+        self.image = self.iterator.get_next()
 
 
 

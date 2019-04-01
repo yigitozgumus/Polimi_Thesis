@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from data_loader.data_generator_eager import DataGenerator_eager
+from data_loader.data_generator_eager import DataGeneratorEager
 from models.gan_eager import GAN_eager
 from trainers.gan_trainer_eager import GANTrainer_eager
 from utils.logger_eager import Logger_eager
@@ -15,7 +15,7 @@ def main(config):
     create_dirs(
         [config.summary_dir, config.checkpoint_dir,config.step_generation_dir])
     # create your data generator
-    data = DataGenerator_eager(config)
+    data = DataGeneratorEager(config)
     # create an instance of the model you want
     model = GAN_eager(config)
     # create tensorboard logger
