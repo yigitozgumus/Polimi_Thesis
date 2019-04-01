@@ -33,7 +33,7 @@ class DataGenerator():
             buffer_size=10 * config.batch_size)
 
         self.iterator = self.dataset.make_initializable_iterator()
-        self.next_element = self.iterator.get_next()
+        self.image = self.iterator.get_next()
 
     def _parse_function(self, filename):
         # Read the image
