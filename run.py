@@ -1,7 +1,7 @@
 from utils.utils import get_args
 from utils.config import process_config
 
-from mains.main_gan import main
+from mains.main_gan_tf import main
 from mains.main_gan_mark2 import main as main_mark2
 from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras

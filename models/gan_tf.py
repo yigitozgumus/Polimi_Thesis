@@ -3,9 +3,9 @@ import tensorflow as tf
 from base.base_model import BaseModel
 
 
-class GAN(BaseModel):
+class GAN_TF(BaseModel):
     def __init__(self, config):
-        super(GAN, self).__init__(config)
+        super(GAN_TF, self).__init__(config)
         self.build_model()
         self.init_saver()
 

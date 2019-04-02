@@ -4,14 +4,14 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from utils.config import process_config
-from models.gan import GAN
+from models.gan_tf import GAN_TF
 from models.gan_mark2 import GAN_mark2
 
 
 def main():
     config = process_config(sys.argv[1])
     if config.model_class == "gan":
-        model = GAN(config)
+        model = GAN_TF(config)
     elif config.model_class == "gan_mark2":
         model = GAN_mark2(config)
     print("Generator Network")

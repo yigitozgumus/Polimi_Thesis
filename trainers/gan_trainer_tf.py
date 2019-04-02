@@ -8,9 +8,9 @@ from time import sleep
 import time
 
 
-class GANTrainer(BaseTrain):
+class GANTrainer_TF(BaseTrain):
     def __init__(self, sess, model, data, config, logger):
-        super(GANTrainer, self).__init__(sess, model, data, config, logger)
+        super(GANTrainer_TF, self).__init__(sess, model, data, config, logger)
 
     def train_epoch(self):
         """
@@ -71,7 +71,7 @@ class GANTrainer(BaseTrain):
         noise_probability = self.config.noise_probability
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        true_labels, generated_labels = self.generated_labels(noise_probability)
+        true_labels, generated_labels = self.generate_labels(noise_probability)
         # Evaluation of the image
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
@@ -88,7 +88,7 @@ class GANTrainer(BaseTrain):
         # Train the Generator and get the summaries
         # Re create the noise for the generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        true_labels, generated_labels = self.generated_labels(noise_probability)
+        true_labels, generated_labels = self.generate_labels(noise_probability)
         _ = self.sess.run(
             [self.model.train_gen],
             feed_dict={
