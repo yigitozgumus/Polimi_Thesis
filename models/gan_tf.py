@@ -19,8 +19,8 @@ class GAN_TF(BaseModel):
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
-        # self.real_noise = tf.placeholder(dtype=tf.float32, shape=[None] + self.config.image_dims, name="real_noise")
-        # self.fake_noise = tf.placeholder(dtype=tf.float32, shape=[None] + self.config.image_dims, name="fake_noise")
+        self.real_noise = tf.placeholder(dtype=tf.float32, shape=[None] + self.config.image_dims, name="real_noise")
+        self.fake_noise = tf.placeholder(dtype=tf.float32, shape=[None] + self.config.image_dims, name="fake_noise")
 
         # self.real_image = self.image_input + self.fake_noise
         # Placeholders for the true and fake labels
@@ -28,8 +28,8 @@ class GAN_TF(BaseModel):
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         # Full Model Scope
         with tf.variable_scope("DCGAN"):
-            self.generated_sample = self.generator(self.noise_tensor)
-            disc_real = self.discriminator(self.image_input)
+            self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
+            disc_real = self.discriminator(self.image_input + self.real_noise)
             disc_fake = self.discriminator(self.generated_sample, reuse=True)
             self.sample_image = self.generator(self.sample_tensor)
 
@@ -57,13 +57,14 @@ class GAN_TF(BaseModel):
         ########################################################################
         # TENSORBOARD
         ########################################################################
-        tf.summary.scalar("Generator_Loss", self.gen_loss)
-        tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
-        tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
-        tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
-        # Images for the Tensorboard
-        tf.summary.image("From_Noise", tf.reshape(self.generated_sample, [-1, 28, 28, 1]))
-        tf.summary.image("Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1]))
+        s_gen_loss = tf.summary.scalar("Generator_Loss", self.gen_loss)
+        s_gen_img = tf.summary.image("From_Noise", tf.reshape(self.generated_sample, [-1, 28, 28, 1]))
+        self.summary_gan = tf.summary.merge(inputs=[s_gen_loss,s_gen_img])
+        s_disc_r = tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
+        s_disc_f = tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
+        s_disc_t = tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
+        s_disc_img = tf.summary.image("Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1]))
+        self.summary_disc = tf.summary.merge(inputs=[s_disc_r,s_disc_f, s_disc_t,s_disc_img])
         # Sample Operation
 
         ########################################################################
@@ -107,7 +108,8 @@ class GAN_TF(BaseModel):
             with tf.name_scope("layer" + str(i)):
                 pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
                 tf.summary.histogram("pesos" + str(i), pesos[i])
-        self.summary = tf.summary.merge_all()
+
+        #self.summary = tf.summary.merge_all()
 
     def generator(self, noise_tensor):
         # Make the Generator model
