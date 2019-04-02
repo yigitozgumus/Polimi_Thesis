@@ -13,7 +13,7 @@ class BaseTrainKeras:
         self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         self.sess.run(self.init)
         self.rows = int(np.sqrt(self.config.num_example_imgs_to_generate))
-        self.rows = int(np.sqrt(self.config.num_example_imgs_to_generate))
+
 
     def train(self):
         raise NotImplementedError

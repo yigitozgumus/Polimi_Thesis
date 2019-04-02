@@ -29,7 +29,7 @@ class GANTrainer_TF(BaseTrain):
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
         for _ in loop:
-            loop.set_description("Epoch:{}".format(cur_epoch))
+            loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)

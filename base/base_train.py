@@ -40,7 +40,7 @@ class BaseTrain:
         predictions = np.asarray(predictions)[0]
         fig = plt.figure(figsize=(self.rows, self.rows))
         for i in range(predictions.shape[0]):
-            plt.subplot(self.rows, self.rows, i+1)
+            plt.subplot(self.rows, self.rows, i)
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
             plt.axis('off')
 
