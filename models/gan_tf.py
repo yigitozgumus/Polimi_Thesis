@@ -14,8 +14,7 @@ class GAN_TF(BaseModel):
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(tf.float32, shape=[None] + self.config.image_dims, name="x")
         self.noise_tensor = tf.placeholder(tf.float32, shape=[None, self.config.noise_dim], name="noise")
-        self.random_vector_for_generation = tf.random_normal(
-            [self.config.num_example_imgs_to_generate, self.config.noise_dim], name="sampler")
+
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
@@ -28,9 +27,12 @@ class GAN_TF(BaseModel):
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         # Full Model Scope
         with tf.variable_scope("DCGAN"):
-            self.generated_sample = self.build_generator(self.noise_tensor)
-            disc_real = self.build_discriminator(self.image_input,name="_real")
-            disc_fake = self.build_discriminator(self.generated_sample,reuse=True,name="_fake")
+            with tf.variable_scope("Generator",reuse=tf.AUTO_REUSE):
+                self.generated_sample = self.generator(self.noise_tensor)
+            with tf.variable_scope("Discriminator_real",reuse=tf.AUTO_REUSE):
+                disc_real = self.discriminator(self.image_input)
+            with tf.variable_scope("Discriminator_fake",reuse=tf.AUTO_REUSE):
+                disc_fake = self.discriminator(self.generated_sample)
 
             # Losses of the training of Generator and Discriminator
             ########################################################################
@@ -92,16 +94,16 @@ class GAN_TF(BaseModel):
         # Discriminator Network Operations
         self.disc_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Discriminator")
         # Initialization of Optimizers
-        with tf.control_dependencies(self.gen_update_ops):
-            self.train_gen = self.generator_optimizer.minimize(
-                self.gen_loss, global_step=self.global_step_tensor,
-                var_list=self.generator_vars
-            )
-        with tf.control_dependencies(self.disc_update_ops):
-            self.train_disc = self.discriminator_optimizer.minimize(
-                self.total_disc_loss, global_step=self.global_step_tensor,
-                var_list=self.discriminator_vars
-            )
+
+        self.train_gen = self.generator_optimizer.minimize(
+            self.gen_loss, global_step=self.global_step_tensor,
+             var_list=self.generator_vars
+        )
+
+        self.train_disc = self.discriminator_optimizer.minimize(
+            self.total_disc_loss, global_step=self.global_step_tensor,
+            var_list=self.discriminator_vars
+        )
 
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
@@ -109,81 +111,79 @@ class GAN_TF(BaseModel):
                 tf.summary.histogram("pesos" + str(i), pesos[i])
         self.summary = tf.summary.merge_all()
 
-    def build_generator(self, noise_tensor):
+    def generator(self, noise_tensor):
         # Make the Generator model
-        with tf.variable_scope("Generator",reuse=tf.AUTO_REUSE):
-            # Densely connected Neural Network layer with 12544 Neurons.
-            x_g = tf.layers.Dense(units=7 * 7 * 256, use_bias=False,
-                                  kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(
-                noise_tensor)
-            # Normalize the output of the Layer
-            x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
-                                                training=self.is_training)
-            # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
-            x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
-            # Reshaping the output
-            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 256])
-            # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
-            # First Conv2DTranspose Layer
-            x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(1, 1), padding="same",
-                                            use_bias=False,
-                                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
 
-            x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
-                                                training=self.is_training)
-            x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
-            # Second Conv2DTranspose Layer
-            x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(2, 2), padding="same",
-                                            use_bias=False,
-                                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+        # Densely connected Neural Network layer with 12544 Neurons.
+        x_g = tf.layers.Dense(units=7 * 7 * 256, use_bias=False,
+                              kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(
+            noise_tensor)
+        # Normalize the output of the Layer
+        x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
+                                            training=self.is_training)
+        # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
+        x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
+        # Reshaping the output
+        x_g = tf.reshape(x_g, shape=[-1, 7, 7, 256])
+        # Check the size of the current output just in case
+        assert x_g.get_shape().as_list() == [None, 7, 7, 256]
+        # First Conv2DTranspose Layer
+        x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(1, 1), padding="same",
+                                        use_bias=False,
+                                        kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+        assert x_g.get_shape().as_list() == [None, 7, 7, 128]
 
-            x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
-                                                training=self.is_training)
-            x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
-            # Third Conv2DTranspose Layer
-            x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(2, 2), padding="same",
-                                            use_bias=False,
-                                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
-            x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
-                                                training=self.is_training)
-            x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
-            # Final Conv2DTranspose Layer
-            x_g = tf.layers.Conv2DTranspose(filters=1, kernel_size=5, strides=(1, 1), padding="same",
-                                            use_bias=False,
-                                            activation=tf.nn.tanh,
-                                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
-            return x_g
+        x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
+                                            training=self.is_training)
+        x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
+        # Second Conv2DTranspose Layer
+        x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(2, 2), padding="same",
+                                        use_bias=False,
+                                        kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+        assert x_g.get_shape().as_list() == [None, 14, 14, 128]
 
-    def build_discriminator(self,image,reuse=True,name=""):
-        # if (reuse):
-        #     tf.get_variable_scope().reuse_variables()
-        with tf.variable_scope("Discriminator"+ name,reuse=tf.AUTO_REUSE):
-            # First Convolutional Layer
-            x_d = tf.layers.Conv2D(filters=128, kernel_size=5, strides=(1, 1), padding="same",
-                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(image)
-            x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
-            x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
-            # Second Convolutional Layer
-            x_d = tf.layers.Conv2D(filters=64, kernel_size=5, strides=(2, 2), padding="same",
-                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
-            x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
-            x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
+        x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
+                                            training=self.is_training)
+        x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
+        # Third Conv2DTranspose Layer
+        x_g = tf.layers.Conv2DTranspose(filters=128, kernel_size=5, strides=(2, 2), padding="same",
+                                        use_bias=False,
+                                        kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+        assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+        x_g = tf.layers.batch_normalization(inputs=x_g, momentum=self.config.batch_momentum,
+                                            training=self.is_training)
+        x_g = tf.nn.leaky_relu(features=x_g, alpha=self.config.leakyReLU_alpha)
+        # Final Conv2DTranspose Layer
+        x_g = tf.layers.Conv2DTranspose(filters=1, kernel_size=5, strides=(1, 1), padding="same",
+                                        use_bias=False,
+                                        activation=tf.nn.tanh,
+                                        kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_g)
+        assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+        return x_g
 
-            # Third Convolutional Layer
-            x_d = tf.layers.Conv2D(filters=32, kernel_size=5, strides=(2, 2), padding="same",
-                                   kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
-            x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
-            x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
+    def discriminator(self, image):
 
-            x_d = tf.layers.Flatten()(x_d)
-            x_d = tf.layers.Dropout(rate=self.config.dropout_rate)(x_d)
-            x_d = tf.layers.Dense(units=1)(x_d)
-            return x_d
+        # First Convolutional Layer
+        x_d = tf.layers.Conv2D(filters=128, kernel_size=5, strides=(1, 1), padding="same",
+                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(image)
+        x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
+        x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
+        # Second Convolutional Layer
+        x_d = tf.layers.Conv2D(filters=64, kernel_size=5, strides=(2, 2), padding="same",
+                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+        x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
+        x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
+
+        # Third Convolutional Layer
+        x_d = tf.layers.Conv2D(filters=32, kernel_size=5, strides=(2, 2), padding="same",
+                               kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))(x_d)
+        x_d = tf.layers.batch_normalization(inputs=x_d, momentum=self.config.batch_momentum, training=self.is_training)
+        x_d = tf.nn.leaky_relu(features=x_d, alpha=self.config.leakyReLU_alpha)
+
+        x_d = tf.layers.Flatten()(x_d)
+        x_d = tf.layers.Dropout(rate=self.config.dropout_rate)(x_d)
+        x_d = tf.layers.Dense(units=1)(x_d)
+        return x_d
 
 
     def init_saver(self):
