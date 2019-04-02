@@ -13,18 +13,12 @@ class GANTrainer(BaseTrain):
         super(GANTrainer, self).__init__(sess, model, data, config, logger)
 
     def train_epoch(self):
-        """
-       implement the logic of epoch:
-       -loop on the number of iterations in the config and call the train step
-       -add any summaries you want using the summary
-        """
         # Attach the epoch loop to a variable
         loop = tqdm(range(self.config.num_iter_per_epoch))
         # Define the lists for summaries and losses
         gen_losses = []
         disc_losses = []
         summaries = []
-
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
@@ -68,18 +62,9 @@ class GANTrainer(BaseTrain):
         # Generate noise from uniform  distribution between -1 and 1
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
-        noise_probability = self.config.noise_probability
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        true_labels = np.zeros((self.config.batch_size, 1)) + np.random.uniform(low=0.0, high=0.1,
-                                                                                size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(true_labels)), size=int(noise_probability * len(true_labels)))
-        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-        generated_labels = np.ones((self.config.batch_size, 1)) - np.random.uniform(low=0.0, high=0.1,
-                                                                                    size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(generated_labels)),
-                                       size=int(noise_probability * len(generated_labels)))
-        generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+        true_labels, generated_labels = self.generate_labels()
         # Instance noise additions
         if self.config.include_noise:
             # If we want to add this is will add the noises
@@ -93,20 +78,29 @@ class GANTrainer(BaseTrain):
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
         # Train the Discriminator on both real and fake images
-        _ = self.sess.run([self.model.train_disc],
-                          feed_dict={
-                              self.model.noise_tensor: noise,
-                              self.model.image_input: image_eval,
-                              self.model.real_noise: real_noise,
-                              self.model.fake_noise: fake_noise,
-                              self.model.true_labels: true_labels,
-                              self.model.generated_labels: generated_labels,
-                              K.learning_phase(): 1
-                          }
-                          )
+        _ = self.sess.run(
+            [self.model.train_disc],
+            feed_dict={
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_eval,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
+                self.model.true_labels: true_labels,
+                self.model.generated_labels: generated_labels,
+                K.learning_phase(): 1
+            }
+        )
         # Train the Generator and get the summaries
         # Re create the noise for the generator
+        if self.config.include_noise:
+            # If we want to add this is will add the noises
+            fake_noise = np.random.normal(scale=sigma, size=[self.config.batch_size] + self.config.image_dims)
+        else:
+            # Otherwise we are just going to add zeros which will not break anything
+            fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
+        true_labels, generated_labels = self.generate_labels()
+
         _ = self.sess.run(
             [self.model.train_gen],
             feed_dict={
@@ -119,7 +113,6 @@ class GANTrainer(BaseTrain):
                 K.learning_phase(): 1
             }
         )
-
         # Calculate the losses
         gen_loss, disc_loss, summary = self.sess.run(
             [self.model.gen_loss,
@@ -137,3 +130,17 @@ class GANTrainer(BaseTrain):
         )
 
         return gen_loss, disc_loss, summary
+
+    def generate_labels(self):
+        true_labels = np.zeros((self.config.batch_size, 1)) + np.random.uniform(low=0.0, high=0.1,
+                                                                                size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(true_labels)),
+                                       size=int(self.config.noise_probability * len(true_labels)))
+        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
+        generated_labels = np.ones((self.config.batch_size, 1)) - np.random.uniform(low=0.0, high=0.1,
+                                                                                    size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(generated_labels)),
+                                       size=int(self.config.noise_probability * len(generated_labels)))
+        generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+
+        return true_labels, generated_labels
