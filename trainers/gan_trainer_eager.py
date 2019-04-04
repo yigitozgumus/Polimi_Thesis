@@ -4,9 +4,9 @@ from tqdm import tqdm
 import numpy as np
 from time import sleep
 
-class GANTrainer_eager(BaseTrainEager):
+class GANTrainerEager(BaseTrainEager):
     def __init__(self, model, data, config, logger):
-        super(GANTrainer_eager, self).__init__( model, data, config, logger)
+        super(GANTrainerEager, self).__init__(model, data, config, logger)
         self.logger.train_summary_writer.set_as_default()
 
     def train_epoch(self):
@@ -41,9 +41,9 @@ class GANTrainer_eager(BaseTrainEager):
             tf.contrib.summary.scalar("Total_Discriminator_Loss", disc_loss_t)
 
         # Generate images between epochs to evaluate
-        rand_noise = tf.random_normal(
-            mean=0.0, stdev=1.0,
-            shape=[self.config.num_example_imgs_to_generate, self.config.noise_dim])
+        rand_noise = np.random.normal(
+            loc=0.0, scale=1.0,
+            size=[self.config.num_example_imgs_to_generate, self.config.noise_dim])
         progress_images = self.model.generator(rand_noise, training=False)
         self.save_generated_images(progress_images, cur_epoch)
 
@@ -63,21 +63,10 @@ class GANTrainer_eager(BaseTrainEager):
         - return any metrics you need to summarize
         """
         # Generate noise from uniform  distribution between -1 and 1
-        noise_probability = self.config.noise_probability
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
-        noise = tf.random_normal(mean=0.0, stddev=1.0, shape=[self.config.batch_size, self.config.noise_dim])
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
         # Soft Label Generation
-        true_labels = np.zeros((self.config.batch_size, 1)) + np.random.uniform(low=0.0, high=0.1,
-                                                                size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(true_labels)),
-                                       size=int(noise_probability * len(true_labels)))
-        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-
-        generated_labels = np.ones((self.config.batch_size, 1)) - np.random.uniform(
-            low=0.0, high=0.1,size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(generated_labels)),
-                                       size=int(noise_probability * len(generated_labels)))
-        generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+        true_labels, generated_labels = self.generate_labels()
 
         # Train the Discriminator
         gradients, disc_loss = self.disc_compute_gradients(
@@ -90,7 +79,6 @@ class GANTrainer_eager(BaseTrainEager):
         self.apply_gradients(self.model.discriminator_optimizer,
                              gradients,
                              self.model.discriminator.trainable_variables)
-        
 
         # Train the Generator
         noise = tf.random_normal(mean=0.0, stddev=1.0, shape=[self.config.batch_size, self.config.noise_dim])
@@ -125,6 +113,7 @@ class GANTrainer_eager(BaseTrainEager):
 
         return total_disc_loss
 
+
     def gen_compute_gradients(self, model_gen, model_disc, noise):
         with tf.GradientTape() as tape:
             loss = self.gen_compute_loss(model_gen,model_disc,noise)
@@ -138,4 +127,18 @@ class GANTrainer_eager(BaseTrainEager):
     def apply_gradients(self,optimizer, gradients, variables):
         optimizer.apply_gradients(zip(gradients, variables))
 
+    def generate_labels(self):
+        true_labels = np.zeros((self.config.batch_size, 1)) + np.random.uniform(low=0.0, high=0.1,
+                                                                                size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(true_labels)),
+                                       size=int(self.config.noise_probability * len(true_labels)))
+        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
+
+        generated_labels = np.ones((self.config.batch_size, 1)) - np.random.uniform(
+            low=0.0, high=0.1, size=[self.config.batch_size, 1])
+        flipped_idx = np.random.choice(np.arange(len(generated_labels)),
+                                       size=int(self.config.noise_probability * len(generated_labels)))
+        generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+
+        true_labels, generated_labels
 

@@ -94,21 +94,6 @@ class GAN_eager(BaseModelEager):
             beta2=self.config.optimizer_adam_beta2
         )
 
-    # Losses of the training of Generator and Discriminator
-    # def generator_loss(self,model, stacked_gan):
-    #     return tf.losses.sigmoid_cross_entropy(tf.zeros_like(stacked_gan), stacked_gan)
-    #
-    # def discriminator_loss(self,model, true_labels, generated_labels, disc_real, disc_fake):
-    #     disc_loss_real = tf.losses.sigmoid_cross_entropy(
-    #         multi_class_labels=true_labels, logits=disc_real)
-    #
-    #     disc_loss_fake = tf.losses.sigmoid_cross_entropy(
-    #         multi_class_labels=generated_labels,logits=disc_fake)
-    #
-    #     total_disc_loss = disc_loss_real + disc_loss_fake
-    #
-    #     return total_disc_loss, disc_loss_real, disc_loss_fake
-
     def init_saver(self):
         # here you initialize the tensorflow saver that will be used in saving the checkpoints.
         self.checkpoint = tf.train.Checkpoint(generator_optimizer=self.generator_optimizer,
