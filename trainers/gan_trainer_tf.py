@@ -71,7 +71,7 @@ class GANTrainer_TF(BaseTrain):
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.batch_size, self.config.noise_dim])
-        true_labels, generated_labels = self.generate_labels()
+        true_labels, generated_labels = self.generate_labels(self.config.soft_labels)
         # Instance noise additions
         if self.config.include_noise:
             # If we want to add this is will add the noises
@@ -122,19 +122,22 @@ class GANTrainer_TF(BaseTrain):
                 self.model.is_training: True
             }
             )
-
         return gen_loss, disc_loss, summary_gan, summary_disc
 
-    def generate_labels(self):
-        true_labels = np.zeros((self.config.batch_size, 1)) + \
-                      np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(true_labels)),
-                                       size=int(self.config.noise_probability * len(true_labels)))
-        true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-        generated_labels = np.ones((self.config.batch_size, 1)) - \
-                           np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
-        flipped_idx = np.random.choice(np.arange(len(generated_labels)),
-                                       size=int(self.config.noise_probability * len(generated_labels)))
-        generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+    def generate_labels(self,soft_labels):
+        if soft_labels:
+            true_labels = tf.ones_like((self.config.batch_size, 1))
+            generated_labels = tf.zeros_like((self.config.batch_size, 1))
+        else:
+            true_labels = np.zeros((self.config.batch_size, 1)) + \
+                          np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
+            flipped_idx = np.random.choice(np.arange(len(true_labels)),
+                                           size=int(self.config.noise_probability * len(true_labels)))
+            true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
+            generated_labels = np.ones((self.config.batch_size, 1)) - \
+                               np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
+            flipped_idx = np.random.choice(np.arange(len(generated_labels)),
+                                           size=int(self.config.noise_probability * len(generated_labels)))
+            generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
 
         return true_labels, generated_labels

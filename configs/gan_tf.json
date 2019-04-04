@@ -1,6 +1,7 @@
 {
   "model_class": "gan_tf",
   "include_noise": true,
+  "soft_labels": false,
   "output_folder": "Logs",
   "data_dir": "data",
   "data_dir_normal": "data/Normal/",
@@ -12,7 +13,7 @@
   "noise_dim": 100,
   "image_dims": [28, 28, 1],
   "num_iter_per_epoch": 100,
-  "discriminator_l_rate": 0.0002,
+  "discriminator_l_rate": 0.00005,
   "generator_l_rate": 0.0002,
   "optimizer_adam_beta1": 0.5,
   "optimizer_adam_beta2": 0.999,
@@ -22,7 +23,7 @@
   "num_parallel_calls": 8,
   "batch_momentum": 0.8,
   "leakyReLU_alpha": 0.2,
-  "dropout_rate": 0.3,
-  "num_example_imgs_to_generate": 25,
+  "dropout_rate": 0.25,
+  "num_example_imgs_to_generate": 9,
   "num_epochs_to_test": 1
 }
