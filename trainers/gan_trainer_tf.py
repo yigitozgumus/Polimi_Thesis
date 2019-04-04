@@ -108,7 +108,7 @@ class GANTrainer_TF(BaseTrain):
         else:
             # Otherwise we are just going to add zeros which will not break anything
             fake_noise = np.zeros(([self.config.batch_size] + self.config.image_dims))
-        true_labels, generated_labels = self.generate_labels()
+        true_labels, generated_labels = self.generate_labels(self.config.soft_labels)
         _, gen_loss,summary_gan = self.sess.run(
             [self.model.train_gen,
              self.model.gen_loss,
