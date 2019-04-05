@@ -124,10 +124,10 @@ class GANTrainer_TF(BaseTrain):
             )
         return gen_loss, disc_loss, summary_gan, summary_disc
 
-    def generate_labels(self,soft_labels):
-        if soft_labels:
-            true_labels = tf.ones_like((self.config.batch_size, 1))
-            generated_labels = tf.zeros_like((self.config.batch_size, 1))
+    def generate_labels(self, soft_labels):
+        if not soft_labels:
+            true_labels = np.ones_like((self.config.batch_size, 1))
+            generated_labels = np.zeros_like((self.config.batch_size, 1))
         else:
             true_labels = np.zeros((self.config.batch_size, 1)) + \
                           np.random.uniform(low=0.0, high=0.1, size=[self.config.batch_size, 1])
