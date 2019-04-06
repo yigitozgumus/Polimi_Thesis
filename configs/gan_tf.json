@@ -13,8 +13,8 @@
     "image_size": 28,
     "batch_size": 128,
     "num_epochs": 2000,
-    "num_iter_per_epoch": 100,
-    "num_parallel_calls": 1
+    "num_iter_per_epoch": 200,
+    "num_parallel_calls": 8
   },
   "trainer": {
     "noise_dim": 100,
@@ -23,16 +23,16 @@
       28,
       1
     ],
-    "include_noise": false,
+    "include_noise": true,
     "soft_labels": true,
-    "discriminator_l_rate": 0.0002,
+    "discriminator_l_rate": 0.00005,
     "noise_probability": 0.05,
     "generator_l_rate": 0.0002,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.25,
+    "dropout_rate": 0.3,
     "ema_decay": 0.999,
     "spectral_norm": false,
     "allow_zz": true,

@@ -10,6 +10,7 @@ __pycache__/
 .vscode
 # Auxilary
 Logs/
+Experiments/
 .DS_Store
 # Distribution / packaging
 .Python
