@@ -1,28 +1,45 @@
 {
-  "model_class": "gan_tf",
-  "include_noise": true,
-  "output_folder": "Logs",
-  "data_dir": "data",
-  "data_dir_normal": "data/Normal/",
-  "data_dir_anomalous": "data/Anomalous/",
-  "buffer_size": 51200,
-  "image_size": 28,
-  "show_steps": 5,
-  "num_epochs": 1000,
-  "noise_dim": 100,
-  "image_dims": [28, 28, 1],
-  "num_iter_per_epoch": 100,
-  "discriminator_l_rate": 0.0002,
-  "generator_l_rate": 0.0002,
-  "optimizer_adam_beta1": 0.5,
-  "optimizer_adam_beta2": 0.999,
-  "noise_probability": 0.05,
-  "batch_size": 128,
-  "max_to_keep": 10,
-  "num_parallel_calls": 8,
-  "batch_momentum": 0.8,
-  "leakyReLU_alpha": 0.2,
-  "dropout_rate": 0.3,
-  "num_example_imgs_to_generate": 25,
-  "num_epochs_to_test": 1
+  "exp":{},
+  "model": {
+    "name": "gan_tf"
+  },
+  "dirs": {
+    "data": "data",
+    "data_normal": "data/Normal/",
+    "data_anomalous": "data/Anomalous/"
+  },
+  "data_loader": {
+    "buffer_size": 51200,
+    "image_size": 28,
+    "batch_size": 128,
+    "num_epochs": 2000,
+    "num_iter_per_epoch": 100,
+    "num_parallel_calls": 8
+  },
+  "trainer": {
+    "noise_dim": 100,
+    "image_dims": [
+      28,
+      28,
+      1
+    ],
+    "include_noise": false,
+    "soft_labels": true,
+    "discriminator_l_rate": 0.0002,
+    "generator_l_rate": 0.0002,
+    "optimizer_adam_beta1": 0.5,
+    "optimizer_adam_beta2": 0.999,
+    "batch_momentum": 0.8,
+    "leakyReLU_alpha": 0.2,
+    "dropout_rate": 0.3,
+    "ema_decay": 0.999,
+    "spectral_norm": false
+  },
+  "log": {
+    "show_steps": 10,
+    "max_to_keep": 10,
+    "num_example_imgs_to_generate": 25,
+    "num_epochs_to_test": 1,
+    "output_folder": "Logs"
+  }
 }

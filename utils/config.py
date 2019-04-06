@@ -1,6 +1,6 @@
 
 import json
-from argparse import Namespace
+from dotmap import DotMap
 import os
 
 
@@ -15,24 +15,24 @@ def get_config_from_json(json_file):
         config_dict = json.load(config_file)
 
     # convert the dictionary to a namespace using Namespace
-    config = Namespace(**config_dict)
+    config = DotMap(config_dict)
 
     return config, config_dict
 
 
 def create_parameter_file(config: object) -> None:
-    location = config.parameter_dir
+    location = config.log.parameter_dir
     # If the folder is present then already the experiment values are created
     if not os.path.exists(location):
         os.makedirs(location)
         name = "parameters.txt"
         f = open(os.path.join(location,name),"w+")
-        f.write("----------------------------------------------------------\n")
-        f.write("Experiment: {}\n".format(config.exp_name))
-        f.write("----------------------------------------------------------\n")
-        parameters = config._get_kwargs()
-        for param in parameters:
-            f.write("{} : {}\n".format(param[0],param[1]))
+        f.write("{}\n".format("-" * 70))
+        for category,sub_list in config.items():
+            f.write("{}:\n".format(category))
+            for element in sub_list.items():
+                f.write("  {} : {}\n".format(element[0],element[1]))
+            f.write("{}\n".format("-" * 70))
         f.close()
     else:
         print("Experiment parameters are already stored")
@@ -40,12 +40,12 @@ def create_parameter_file(config: object) -> None:
 
 def process_config(json_file: str, exp_name: str) -> object:
     config, _ = get_config_from_json(json_file)
-    config.exp_name = exp_name
-    config.summary_dir = os.path.join(config.output_folder, config.exp_name, "summary/")
-    config.checkpoint_dir = os.path.join(config.output_folder, config.exp_name, "checkpoint/")
-    config.checkpoint_prefix = os.path.join(config.checkpoint_dir, "ckpt")
-    config.step_generation_dir = os.path.join(config.output_folder, config.exp_name, "generated/")
-    config.parameter_dir = os.path.join(config.output_folder,config.exp_name, "parameters/")
+    config.exp.name = exp_name
+    config.log.summary_dir = os.path.join(config.log.output_folder, config.exp.name, "summary/")
+    config.log.checkpoint_dir = os.path.join(config.log.output_folder, config.exp.name, "checkpoint/")
+    config.log.checkpoint_prefix = os.path.join(config.log.checkpoint_dir, "ckpt")
+    config.log.step_generation_dir = os.path.join(config.log.output_folder, config.exp.name, "generated/")
+    config.log.parameter_dir = os.path.join(config.log.output_folder, config.exp.name, "parameters/")
     create_parameter_file(config)
     return config
 
