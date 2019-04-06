@@ -9,7 +9,7 @@ from tqdm import tqdm
 from utils.utils import working_directory
 from utils.download_data import download_data
 from utils.dirs import listdir_nohidden
-
+from utils.logger import Logger
 
 def show_image_from_path(image):
     """
@@ -35,12 +35,14 @@ class DataLoader():
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.config = config
-        self.data_dir = self.config.data_dir
+        log_object = Logger(self.config, __name__)
+        self.logger = log_object.logger
+        self.data_dir = self.config.dirs.data
         if not os.path.exists(self.data_dir):
-            print("DataLoader: dataset is not present. Download is started.")
+            self.logger.info("DataLoader: dataset is not present. Download is started.")
             download_data(self.data_dir)
-        self.data_dir_normal = self.config.data_dir_normal
-        self.data_dir_anomalous = self.config.data_dir_anomalous
+        self.data_dir_normal = self.config.dirs.data_normal
+        self.data_dir_anomalous = self.config.dirs.data_anomalous
         self.dataset_name= None
         # this is to list all the folders
         self.dir_names =listdir_nohidden(self.data_dir)
@@ -58,8 +60,8 @@ class DataLoader():
     
     def populate(self):
         if len(self.dir_names) == 2:
-            print("DataLoader: Cropped subsets will be populated")
-            size_list = [self.config.image_size]
+            self.logger.info("DataLoader: Cropped subsets will be populated")
+            size_list = [self.config.data_loader.image_size]
             folder_name = "cropped"
             num_images = 10240
             for size in size_list:
@@ -68,7 +70,7 @@ class DataLoader():
                 self.generate_sub_dataset(self.norm_img_array, size=size, num_images=num_images, save=True,
                                           folder_name=folder)
         else:
-            print("DataLoader: Subsets are already populated.")
+            self.logger.info("DataLoader: Subsets are already populated.")
 
     def create_image_array(self, img_names,save=True,file_name="Dataset",size=28,progress=False):
         """

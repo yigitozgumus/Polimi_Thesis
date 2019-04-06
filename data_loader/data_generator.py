@@ -1,38 +1,39 @@
 import numpy as np
 from utils.DataLoader import DataLoader
 import tensorflow as tf
-
+from utils.logger import Logger
 
 class DataGenerator():
-    def __init__(self, config, logger):
+    def __init__(self, config):
         """
         Args:
             config: config file of the current model
         """
 
         self.config = config
-        self.logger = logger
+        log_object = Logger(self.config,__name__)
+        self.logger = log_object.logger
         # load data here
         d = DataLoader(self.config)
         self.logger.info("Data is loading...")
         # Get the filenames and labels
-        self.filenames, self.labels = d.get_sub_dataset(self.config.image_size)
+        self.filenames, self.labels = d.get_sub_dataset(self.config.data_loader.image_size)
        # assert len(self.filenames) == len(self.labels)
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
         # Apply parse function to get the numpy array of the images
         self.dataset = self.dataset.map(map_func=self._parse_function,
-                                        num_parallel_calls=self.config.num_parallel_calls)
+                                        num_parallel_calls=self.config.data_loader.num_parallel_calls)
         # Shuffle the dataset
-        self.dataset = self.dataset.shuffle(self.config.buffer_size)
+        self.dataset = self.dataset.shuffle(self.config.data_loader.buffer_size)
         # Repeat the dataset indefinitely
-        self.dataset = self.dataset.repeat(self.config.num_epochs)
+        self.dataset = self.dataset.repeat(self.config.data_loader.num_epochs)
         # Apply batching
-        self.dataset = self.dataset.batch(config.batch_size)
+        self.dataset = self.dataset.batch(self.config.data_loader.batch_size)
         # Applying prefetch to increase the performance
         # Prefetch the next 10 batches
         self.dataset = self.dataset.prefetch(
-            buffer_size=10 * config.batch_size)
+            buffer_size=10 * self.config.data_loader.batch_size)
         self.iterator = self.dataset.make_initializable_iterator()
         self.image = self.iterator.get_next()
 
@@ -48,7 +49,8 @@ class DataGenerator():
         # Decode the image
         image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
-        image_resized = tf.image.resize_images(image_decoded, [self.config.image_size, self.config.image_size])
+        image_resized = tf.image.resize_images(image_decoded, [self.config.data_loader.image_size,
+                                                               self.config.data_loader.image_size])
         # Normalize the values of the pixels. The function that is applied is below
         # (x - mean) / adjusted_stddev
         # adjusted_stddev = max(stddev, 1.0/sqrt(image.NumElements()))

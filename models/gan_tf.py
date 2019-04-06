@@ -4,8 +4,8 @@ from base.base_model import BaseModel
 
 
 class GAN_TF(BaseModel):
-    def __init__(self, config, logger):
-        super(GAN_TF, self).__init__(config, logger)
+    def __init__(self, config):
+        super(GAN_TF, self).__init__(config)
         self.build_model()
         self.init_saver()
 

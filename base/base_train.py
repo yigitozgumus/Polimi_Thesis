@@ -2,21 +2,23 @@ import tensorflow as tf
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
+from utils.logger import Logger
 class BaseTrain:
-    def __init__(self, sess, model,data, config, summarizer, logger):
+    def __init__(self, sess, model,data, config, summarizer):
         self.model = model
         self.summarizer = summarizer
-        self.logger = logger
         self.config = config
+        log_object = Logger(self.config, __name__)
+        self.logger = log_object.logger
         self.sess = sess
         self.data = data
         self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         self.sess.run(self.init)
-        self.rows = int(np.sqrt(self.config.num_example_imgs_to_generate))
+        self.rows = int(np.sqrt(self.config.log.num_example_imgs_to_generate))
 
     def train(self):
         self.logger.info("Training is started")
-        for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs + 1, 1):
+        for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.data_loader.num_epochs + 1, 1):
             self.train_epoch()
             self.sess.run(self.model.increment_cur_epoch_tensor)
 

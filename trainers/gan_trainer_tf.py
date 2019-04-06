@@ -7,8 +7,8 @@ import time
 
 
 class GANTrainer_TF(BaseTrain):
-    def __init__(self, sess, model, data, config, summarizer, logger):
-        super(GANTrainer_TF, self).__init__(sess, model, data, config, summarizer, logger)
+    def __init__(self, sess, model, data, config, summarizer):
+        super(GANTrainer_TF, self).__init__(sess, model, data, config, summarizer)
         self.batch_size = self.config.data_loader.batch_size
         self.noise_dim = self.config.trainer.noise_dim
         self.img_dims = self.config.trainer.image_dims
@@ -72,7 +72,7 @@ class GANTrainer_TF(BaseTrain):
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
         sigma = max(0.75 * (10. - cur_epoch) / (10), 0.05)
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.config.trainer.batch_size, self.noise_dim])
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
         # Instance noise additions
         if self.config.trainer.include_noise:

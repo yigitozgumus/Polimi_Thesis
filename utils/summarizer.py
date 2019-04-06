@@ -9,8 +9,8 @@ class Summarizer:
         self.config = config
         self.summary_placeholders = {}
         self.summary_ops = {}
-        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "train"), self.sess.graph)
-        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "test"))
+        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.log.summary_dir, "train"), self.sess.graph)
+        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.log.summary_dir, "test"))
 
 
     # it can summarize scalars and images.
