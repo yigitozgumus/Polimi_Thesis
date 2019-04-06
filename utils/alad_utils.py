@@ -2,6 +2,13 @@
 
 import tensorflow as tf
 
+def get_getter(ema):  # to update neural net with moving avg variables, suitable for ss learning cf Saliman
+    def ema_getter(getter, name, *args, **kwargs):
+        var = getter(name, *args, **kwargs)
+        ema_var = ema.average(var)
+        return ema_var if ema_var else var
+    return ema_getter
+
 def conv2d(inputs, filters, kernel_size, strides=1, padding='valid',
            use_bias=True, kernel_initializer=None,
            bias_initializer=tf.zeros_initializer(), kernel_regularizer=None,
