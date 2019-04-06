@@ -4,8 +4,8 @@ from base.base_model import BaseModel
 
 
 class GAN_TF(BaseModel):
-    def __init__(self, config):
-        super(GAN_TF, self).__init__(config)
+    def __init__(self, config, logger):
+        super(GAN_TF, self).__init__(config, logger)
         self.build_model()
         self.init_saver()
 
@@ -27,6 +27,7 @@ class GAN_TF(BaseModel):
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         # Full Model Scope
+        self.logger.info("Building Graph...")
         with tf.variable_scope("DCGAN"):
             self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
             disc_real = self.discriminator(self.image_input + self.real_noise)

@@ -4,7 +4,7 @@ from data_loader.data_generator import DataGenerator
 from models.gan import GAN
 from trainers.gan_trainer import GANTrainer
 from utils.config import process_config
-from utils.logger import Logger
+from utils.summarizer import Summarizer
 from utils.utils import get_args
 from utils.dirs import create_dirs
 
@@ -23,7 +23,7 @@ def main(config):
     # create an instance of the model you want
     model = GAN(config)
     # create tensorboard logger
-    logger = Logger(sess, config)
+    logger = Summarizer(sess, config)
     # create trainer and pass all the previous components to it
     trainer = GANTrainer(sess, model, data, config, logger)
     # load model if exists

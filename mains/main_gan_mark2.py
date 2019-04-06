@@ -4,7 +4,7 @@ from data_loader.data_generator import DataGenerator
 from models.gan_mark2 import GAN_mark2
 from trainers.gan_trainer_mark2 import GANTrainer_mark2
 from utils.config import process_config
-from utils.logger import Logger
+from utils.summarizer import Summarizer
 from utils.utils import get_args
 from utils.dirs import create_dirs
 
@@ -22,7 +22,7 @@ def main(config):
     # create an instance of the model you want
     model = GAN_mark2(config)
     # create tensorboard logger
-    logger = Logger(sess, config)
+    logger = Summarizer(sess, config)
     # create trainer and pass all the previous components to it
     trainer = GANTrainer_mark2(sess, model, data, config, logger)
     # load model if exists

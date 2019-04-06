@@ -43,6 +43,7 @@ def process_config(json_file: str, exp_name: str) -> object:
     config.exp.name = exp_name
     config.log.summary_dir = os.path.join(config.log.output_folder, config.exp.name, "summary/")
     config.log.checkpoint_dir = os.path.join(config.log.output_folder, config.exp.name, "checkpoint/")
+    config.log.log_file_dir = os.path.join(config.log.output_folder, config.exp.name, "logs/")
     config.log.checkpoint_prefix = os.path.join(config.log.checkpoint_dir, "ckpt")
     config.log.step_generation_dir = os.path.join(config.log.output_folder, config.exp.name, "generated/")
     config.log.parameter_dir = os.path.join(config.log.output_folder, config.exp.name, "parameters/")

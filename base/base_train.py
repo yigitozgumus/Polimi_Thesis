@@ -3,8 +3,9 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 class BaseTrain:
-    def __init__(self, sess, model,data, config, logger):
+    def __init__(self, sess, model,data, config, summarizer, logger):
         self.model = model
+        self.summarizer = summarizer
         self.logger = logger
         self.config = config
         self.sess = sess
@@ -14,6 +15,7 @@ class BaseTrain:
         self.rows = int(np.sqrt(self.config.num_example_imgs_to_generate))
 
     def train(self):
+        self.logger.info("Training is started")
         for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs + 1, 1):
             self.train_epoch()
             self.sess.run(self.model.increment_cur_epoch_tensor)

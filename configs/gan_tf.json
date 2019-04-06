@@ -1,5 +1,5 @@
 {
-  "exp":{},
+  "exp": {},
   "model": {
     "name": "gan_tf"
   },
@@ -31,15 +31,23 @@
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.3,
+    "dropout_rate": 0.25,
     "ema_decay": 0.999,
-    "spectral_norm": false
+    "spectral_norm": false,
+    "allow_zz": true,
+    "enable_early_stop": true,
+    "degree": 1
   },
   "log": {
+    "name": "GAN_TF",
+    "file_logging": false,
+    "info_logging": true,
+    "debug_logging": false,
+    "enable_summary": true,
     "show_steps": 10,
-    "max_to_keep": 10,
+    "max_to_keep": 5,
     "num_example_imgs_to_generate": 25,
     "num_epochs_to_test": 1,
-    "output_folder": "Logs"
+    "output_folder": "Experiments"
   }
 }

@@ -33,7 +33,7 @@ class GANTrainer_mark2(BaseTrain):
             disc_losses.append(disc_loss)
             summaries.append(summary)
         # write the summaries
-        self.logger.summarize(cur_epoch, summaries=summaries)
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summaries)
         # Compute the means of the losses
         gen_loss = np.mean(gen_losses)
         disc_loss = np.mean(disc_losses)

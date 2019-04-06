@@ -4,15 +4,17 @@ import tensorflow as tf
 
 
 class DataGenerator():
-    def __init__(self, config):
+    def __init__(self, config, logger):
         """
         Args:
             config: config file of the current model
         """
 
         self.config = config
+        self.logger = logger
         # load data here
         d = DataLoader(self.config)
+        self.logger.info("Data is loading...")
         # Get the filenames and labels
         self.filenames, self.labels = d.get_sub_dataset(self.config.image_size)
        # assert len(self.filenames) == len(self.labels)
@@ -31,7 +33,6 @@ class DataGenerator():
         # Prefetch the next 10 batches
         self.dataset = self.dataset.prefetch(
             buffer_size=10 * config.batch_size)
-
         self.iterator = self.dataset.make_initializable_iterator()
         self.image = self.iterator.get_next()
 

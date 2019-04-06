@@ -4,9 +4,10 @@ from data_loader.data_generator import DataGenerator
 from models.gan_tf import GAN_TF
 from trainers.gan_trainer_tf import GANTrainer_TF
 from utils.config import process_config
-from utils.logger import Logger
+from utils.summarizer import Summarizer
 from utils.utils import get_args
 from utils.dirs import create_dirs
+from utils.logger import Logger
 
 
 def main(config):
@@ -18,14 +19,19 @@ def main(config):
                 config.step_generation_dir])
     # create tensorflow session
     sess = tf.Session()
+    # create the Summarizer object
+    summarizer = Summarizer(sess, config)
+    # Create the logger object
+
+    logger = Logger(config)
+    logging_handler = logger.initialize()
     # create your data generator
-    data = DataGenerator(config)
+    data = DataGenerator(config, logging_handler)
     # create an instance of the model you want
-    model = GAN_TF(config)
-    # create tensorboard logger
-    logger = Logger(sess, config)
+    model = GAN_TF(config, logging_handler)
+
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer_TF(sess, model, data, config, logger)
+    trainer = GANTrainer_TF(sess, model, data, config, summarizer, logging_handler)
     # load model if exists
     model.load(sess)
     # here you train your model
