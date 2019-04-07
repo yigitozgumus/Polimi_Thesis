@@ -15,9 +15,9 @@ class DataGenerator():
         self.logger = log_object.logger
         # load data here
         d = DataLoader(self.config)
-        self.logger.info("Data is loading...")
+        self.logger.info("DataGenerator: Data is loading...")
         # Get the filenames and labels
-        self.filenames, self.labels = d.get_sub_dataset(self.config.data_loader.image_size)
+        self.filenames = d.get_train_dataset()
        # assert len(self.filenames) == len(self.labels)
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
@@ -36,6 +36,21 @@ class DataGenerator():
             buffer_size=10 * self.config.data_loader.batch_size)
         self.iterator = self.dataset.make_initializable_iterator()
         self.image = self.iterator.get_next()
+
+        # If the mode is anomaly create the test dataset
+        if self.config.data_loader.mode == "anomaly":
+            self.test_filenames, self.test_labels = d.get_test_dataset()
+            self.test_dataset = tf.data.Dataset.from_tensor_slices((self.test_filenames, self.test_labels))
+            self.test_dataset = self.test_dataset.map(map_func=self._parse_function_test,
+                                                      num_parallel_calls=self.config.data_loader.num_parallel_calls)
+            # Shuffle the dataset
+            #self.test_dataset = self.test_dataset.shuffle(self.config.data_loader.buffer_size)
+            # Repeat the dataset indefinitely
+            self.test_dataset = self.test_dataset.repeat(self.config.data_loader.num_epochs)
+            # Apply batching
+            self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
+            self.test_iterator = self.test_dataset.make_initializable_iterator()
+            self.test_image, self.test_label = self.test_iterator.get_next()
 
     def _parse_function(self, filename):
         # Read the image
@@ -62,3 +77,19 @@ class DataGenerator():
         image_random_flip_ud = tf.image.random_flip_up_down(
             image_random_flip_lr, seed=tf.random.set_random_seed(1234))
         return image_random_flip_ud
+
+    def _parse_function_test(self, img_file, tag):
+        # Read the image
+        img = tf.read_file(img_file)
+        # Decode the image and the label
+        img_decoded = tf.image.decode_jpeg(img)
+        image_resized = tf.image.resize_images(img_decoded, [self.config.data_loader.image_size,
+                                                               self.config.data_loader.image_size])
+        image_normalized = tf.image.per_image_standardization(image_resized)
+
+
+
+        return image_normalized, tag
+
+
+
