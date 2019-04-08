@@ -1,30 +1,32 @@
 import logging
 import os
+import sys
+
+FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
+LOG_FILE = "experiment_run.log"
 
 
-class Logger():
-    def __init__(self, config,name):
+class Logger:
+    def __init__(self, config):
         self.config = config
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s %(name)-15s %(levelname)-12s %(message)s',
-                            datefmt='%m-%d %H:%M',
-                            filename=os.path.join(self.config.log.log_file_dir, "test.log"),
-                            filemode='w')
+        self.log_file = os.path.join(self.config.log.log_file_dir, LOG_FILE)
 
-        debug_handler = logging.StreamHandler()
-        info_handler = logging.StreamHandler()
-        debug_handler.setLevel(logging.DEBUG)
-        info_handler.setLevel(logging.INFO)
+    def get_logger(self, logger_name):
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(logging.DEBUG)  # better to have too much log than not enough
+        logger.addHandler(self.get_console_handler())
+        logger.addHandler(self.get_file_handler())
+        # with this pattern, it's rarely necessary to propagate the error up to parent
+        logger.propagate = False
+        return logger
 
-        # Create formatters and add it to the handlers
-        debug_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-        info_format = logging.Formatter('%(name)-15s %(levelname)-12s %(message)s')
-        debug_handler.setFormatter(debug_format)
-        info_handler.setFormatter(info_format)
+    def get_console_handler(self):
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(FORMATTER)
+        return console_handler
 
-        self.logger = logging.getLogger(name)
-        # Add handlers to the logger
-        if self.config.log.info_logging:
-            self.logger.addHandler(info_handler)
-        if self.config.log.debug_logging:
-            self.logger.addHandler(debug_handler)
+    def get_file_handler(self):
+        file_handler = logging.FileHandler(self.log_file)
+        file_handler.setFormatter(FORMATTER)
+        file_handler.setLevel(logging.INFO)
+        return file_handler

@@ -96,32 +96,32 @@ class ALADKeras(BaseModelKeras):
         layer_dx = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_dx)
         layer_dx = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dx)
 
-        layer_dx = Reshape((1, 1, 512 * 4 * 4))(layer_dx)
-
-        layer_dz = Reshape((1, 1, self.config.trainer.noise_dim))(inputs_z)
-
-        layer_dz = Conv2D(filters=512, kernel_size=1, strides=(1, 1), padding="same",
-                          kernel_initializer=init_kernel)(layer_dz)
-        layer_dz = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dz)
-        layer_dz = Dropout(rate=self.config.trainer.dropout_rate)(layer_dz)
-
-        layer_dz = Conv2D(filters=512, kernel_size=1, strides=(1, 1), padding="same",
-                          kernel_initializer=init_kernel)(layer_dz)
-        layer_dz = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dz)
-        layer_dz = Dropout(rate=self.config.trainer.dropout_rate)(layer_dz)
-
-        inputs_y = Concatenate(axis=-1)([layer_dx, layer_dz])
-
-        layer_dy = Conv2D(filters=1024, kernel_size=1, strides=(1, 1), padding="same",
-                          kernel_initializer=init_kernel)(inputs_y)
-        layer_dy = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dy)
-        layer_dy = Dropout(rate=self.config.trainer.dropout_rate)(layer_dy)
-
-        intermediate_layer = layer_dy
-        layer_dy = Conv2D(filters=1024, kernel_size=1, strides=(1, 1), padding="same",
-                          kernel_initializer=init_kernel)(layer_dy)
-        layer_dy = Reshape((1024,))(layer_dy)
-        self.discriminator_xz = Model(inputs=[inputs_x, inputs_z], outputs=[layer_dy, intermediate_layer])
+        layer_dx = Reshape((1, 1, 512 * 14 * 14))(layer_dx)
+        #
+        # layer_dz = Reshape((1, 1, self.config.trainer.noise_dim))(inputs_z)
+        #
+        # layer_dz = Conv2D(filters=512, kernel_size=1, strides=(1, 1), padding="same",
+        #                   kernel_initializer=init_kernel)(layer_dz)
+        # layer_dz = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dz)
+        # layer_dz = Dropout(rate=self.config.trainer.dropout_rate)(layer_dz)
+        #
+        # layer_dz = Conv2D(filters=512, kernel_size=1, strides=(1, 1), padding="same",
+        #                   kernel_initializer=init_kernel)(layer_dz)
+        # layer_dz = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dz)
+        # layer_dz = Dropout(rate=self.config.trainer.dropout_rate)(layer_dz)
+        #
+        # inputs_y = Concatenate(axis=-1)([layer_dx, layer_dz])
+        #
+        # layer_dy = Conv2D(filters=1024, kernel_size=1, strides=(1, 1), padding="same",
+        #                   kernel_initializer=init_kernel)(inputs_y)
+        # layer_dy = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_dy)
+        # layer_dy = Dropout(rate=self.config.trainer.dropout_rate)(layer_dy)
+        #
+        # intermediate_layer = layer_dy
+        # layer_dy = Conv2D(filters=1024, kernel_size=1, strides=(1, 1), padding="same",
+        #                   kernel_initializer=init_kernel)(layer_dy)
+        # layer_dy = Reshape((1024,))(layer_dy)
+        self.discriminator_xz = Model(inputs=[inputs_x, inputs_z], outputs=[layer_dx])
 
         ##################################
         # DISCRIMINATOR XX

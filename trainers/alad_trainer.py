@@ -9,9 +9,14 @@ from utils.evaluations import save_results
 class ALAD_Trainer(BaseTrain):
     def __init__(self, sess, model, data, config, logger):
         super(ALAD_Trainer, self).__init__(sess, model, data, config, logger)
+        # This values are added as variable becaouse they are used a lot and changing it become difficult over time.
         self.batch_size = self.config.data_loader.batch_size
         self.noise_dim = self.config.trainer.noise_dim
         self.img_dims = self.config.trainer.image_dims
+        # Inititalize the train Dataset Iterator
+        self.sess.run(self.data.iterator.initializer)
+        # Initialize the test Dataset Iterator
+        self.sess.run(self.data.test_iterator.initializer)
 
     def train_epoch(self):
         """
@@ -21,6 +26,7 @@ class ALAD_Trainer(BaseTrain):
         """
         # Attach the epoch loop to a variable
         begin = time()
+        # Make the loop of the epoch iterations
         loop = tqdm(range(self.config.data_loader.num_iter_per_epoch))
         # Define Losses
         gen_losses = []
@@ -30,15 +36,17 @@ class ALAD_Trainer(BaseTrain):
         disc_xx_losses = []
         disc_zz_losses = []
         summaries = []
-        self.sess.run(self.data.iterator.initializer)
-        self.sess.run(self.data.test_iterator.initializer)
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            lg, le, ld, ldxz, ldxx, ldzz, summary = self.train_step(self.data.image, cur_epoch)
+            # Compute the main losses
+            # TODO summary object
+            lg, le, ld, ldxz, ldxx, ldzz, summary = self.train_step(
+                self.data.image, cur_epoch
+            )
             gen_losses.append(lg)
             enc_losses.append(le)
             disc_losses.append(ld)
@@ -46,6 +54,7 @@ class ALAD_Trainer(BaseTrain):
             disc_xx_losses.append(ldxx)
             disc_zz_losses.append(ldzz)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
+        # Get the means of the loss values to display
         gl_m = np.mean(gen_losses)
         el_m = np.mean(enc_losses)
         dl_m = np.mean(disc_losses)
@@ -53,58 +62,123 @@ class ALAD_Trainer(BaseTrain):
         dlxx_m = np.mean(disc_xx_losses)
         dlzz_m = np.mean(disc_zz_losses)
         if self.config.trainer.allow_zz:
-            print("Epoch {} | time = {} | loss gen = {:4f} | loss enc = {:4f} | "
-                  "loss dis = {:4f} | loss dis xz = {:4f} | loss dis xx = {:4f} | "
-                  "loss dis zz = {:4f}".format(cur_epoch, time() - begin, gl_m,
-                                               el_m, dl_m, dlxz_m, dlxx_m, dlzz_m))
+            self.logger.info(
+                "Epoch {} | time = {} | loss gen = {:4f} | loss enc = {:4f} | "
+                "loss dis = {:4f} | loss dis xz = {:4f} | loss dis xx = {:4f} | "
+                "loss dis zz = {:4f}".format(
+                    cur_epoch, time() - begin, gl_m, el_m, dl_m, dlxz_m, dlxx_m, dlzz_m
+                )
+            )
         else:
-            print("Epoch {} | time = {} | loss gen = {:4f} | loss enc = {:4f} | "
-                  "loss dis = {:4f} | loss dis xz = {:4f} | loss dis xx = {:4f} | "
-                  .format(cur_epoch, time() - begin, gl_m,
-                          el_m, dl_m, dlxz_m, dlxx_m))
+            self.logger.info(
+                "Epoch {} | time = {} | loss gen = {:4f} | loss enc = {:4f} | "
+                "loss dis = {:4f} | loss dis xz = {:4f} | loss dis xx = {:4f} | ".format(
+                    cur_epoch, time() - begin, gl_m, el_m, dl_m, dlxz_m, dlxx_m
+                )
+            )
 
+        # Save the model state
         self.model.save(self.sess)
-        self.logger.warn("Testing evaluation...")
+        # Evaluation for the testing
+        self.logger.info("Testing evaluation...")
         scores_ch = []
         scores_l1 = []
         scores_l2 = []
         scores_fm = []
         inference_time = []
-
+        true_labels = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         for _ in test_loop:
             test_batch_begin = time()
+            test_batch, test_labels = self.sess.run(
+                [self.data.test_image, self.data.test_label]
+            )
             test_loop.refresh()  # to show immediately the update
             sleep(0.01)
-            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
-            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-            feed_dict = {self.model.image_tensor : test_batch,
-                         self.model.noise_tensor: noise,
-                         self.model.is_training: False}
-            scores_ch += self.sess.run(self.model.score_ch, feed_dict=feed_dict).tolist()
-            scores_l1 += self.sess.run(self.model.score_l1, feed_dict=feed_dict).tolist()
-            scores_l2 += self.sess.run(self.model.score_l2, feed_dict=feed_dict).tolist()
-            scores_fm += self.sess.run(self.model.score_fm, feed_dict=feed_dict).tolist()
+            noise = np.random.normal(
+                loc=0.0,
+                scale=1.0,
+                size=[self.config.data_loader.test_batch, self.noise_dim],
+            )
+            feed_dict = {
+                self.model.image_tensor: test_batch,
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            scores_ch += self.sess.run(
+                self.model.score_ch, feed_dict=feed_dict
+            ).tolist()
+            scores_l1 += self.sess.run(
+                self.model.score_l1, feed_dict=feed_dict
+            ).tolist()
+            scores_l2 += self.sess.run(
+                self.model.score_l2, feed_dict=feed_dict
+            ).tolist()
+            scores_fm += self.sess.run(
+                self.model.score_fm, feed_dict=feed_dict
+            ).tolist()
             inference_time.append(time() - test_batch_begin)
-
+            true_labels += test_labels.tolist()
+        true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
-        #TODO BATCH FILL ?
-        model = 'alad_sn{}_dzz{}'.format(self.config.trainer.do_spectral_norm, self.config.trainer.allow_zz)
+        # TODO BATCH FILL ?
+        model = "alad_sn{}_dzz{}".format(
+            self.config.trainer.do_spectral_norm, self.config.trainer.allow_zz
+        )
         random_seed = 42
         label = 1
         step = self.sess.run(self.model.global_step_tensor)
 
-        save_results(scores_ch, test_labels, model, self.config.data_loader.dataset_name, 'ch',
-                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
-        save_results(scores_l1, test_labels, model, self.config.data_loader.dataset_name, 'l1',
-                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
-        save_results(scores_l2, test_labels, model, self.config.data_loader.dataset_name, 'l2',
-                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
-        save_results(scores_fm, test_labels, model, self.config.data_loader.dataset_name, 'fm',
-                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
-
+        save_results(
+            self.config.log.result_dir,
+            scores_ch,
+            true_labels,
+            model,
+            self.config.data_loader.dataset_name,
+            "ch",
+            "dzzenabled{}".format(self.config.trainer.allow_zz),
+            label,
+            random_seed,
+            step,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_l1,
+            true_labels,
+            model,
+            self.config.data_loader.dataset_name,
+            "l1",
+            "dzzenabled{}".format(self.config.trainer.allow_zz),
+            label,
+            random_seed,
+            step,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_l2,
+            true_labels,
+            model,
+            self.config.data_loader.dataset_name,
+            "l2",
+            "dzzenabled{}".format(self.config.trainer.allow_zz),
+            label,
+            random_seed,
+            step,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_fm,
+            true_labels,
+            model,
+            self.config.data_loader.dataset_name,
+            "fm",
+            "dzzenabled{}".format(self.config.trainer.allow_zz),
+            label,
+            random_seed,
+            step,
+        )
 
     def train_step(self, image, cur_epoch):
         """
@@ -112,31 +186,47 @@ class ALAD_Trainer(BaseTrain):
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        noise = np.random.normal(
+            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
+        )
         # Train the discriminator
         image_eval = self.sess.run(image)
-        feed_dict = {self.model.image_tensor: image_eval,
-                     self.model.noise_tensor: noise,
-                     self.model.is_training: True}
+        feed_dict = {
+            self.model.image_tensor: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.is_training: True,
+        }
         self.logger.debug("Session for the Discriminator")
-        _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run([self.model.train_dis_op_xz,
-                                                       self.model.train_dis_op_xx,
-                                                       self.model.train_dis_op_zz,
-                                                       self.model.loss_discriminator,
-                                                       self.model.dis_loss_xz,
-                                                       self.model.dis_loss_xx,
-                                                       self.model.dis_loss_zz],
-                                                      feed_dict=feed_dict)
+        _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
+            [
+                self.model.train_dis_op_xz,
+                self.model.train_dis_op_xx,
+                self.model.train_dis_op_zz,
+                self.model.loss_discriminator,
+                self.model.dis_loss_xz,
+                self.model.dis_loss_xx,
+                self.model.dis_loss_zz,
+            ],
+            feed_dict=feed_dict,
+        )
         # Train the Generator and Encoder
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        feed_dict = {self.model.image_tensor: image_eval,
-                     self.model.noise_tensor: noise,
-                     self.model.is_training: True}
-        _, _, le, lg = self.sess.run([self.model.train_gen_op,
-                                      self.model.train_enc_op,
-                                      self.model.loss_encoder,
-                                      self.model.loss_generator],
-                                     feed_dict=feed_dict)
+        noise = np.random.normal(
+            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
+        )
+        feed_dict = {
+            self.model.image_tensor: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.is_training: True,
+        }
+        _, _, le, lg = self.sess.run(
+            [
+                self.model.train_gen_op,
+                self.model.train_enc_op,
+                self.model.loss_encoder,
+                self.model.loss_generator,
+            ],
+            feed_dict=feed_dict,
+        )
 
         if self.config.log.enable_summary:
             sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)

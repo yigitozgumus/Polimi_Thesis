@@ -7,17 +7,25 @@ from trainers.alad_trainer import ALAD_Trainer
 from utils.summarizer import Summarizer
 
 from utils.dirs import create_dirs
+from utils.logger import Logger
 
 
 def main(config):
-    # capture the config path from the run arguments
-    # then process the json configuration file
+
+    l = Logger(config)
+    logger = l.get_logger(__name__)
 
     # create the experiments dirs
-    create_dirs([config.log.summary_dir,
-                 config.log.checkpoint_dir,
-                 config.log.step_generation_dir,
-                 config.log.log_file_dir])
+    create_dirs(
+        [
+            config.log.summary_dir,
+            config.log.checkpoint_dir,
+            config.log.step_generation_dir,
+            config.log.log_file_dir,
+            config.log.results_dir,
+        ]
+    )
+    logger.info("Experiment has begun")
     # create tensorflow session
     sess = tf.Session()
     # create your data generator
@@ -32,7 +40,8 @@ def main(config):
     model.load(sess)
     # here you train your model
     trainer.train()
+    logger.info("Experiment has ended.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
