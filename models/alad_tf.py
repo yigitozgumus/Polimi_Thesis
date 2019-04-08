@@ -386,7 +386,7 @@ class ALAD_TF(BaseModel):
 
             net_name = "z_layer_1"
             with tf.variable_scope(net_name):
-                z = layers.conv2d(z, filters=512, kernel_size=4, strides=2, padding="same",
+                z = layers.conv2d(z, filters=512, kernel_size=1, strides=1, padding="same",
                                   kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01), name="conv")
                 z = tf.nn.leaky_relu(features=z, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu")
                 z = tf.layers.dropout(z, rate=self.config.trainer.dropout_rate, training=self.is_training,
@@ -394,7 +394,7 @@ class ALAD_TF(BaseModel):
 
             net_name = "z_layer_2"
             with tf.variable_scope(net_name):
-                z = layers.conv2d(z, filters=512, kernel_size=4, strides=2, padding="same",
+                z = layers.conv2d(z, filters=512, kernel_size=1, strides=1, padding="same",
                                   kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01), name="conv")
                 z = tf.nn.leaky_relu(features=z, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu")
                 z = tf.layers.dropout(z, rate=self.config.trainer.dropout_rate, training=self.is_training,

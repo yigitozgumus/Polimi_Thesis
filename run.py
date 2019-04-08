@@ -6,6 +6,7 @@ from mains.main_gan_mark2 import main as main_mark2
 from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras
 from mains.main_gan_tf import main as main_tf
+from mains.main_alad import main as main_alad
 
 import os
 
@@ -34,6 +35,9 @@ def run():
 
     elif config.model.name == "gan_tf":
         main_tf(config)
+
+    elif config.model.name == "alad":
+        main_alad(config)
 
 
 if __name__ == '__main__':

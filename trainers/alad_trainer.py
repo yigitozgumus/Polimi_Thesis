@@ -3,6 +3,7 @@ from tqdm import tqdm
 import numpy as np
 from time import sleep
 from time import time
+from utils.evaluations import save_results
 
 
 class ALAD_Trainer(BaseTrain):
@@ -29,7 +30,8 @@ class ALAD_Trainer(BaseTrain):
         disc_xx_losses = []
         disc_zz_losses = []
         summaries = []
-
+        self.sess.run(self.data.iterator.initializer)
+        self.sess.run(self.data.test_iterator.initializer)
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
@@ -63,7 +65,46 @@ class ALAD_Trainer(BaseTrain):
 
         self.model.save(self.sess)
         self.logger.warn("Testing evaluation...")
-        #TODO
+        scores_ch = []
+        scores_l1 = []
+        scores_l2 = []
+        scores_fm = []
+        inference_time = []
+
+        # Create the scores
+        test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        for _ in test_loop:
+            test_batch_begin = time()
+            test_loop.refresh()  # to show immediately the update
+            sleep(0.01)
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
+            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            feed_dict = {self.model.image_tensor : test_batch,
+                         self.model.noise_tensor: noise,
+                         self.model.is_training: False}
+            scores_ch += self.sess.run(self.model.score_ch, feed_dict=feed_dict).tolist()
+            scores_l1 += self.sess.run(self.model.score_l1, feed_dict=feed_dict).tolist()
+            scores_l2 += self.sess.run(self.model.score_l2, feed_dict=feed_dict).tolist()
+            scores_fm += self.sess.run(self.model.score_fm, feed_dict=feed_dict).tolist()
+            inference_time.append(time() - test_batch_begin)
+
+        inference_time = np.mean(inference_time)
+        self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
+        #TODO BATCH FILL ?
+        model = 'alad_sn{}_dzz{}'.format(self.config.trainer.do_spectral_norm, self.config.trainer.allow_zz)
+        random_seed = 42
+        label = 1
+        step = self.sess.run(self.model.global_step_tensor)
+
+        save_results(scores_ch, test_labels, model, self.config.data_loader.dataset_name, 'ch',
+                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
+        save_results(scores_l1, test_labels, model, self.config.data_loader.dataset_name, 'l1',
+                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
+        save_results(scores_l2, test_labels, model, self.config.data_loader.dataset_name, 'l2',
+                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
+        save_results(scores_fm, test_labels, model, self.config.data_loader.dataset_name, 'fm',
+                     'dzzenabled{}'.format(self.config.trainer.allow_zz), label, random_seed, step)
+
 
     def train_step(self, image, cur_epoch):
         """
@@ -73,7 +114,8 @@ class ALAD_Trainer(BaseTrain):
        """
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         # Train the discriminator
-        feed_dict = {self.model.image_tensor: image,
+        image_eval = self.sess.run(image)
+        feed_dict = {self.model.image_tensor: image_eval,
                      self.model.noise_tensor: noise,
                      self.model.is_training: True}
         self.logger.debug("Session for the Discriminator")
@@ -87,7 +129,7 @@ class ALAD_Trainer(BaseTrain):
                                                       feed_dict=feed_dict)
         # Train the Generator and Encoder
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        feed_dict = {self.model.image_tensor: image,
+        feed_dict = {self.model.image_tensor: image_eval,
                      self.model.noise_tensor: noise,
                      self.model.is_training: True}
         _, _, le, lg = self.sess.run([self.model.train_gen_op,
