@@ -19,7 +19,6 @@ class GAN_TF(BaseModel):
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
 
-
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
@@ -72,11 +71,13 @@ class GAN_TF(BaseModel):
         with tf.name_scope("Generator_Loss"):
 
             if self.config.soft_labels:
-                self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                    tf.zeros_like(disc_fake), disc_fake))
+                self.gen_loss = tf.reduce_mean(
+                    tf.losses.sigmoid_cross_entropy(tf.zeros_like(disc_fake), disc_fake)
+                )
             else:
-                self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(
-                    tf.ones_like(disc_fake), disc_fake))
+                self.gen_loss = tf.reduce_mean(
+                    tf.losses.sigmoid_cross_entropy(tf.ones_like(disc_fake), disc_fake)
+                )
 
         # Store the loss values for the Tensorboard
         ########################################################################
@@ -133,18 +134,20 @@ class GAN_TF(BaseModel):
             tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Discriminator"
         )
         # Initialization of Optimizers
-        
+
         with tf.control_dependencies(self.gen_update_ops):
             self.train_gen = self.generator_optimizer.minimize(
-                self.gen_loss, global_step=self.global_step_tensor,
-                var_list=self.generator_vars
+                self.gen_loss,
+                global_step=self.global_step_tensor,
+                var_list=self.generator_vars,
             )
         with tf.control_dependencies(self.disc_update_ops):
             self.train_disc = self.discriminator_optimizer.minimize(
-                self.total_disc_loss, global_step=self.global_step_tensor,
-                var_list=self.discriminator_vars
+                self.total_disc_loss,
+                global_step=self.global_step_tensor,
+                var_list=self.discriminator_vars,
             )
-            
+
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
                 pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -211,7 +214,6 @@ class GAN_TF(BaseModel):
                 name="g_conv2dtr_2",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 14, 14, 128]
-
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,

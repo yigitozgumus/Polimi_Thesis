@@ -34,8 +34,7 @@ class GANTrainer_TF(BaseTrain):
             loop.refresh()  # to show immediately the update
             sleep(0.01)
             gen_loss, disc_loss, summary_g, summary_d = self.train_step(
-                self.data.image,
-                cur_epoch=cur_epoch
+                self.data.image, cur_epoch=cur_epoch
             )
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)

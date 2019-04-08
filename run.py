@@ -10,8 +10,8 @@ from mains.main_alad import main as main_alad
 
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 
 def run():
@@ -40,5 +40,5 @@ def run():
         main_alad(config)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()
