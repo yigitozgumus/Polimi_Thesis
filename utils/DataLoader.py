@@ -9,133 +9,164 @@ from tqdm import tqdm
 from utils.utils import working_directory
 from utils.download_data import download_data
 from utils.dirs import listdir_nohidden
+from utils.logger import Logger
 
 
-def show_image_from_path(image):
-    """
-    Args:
-        image: absolute path of the image
-    """
-    plt.imshow(io.imread(image), cmap="gray")
-
-
-def show_image_from_memory(image):
-    """
-    Args:
-        image: io.imread object
-    """
-    plt.imshow(image, cmap="gray")
-
-
-class DataLoader():
-
+class DataLoader:
     def __init__(self, config):
         """
         Args:
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.config = config
-        self.data_dir = self.config.data_dir
+        log_object = Logger(self.config)
+        self.logger = log_object.get_logger(__name__)
+        self.data_dir = self.config.dirs.data
+        self.train_dataset = os.path.join(self.data_dir, "train")
+        self.img_location = os.path.join(self.data_dir, "test", "imgs/")
+        self.tag_location = os.path.join(self.data_dir, "test", "labels/")
         if not os.path.exists(self.data_dir):
-            print("DataLoader: dataset is not present. Download is started.")
+            self.logger.info("Dataset is not present. Download is started.")
             download_data(self.data_dir)
-        self.data_dir_normal = self.config.data_dir_normal
-        self.data_dir_anomalous = self.config.data_dir_anomalous
-        self.dataset_name= None
+        self.data_dir_normal = self.config.dirs.data_normal
+        self.data_dir_anomalous = self.config.dirs.data_anomalous
+        # Up until this part only the raw dataset existence is checked and downloaded if not
+        self.dataset_name = None
         # this is to list all the folders
-        self.dir_names =listdir_nohidden(self.data_dir)
-        # If the cropped subsets are not present create them
-        self.dataset_list = []
-        # Download the data if it is not downloaded
-
+        self.dir_names = listdir_nohidden(self.data_dir)
+        self.test_size_per_img = (
+            None
+        )  # This will be the number of patches that will be extracted from each test image
+        # Normal images for the train and validation dataset
         normal_imgs = self.data_dir_normal
+        # Anormal images and the tag infor regarding the anomaly for test set
         anorm_imgs = self.data_dir_anomalous + "/images/"
-        norm_img_nms = [normal_imgs + x for x in listdir_nohidden(normal_imgs)]
-        anorm_img_nms = [anorm_imgs + x for x in listdir_nohidden(anorm_imgs)]
-        self.norm_img_array = self.create_image_array(norm_img_nms,save=False)
-        self.anorm_img_array = self.create_image_array(anorm_img_nms,save=False)
-        self.populate()
-    
-    def populate(self):
-        if len(self.dir_names) == 2:
-            print("DataLoader: Cropped subsets will be populated")
-            size_list = [self.config.image_size]
-            folder_name = "cropped"
-            num_images = 10240
-            for size in size_list:
-                folder = folder_name + str(size)
-                self.dataset_list.append(folder)
-                self.generate_sub_dataset(self.norm_img_array, size=size, num_images=num_images, save=True,
-                                          folder_name=folder)
-        else:
-            print("DataLoader: Subsets are already populated.")
+        anorm_tag_imgs = self.data_dir_anomalous + "/gt/"
+        norm_img_names = [normal_imgs + x for x in listdir_nohidden(normal_imgs)]
+        anorm_img_names = [anorm_imgs + x for x in listdir_nohidden(anorm_imgs)]
+        anorm_tag_names = [anorm_tag_imgs + x for x in listdir_nohidden(anorm_tag_imgs)]
+        self.norm_img_array = self.create_image_array(norm_img_names, save=False)
+        self.anorm_img_array = self.create_image_array(anorm_img_names, save=False)
+        self.anorm_tag_array = self.create_image_array(anorm_tag_names, save=False)
+        self.image_tag_list = list(zip(self.anorm_img_array, self.anorm_tag_array))
+        self.populate_train()
+        if self.config.data_loader.mode == "anomaly":
+            self.populate_test()
 
-    def create_image_array(self, img_names,save=True,file_name="Dataset",size=28,progress=False):
+    def populate_train(self):
+        # Check if we have the data already
+        if "train" in self.dir_names:
+            self.logger.info("Train Dataset is already populated.")
+        else:
+            self.logger.info("Train Dataset will be populated")
+            size = self.config.data_loader.image_size
+            num_images = 10240
+            imgs = []
+            for ind, img in enumerate(self.norm_img_array):
+                h, w = img.shape[:2]
+                new_h, new_w = size, size
+                for idx in range(num_images):
+                    top = np.random.randint(0, h - new_h)
+                    left = np.random.randint(0, w - new_w)
+                    image = img[top : top + new_h, left : left + new_w]
+                    imgs.append(image)
+                self.logger.debug("{} images generated".format(num_images * (ind + 1)))
+            # Check if the folder is there
+            if not os.path.exists(self.train_dataset):
+                os.mkdir(self.train_dataset)
+            with working_directory(self.train_dataset):
+                for idx, img in enumerate(imgs):
+                    im = Image.fromarray(img)
+                    im.save("img_{}.jpg".format(str(idx)))
+
+    def populate_test(self):
+        if "test" in self.dir_names:
+            self.logger.info("Test Dataset is already populated")
+        else:
+            self.logger.info("Test Dataset will be populated")
+            size = self.config.data_loader.image_size
+            folder_name = "test"
+            first_level = os.path.join(self.data_dir, folder_name)
+            if not os.path.exists(first_level):
+                os.mkdir(first_level)
+            img_files = []
+            tag_files = []
+            for img_, tag_ in self.image_tag_list:
+                h, w = img_.shape[:2]
+                self.w_turns = w // size
+                self.h_turns = h // size
+
+                for adv_h in range(self.h_turns):
+                    for adv_w in range(self.w_turns):
+                        image = img_[
+                            adv_h * size : (adv_h + 1) * size,
+                            adv_w * size : (adv_w + 1) * size,
+                        ]
+                        tag = tag_[
+                            adv_h * size : (adv_h + 1) * size,
+                            adv_w * size : (adv_w + 1) * size,
+                        ]
+                        img_files.append(image)
+                        tag_files.append(tag)
+            self.test_size_per_img = self.w_turns * self.h_turns
+            if not os.path.exists(self.img_location):
+                os.mkdir(self.img_location)
+            with working_directory(self.img_location):
+                for idx, img in enumerate(img_files):
+                    im = Image.fromarray(img)
+                    im.save(
+                        "img_{}_{}.jpg".format(
+                            idx // self.test_size_per_img, idx % self.test_size_per_img
+                        )
+                    )
+            if not os.path.exists(self.tag_location):
+                os.mkdir(self.tag_location)
+            with working_directory(self.tag_location):
+                for idx, tag in enumerate(tag_files):
+                    im = Image.fromarray(tag)
+                    im.save(
+                        "label_{}_{}.jpg".format(
+                            idx // self.test_size_per_img, idx % self.test_size_per_img
+                        )
+                    )
+
+    def create_image_array(self, img_names, save=True, file_name="Dataset"):
         """
         Args:
             img_names:
         """
-        self.dataset_name = self.data_dir + "/" + file_name + "-" + str(size)
+        self.dataset_name = os.path.join(self.data_dir, file_name)
         img_array = []
-        if progress:
-            for img in tqdm(img_names):
-                im2arr = io.imread(img)
-                img_array.append(im2arr)
-        else:
-            for img in img_names:
-                im2arr = io.imread(img)
-                img_array.append(im2arr)
+        for img in img_names:
+            im2arr = io.imread(img)
+            img_array.append(im2arr)
         if save:
-            np.save(self.dataset_name,img_array)
+            np.save(self.dataset_name, img_array)
         return np.array(img_array)
 
-    def generate_sub_dataset(self, image_array, size, num_images, save=False, folder_name="cropped"):
+    def get_train_dataset(self):
         """
-        Args:
-            image_array: image array of the dataset
-            size: size of the image
-            num_images: total number of images
-            save: whether to save the generated subset or not
-            folder_name: output folder name
-        """
-        print("DataLoader: generating new dataset with size:{}".format(size))
-        imgs = []
-        for ind, img in enumerate(image_array):
-            h, w = img.shape[:2]
-            new_h, new_w = size, size
-            for idx in range(num_images):
-                top = np.random.randint(0, h - new_h)
-                left = np.random.randint(0, w - new_w)
-                image = img[top: top + new_h, left:left + new_w]
-                imgs.append(image)
-            print("{} images generated".format(num_images * (ind + 1)))
-        if save:
-            with working_directory("./data"):
-                if not os.path.exists(folder_name):
-                    os.mkdir(folder_name)
-                    with working_directory(folder_name):
-                        for idx, img in enumerate(imgs):
-                            im = Image.fromarray(img)
-                            im.save("img-" + str(idx) + ".jpg")
-                else:
-                    print("{} exists".format(folder_name))
-
-
-        return imgs
-
-    def get_sub_dataset(self, size):
-        """
-
         :param size: size of the image
         :return: numpy array of images and corresponding labels
         """
-        folder_name = self.data_dir + "/cropped" + str(size) + "/"
-        img_names = []
+        img_list = listdir_nohidden(self.train_dataset)
+        img_names = tf.constant([os.path.join(self.train_dataset, x) for x in img_list])
+        self.logger.info("Train Dataset is Loaded")
+        return img_names
+
+    def get_test_dataset(self):
+        """
+        :param size: size of the image
+        :return: numpy array of images and corresponding labels
+        """
+        img_list = listdir_nohidden(self.img_location)
+        img_names = tf.constant([os.path.join(self.img_location, x) for x in img_list])
+        tag_list = listdir_nohidden(self.tag_location)
+        tag_list_merged = [os.path.join(self.tag_location, x) for x in tag_list]
         labels = []
-        if os.path.exists(folder_name):
-            img_list = listdir_nohidden(folder_name)
-            img_names = tf.constant([folder_name + x for x in img_list])
-            labels = tf.constant([x[4:-4] for x in img_list])
-        else:
-            print("DataLoader: subset doesn't exist")
-        return [img_names, labels]
+        for label in tag_list_merged:
+            im2arr = io.imread(label)
+            labels.append(0) if np.sum(im2arr) else labels.append(1)
+        labels_f = tf.constant(labels)
+
+        return [img_names, labels_f]

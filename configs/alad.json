@@ -1,26 +1,58 @@
 {
-  "model_class": "alad",
-  "include_noise": false,
-  "output_folder": "Logs",
-  "data_dir": "data",
-  "data_dir_normal": "data/Normal/",
-  "data_dir_anomalous": "data/Anomalous/",
-  "buffer_size": 51200,
-  "image_size": 28,
-  "show_steps": 10,
-  "num_epochs": 2000,
-  "noise_dim": 100,
-  "image_dims": [32, 32, 1],
-  "num_iter_per_epoch": 100,
-  "discriminator_l_rate": 0.0002,
-  "generator_l_rate": 0.0002,
-  "optimizer_adam_beta1": 0.5,
-  "batch_size": 128,
-  "max_to_keep": 10,
-  "num_parallel_calls": 8,
-  "batch_momentum": 0.8,
-  "leakyReLU_alpha": 0.2,
-  "dropout_rate": 0.25,
-  "num_example_imgs_to_generate": 25,
-  "num_epochs_to_test": 2
+  "exp": {},
+  "model": {
+    "name": "alad"
+  },
+  "dirs": {
+    "data": "data",
+    "data_normal": "data/Normal/",
+    "data_anomalous": "data/Anomalous/"
+  },
+  "data_loader": {
+    "buffer_size": 51200,
+    "image_size": 28,
+    "batch_size": 128,
+    "num_epochs": 2000,
+    "num_iter_per_epoch": 400,
+    "num_parallel_calls": 8,
+    "num_iter_per_test": 280,
+    "mode":"anomaly",
+    "dataset_name" : "material",
+    "binary_location":"offload",
+    "test_batch":144
+  },
+  "trainer": {
+    "noise_dim": 100,
+    "image_dims": [
+      28,
+      28,
+      1
+    ],
+    "include_noise": false,
+    "soft_labels": true,
+    "discriminator_l_rate": 0.0002,
+    "generator_l_rate": 0.0002,
+    "optimizer_adam_beta1": 0.5,
+    "optimizer_adam_beta2": 0.999,
+    "batch_momentum": 0.8,
+    "leakyReLU_alpha": 0.2,
+    "dropout_rate": 0.25,
+    "ema_decay": 0.999,
+    "spectral_norm": false,
+    "allow_zz": true,
+    "enable_early_stop": true,
+    "degree": 1
+  },
+  "log": {
+    "name": "ALAD",
+    "file_logging": false,
+    "info_logging": true,
+    "debug_logging": false,
+    "enable_summary": true,
+    "show_steps": 10,
+    "max_to_keep": 5,
+    "num_example_imgs_to_generate": 25,
+    "num_epochs_to_test": 2,
+    "output_folder": "Experiments"
+  }
 }

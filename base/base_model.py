@@ -1,9 +1,12 @@
 import tensorflow as tf
+from utils.logger import Logger
 
 
 class BaseModel:
     def __init__(self, config):
         self.config = config
+        log_object = Logger(self.config)
+        self.logger = log_object.get_logger(__name__)
         # init the global step
         self.init_global_step()
         # init the epoch counter
@@ -11,29 +14,35 @@ class BaseModel:
 
     # save function that saves the checkpoint in the path defined in the config file
     def save(self, sess):
-        print("Saving model...")
-        self.saver.save(sess, self.config.checkpoint_dir, self.global_step_tensor)
-        print("Model saved")
+        self.logger.info("Saving model...")
+        self.saver.save(sess, self.config.log.checkpoint_dir, self.global_step_tensor)
+        self.logger.info("Model saved")
 
     # load latest checkpoint from the experiment path defined in the config file
     def load(self, sess):
-        latest_checkpoint = tf.train.latest_checkpoint(self.config.checkpoint_dir)
+        latest_checkpoint = tf.train.latest_checkpoint(self.config.log.checkpoint_dir)
         if latest_checkpoint:
-            print("Loading model checkpoint {} ...\n".format(latest_checkpoint))
+            self.logger.info(
+                "Loading model checkpoint {} ...\n".format(latest_checkpoint)
+            )
             self.saver.restore(sess, latest_checkpoint)
-            print("Model loaded")
+            self.logger.info("Model loaded")
 
     # just initialize a tensorflow variable to use it as epoch counter
     def init_cur_epoch(self):
-        with tf.variable_scope('cur_epoch'):
-            self.cur_epoch_tensor = tf.Variable(0, trainable=False, name='cur_epoch')
-            self.increment_cur_epoch_tensor = tf.assign(self.cur_epoch_tensor, self.cur_epoch_tensor + 1)
+        with tf.variable_scope("cur_epoch"):
+            self.cur_epoch_tensor = tf.Variable(0, trainable=False, name="cur_epoch")
+            self.increment_cur_epoch_tensor = tf.assign(
+                self.cur_epoch_tensor, self.cur_epoch_tensor + 1
+            )
 
     # just initialize a tensorflow variable to use it as global step counter
     def init_global_step(self):
         # DON'T forget to add the global step tensor to the tensorflow trainer
-        with tf.variable_scope('global_step'):
-            self.global_step_tensor = tf.Variable(0, trainable=False, name='global_step')
+        with tf.variable_scope("global_step"):
+            self.global_step_tensor = tf.Variable(
+                0, trainable=False, name="global_step"
+            )
 
     def init_saver(self):
         # just copy the following line in your child class
@@ -42,4 +51,3 @@ class BaseModel:
 
     def build_model(self):
         raise NotImplementedError
-
