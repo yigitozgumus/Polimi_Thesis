@@ -170,7 +170,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="g_bn_1",
             )
 
@@ -197,7 +197,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="g_bn_2",
             )
             x_g = tf.nn.leaky_relu(
@@ -218,7 +218,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="g_bn_3",
             )
             x_g = tf.nn.leaky_relu(
@@ -239,7 +239,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="g_bn_4",
             )
             x_g = tf.nn.leaky_relu(
@@ -275,7 +275,7 @@ class GAN_TF(BaseModel):
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="d_bn_1",
             )
             x_d = tf.nn.leaky_relu(
@@ -293,7 +293,7 @@ class GAN_TF(BaseModel):
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="d_bn_2",
             )
             x_d = tf.nn.leaky_relu(
@@ -312,7 +312,7 @@ class GAN_TF(BaseModel):
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=True,
+                training=self.is_training,
                 name="d_bn_3",
             )
             x_d = tf.nn.leaky_relu(

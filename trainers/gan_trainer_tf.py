@@ -52,10 +52,7 @@ class GANTrainer_TF(BaseTrain):
             scale=1.0,
             size=[self.config.log.num_example_imgs_to_generate, self.noise_dim],
         )
-        feed_dict = {
-            self.model.noise_tensor: rand_noise,
-            self.model.is_training: False,
-        }
+        feed_dict = {self.model.noise_tensor: rand_noise, self.model.is_training: False}
 
         generator_predictions = self.sess.run(
             [self.model.sample_image], feed_dict=feed_dict
