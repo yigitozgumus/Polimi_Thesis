@@ -27,6 +27,7 @@ class GANTrainer_TF(BaseTrain):
         disc_losses = []
         summary_gan = []
         summary_disc = []
+        summaries = []
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
@@ -35,17 +36,19 @@ class GANTrainer_TF(BaseTrain):
             sleep(0.01)
             update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(update_ops):
-                gen_loss, disc_loss, summary_g, summary_d = self.train_step(
+                gen_loss, disc_loss, summary = self.train_step(
                     self.data.image, cur_epoch=cur_epoch
                 )
                 gen_losses.append(gen_loss)
                 disc_losses.append(disc_loss)
-                summary_gan.append(summary_g)
-                summary_disc.append(summary_d)
+                summaries.append(summary)
+                # summary_gan.append(summary_g)
+                # summary_disc.append(summary_d)
         # write the summaries
-        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_gan)
-        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_disc)
-        # Compute the means of the losses
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summaries)
+        # self.summarizer.add_tensorboard(cur_epoch, summaries=summary_gan)
+        # self.summarizer.add_tensorboard(cur_epoch, summaries=summary_disc)
+        # # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
         # Generate images between epochs to evaluate
@@ -98,12 +101,8 @@ class GANTrainer_TF(BaseTrain):
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
         # Train the Discriminator on both real and fake images
-        _, disc_loss, summary_disc = self.sess.run(
-            [
-                self.model.train_disc,
-                self.model.total_disc_loss,
-                self.model.summary_disc,
-            ],
+        _, disc_loss = self.sess.run(
+            [self.model.train_disc, self.model.total_disc_loss],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -130,8 +129,8 @@ class GANTrainer_TF(BaseTrain):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels
         )
-        _, gen_loss, summary_gan = self.sess.run(
-            [self.model.train_gen, self.model.gen_loss, self.model.summary_gan],
+        _, gen_loss, summary = self.sess.run(
+            [self.model.train_gen, self.model.gen_loss, self.model.summary],
             feed_dict={
                 self.model.noise_tensor: noise,
                 self.model.image_input: image_eval,
@@ -142,7 +141,7 @@ class GANTrainer_TF(BaseTrain):
             },
         )
 
-        return gen_loss, disc_loss, summary_gan, summary_disc
+        return gen_loss, disc_loss, summary
 
     def generate_labels(self, soft_labels):
         if not soft_labels:
