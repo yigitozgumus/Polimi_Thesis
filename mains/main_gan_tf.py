@@ -26,13 +26,12 @@ def main(config):
     # create tensorflow session
     logger.info("Experiment has begun")
     sess = tf.Session()
-    # create the Summarizer object
-    summarizer = Summarizer(sess, config)
-    # create your data generator
     data = DataGenerator(config)
     # create an instance of the model you want
     model = GAN_TF(config)
-
+    # create the Summarizer object
+    summarizer = Summarizer(sess, config)
+    # create your data generator
     # create trainer and pass all the previous components to it
     trainer = GANTrainer_TF(sess, model, data, config, summarizer)
     # load model if exists
