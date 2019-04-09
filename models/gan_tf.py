@@ -108,18 +108,18 @@ class GAN_TF(BaseModel):
         # OPTIMIZATION
         ########################################################################
         # Build the Optimizers
-        with tf.control_dependencies(self.gen_update_ops):
-            self.generator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.generator_l_rate,
-                beta1=self.config.trainer.optimizer_adam_beta1,
-                beta2=self.config.trainer.optimizer_adam_beta2,
-            )
-        with tf.control_dependencies(self.disc_update_ops):
-            self.discriminator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.discriminator_l_rate,
-                beta1=self.config.trainer.optimizer_adam_beta1,
-                beta2=self.config.trainer.optimizer_adam_beta2,
-            )
+
+        self.generator_optimizer = tf.train.AdamOptimizer(
+            self.config.trainer.generator_l_rate,
+            beta1=self.config.trainer.optimizer_adam_beta1,
+            beta2=self.config.trainer.optimizer_adam_beta2,
+        )
+
+        self.discriminator_optimizer = tf.train.AdamOptimizer(
+            self.config.trainer.discriminator_l_rate,
+            beta1=self.config.trainer.optimizer_adam_beta1,
+            beta2=self.config.trainer.optimizer_adam_beta2,
+        )
         # Collect all the variables
         all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         # Generator Network Variables
@@ -141,17 +141,19 @@ class GAN_TF(BaseModel):
         )
         # Initialization of Optimizers
 
-        self.train_gen = self.generator_optimizer.minimize(
-            self.gen_loss,
-            global_step=self.global_step_tensor,
-            var_list=self.generator_vars,
-        )
+        with tf.control_dependencies(self.gen_update_ops):
+            self.train_gen = self.generator_optimizer.minimize(
+                self.gen_loss,
+                global_step=self.global_step_tensor,
+                var_list=self.generator_vars,
+            )
 
-        self.train_disc = self.discriminator_optimizer.minimize(
-            self.total_disc_loss,
-            global_step=self.global_step_tensor,
-            var_list=self.discriminator_vars,
-        )
+        with tf.control_dependencies(self.disc_update_ops):
+            self.train_disc = self.discriminator_optimizer.minimize(
+                self.total_disc_loss,
+                global_step=self.global_step_tensor,
+                var_list=self.discriminator_vars,
+            )
 
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
