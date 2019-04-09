@@ -7,8 +7,8 @@ import time
 
 
 class GANTrainer_TF(BaseTrain):
-    def __init__(self, sess, model, data, config, logger):
-        super(GANTrainer_TF, self).__init__(sess, model, data, config, logger)
+    def __init__(self, sess, model, data, config, summarizer):
+        super(GANTrainer_TF, self).__init__(sess, model, data, config, summarizer)
 
     def train_epoch(self):
         """
@@ -39,8 +39,8 @@ class GANTrainer_TF(BaseTrain):
             summary_gan.append(summary_g)
             summary_disc.append(summary_d)
         # write the summaries
-        self.logger.summarize(cur_epoch, summaries=summary_gan)
-        self.logger.summarize(cur_epoch, summaries=summary_disc)
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_gan)
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_disc)
         # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
