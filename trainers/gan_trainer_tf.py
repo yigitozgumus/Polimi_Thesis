@@ -33,13 +33,15 @@ class GANTrainer_TF(BaseTrain):
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            gen_loss, disc_loss, summary_g, summary_d = self.train_step(
-                self.data.image, cur_epoch=cur_epoch
-            )
-            gen_losses.append(gen_loss)
-            disc_losses.append(disc_loss)
-            summary_gan.append(summary_g)
-            summary_disc.append(summary_d)
+            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+            with tf.control_dependencies(update_ops):
+                gen_loss, disc_loss, summary_g, summary_d = self.train_step(
+                    self.data.image, cur_epoch=cur_epoch
+                )
+                gen_losses.append(gen_loss)
+                disc_losses.append(disc_loss)
+                summary_gan.append(summary_g)
+                summary_disc.append(summary_d)
         # write the summaries
         self.summarizer.add_tensorboard(cur_epoch, summaries=summary_gan)
         self.summarizer.add_tensorboard(cur_epoch, summaries=summary_disc)

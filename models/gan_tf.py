@@ -135,18 +135,17 @@ class GAN_TF(BaseModel):
         )
         # Initialization of Optimizers
 
-        with tf.control_dependencies(self.gen_update_ops):
-            self.train_gen = self.generator_optimizer.minimize(
-                self.gen_loss,
-                global_step=self.global_step_tensor,
-                var_list=self.generator_vars,
-            )
-        with tf.control_dependencies(self.disc_update_ops):
-            self.train_disc = self.discriminator_optimizer.minimize(
-                self.total_disc_loss,
-                global_step=self.global_step_tensor,
-                var_list=self.discriminator_vars,
-            )
+        self.train_gen = self.generator_optimizer.minimize(
+            self.gen_loss,
+            global_step=self.global_step_tensor,
+            var_list=self.generator_vars,
+        )
+
+        self.train_disc = self.discriminator_optimizer.minimize(
+            self.total_disc_loss,
+            global_step=self.global_step_tensor,
+            var_list=self.discriminator_vars,
+        )
 
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
