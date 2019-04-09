@@ -18,7 +18,7 @@ class GAN_TF(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
-
+        self.init_kernel = tf.truncated_normal_initializer(stddev=0.02)
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
@@ -162,7 +162,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.Dense(
                 units=7 * 7 * 256,
                 use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_dense",
             )(noise_tensor)
             # Normalize the output of the Layer
@@ -189,7 +189,7 @@ class GAN_TF(BaseModel):
                 strides=(1, 1),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_1",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 7, 7, 128]
@@ -210,7 +210,7 @@ class GAN_TF(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_2",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 14, 14, 128]
@@ -231,7 +231,7 @@ class GAN_TF(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_3",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 128]
@@ -253,7 +253,7 @@ class GAN_TF(BaseModel):
                 padding="same",
                 use_bias=False,
                 activation=tf.nn.tanh,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_4",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
@@ -269,7 +269,7 @@ class GAN_TF(BaseModel):
                 kernel_size=5,
                 strides=(1, 1),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv1",
             )(image)
             x_d = tf.layers.batch_normalization(
@@ -287,7 +287,7 @@ class GAN_TF(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv_2",
             )(x_d)
             x_d = tf.layers.batch_normalization(
@@ -306,7 +306,7 @@ class GAN_TF(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv_3",
             )(x_d)
             x_d = tf.layers.batch_normalization(
