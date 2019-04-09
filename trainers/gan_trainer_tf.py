@@ -53,7 +53,7 @@ class GANTrainer_TF(BaseTrain):
             size=[self.config.log.num_example_imgs_to_generate, self.noise_dim],
         )
         feed_dict = {
-            self.model.sample_tensor: rand_noise,
+            self.model.noise_tensor: rand_noise,
             self.model.is_training: False,
         }
 

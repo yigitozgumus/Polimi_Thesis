@@ -57,6 +57,6 @@ class BaseTrain:
             plt.axis("off")
 
         plt.savefig(
-            self.config.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch)
+            self.config.log.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch)
         )
         plt.close()

@@ -11,8 +11,6 @@ from utils.logger import Logger
 
 
 def main(config):
-    l = Logger(config)
-    logger = l.get_logger(__name__)
     # create the experiments dirs
     create_dirs(
         [
@@ -22,6 +20,9 @@ def main(config):
             config.log.log_file_dir,
         ]
     )
+    l = Logger(config)
+    logger = l.get_logger(__name__)
+
     # create tensorflow session
     logger.info("Experiment has begun")
     sess = tf.Session()

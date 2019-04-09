@@ -13,7 +13,7 @@
     "image_size": 28,
     "batch_size": 128,
     "num_epochs": 2000,
-    "num_iter_per_epoch": 200,
+    "num_iter_per_epoch": 400,
     "num_parallel_calls": 8
   },
   "trainer": {
@@ -25,7 +25,7 @@
     ],
     "include_noise": true,
     "soft_labels": true,
-    "discriminator_l_rate": 0.00005,
+    "discriminator_l_rate": 0.0002,
     "noise_probability": 0.05,
     "generator_l_rate": 0.0002,
     "optimizer_adam_beta1": 0.5,
@@ -41,8 +41,6 @@
   },
   "log": {
     "name": "GAN_TF",
-    "info_logging": true,
-    "debug_logging": false,
     "enable_summary": true,
     "show_steps": 10,
     "max_to_keep": 5,
