@@ -26,7 +26,7 @@ class Logger:
         return console_handler
 
     def get_file_handler(self):
-        file_handler = logging.FileHandler(self.log_file)
+        file_handler = logging.FileHandler(filename=self.log_file)
         file_handler.setFormatter(FORMATTER)
         file_handler.setLevel(logging.INFO)
         return file_handler

@@ -12,7 +12,7 @@ from utils.logger import Logger
 
 def main(config):
     l = Logger(config)
-    logger = Logger.get_logger(__name__)
+    logger = l.get_logger(__name__)
     # create the experiments dirs
     create_dirs(
         [

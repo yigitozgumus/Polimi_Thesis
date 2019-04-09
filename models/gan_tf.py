@@ -18,6 +18,9 @@ class GAN_TF(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
+        self.sample_tensor = tf.placeholder(
+            tf.float32, shape=[None, self.config.trainer.noise_dim], name="sample"
+        )
 
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
@@ -47,7 +50,7 @@ class GAN_TF(BaseModel):
             self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
             disc_real = self.discriminator(self.image_input + self.real_noise)
             disc_fake = self.discriminator(self.generated_sample, reuse=True)
-            self.sample_image = self.generator(self.noise_tensor)
+            self.sample_image = self.generator(self.sample_tensor)
 
             # Losses of the training of Generator and Discriminator
             ########################################################################
