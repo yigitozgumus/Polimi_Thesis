@@ -120,11 +120,15 @@ class GANTrainer_TF(BaseTrain):
         )
         if self.config.trainer.include_noise:
             # If we want to add this is will add the noises
+            real_noise = np.random.normal(
+                scale=sigma, size=[self.batch_size] + self.img_dims
+            )
             fake_noise = np.random.normal(
                 scale=sigma, size=[self.batch_size] + self.img_dims
             )
         else:
             # Otherwise we are just going to add zeros which will not break anything
+            real_noise = np.zeros(([self.batch_size] + self.img_dims))
             fake_noise = np.zeros(([self.batch_size] + self.img_dims))
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels
@@ -136,6 +140,7 @@ class GANTrainer_TF(BaseTrain):
                 self.model.image_input: image_eval,
                 self.model.true_labels: true_labels,
                 self.model.generated_labels: generated_labels,
+                self.model.real_noise: real_noise,
                 self.model.fake_noise: fake_noise,
                 self.model.is_training: True,
             },
