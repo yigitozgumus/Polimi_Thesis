@@ -63,7 +63,7 @@ class GANTrainer_TF(BaseTrain):
         self.save_generated_images(generator_predictions, cur_epoch)
 
         if cur_epoch % self.config.log.show_steps == 0 or cur_epoch == 1:
-            print(
+            self.logger.info(
                 "Epoch {}, Generator Loss: {}, Discriminator Loss: {}".format(
                     cur_epoch + 1, gen_loss_m, disc_loss_m
                 )
