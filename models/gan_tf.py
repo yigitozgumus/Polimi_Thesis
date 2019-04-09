@@ -105,12 +105,12 @@ class GAN_TF(BaseModel):
         ########################################################################
         # Build the Optimizers
         self.generator_optimizer = tf.train.AdamOptimizer(
-            self.config.generator_l_rate,
+            self.config.trainer.generator_l_rate,
             beta1=self.config.trainer.optimizer_adam_beta1,
             beta2=self.config.trainer.optimizer_adam_beta2,
         )
         self.discriminator_optimizer = tf.train.AdamOptimizer(
-            self.config.discriminator_l_rate,
+            self.config.trainer.discriminator_l_rate,
             beta1=self.config.trainer.optimizer_adam_beta1,
             beta2=self.config.trainer.optimizer_adam_beta2,
         )
@@ -147,7 +147,6 @@ class GAN_TF(BaseModel):
                 global_step=self.global_step_tensor,
                 var_list=self.discriminator_vars,
             )
-
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
                 pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
