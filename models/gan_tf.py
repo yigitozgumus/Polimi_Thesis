@@ -18,7 +18,10 @@ class GAN_TF(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
-        self.init_kernel = tf.truncated_normal_initializer(stddev=0.02)
+        self.sample_tensor = tf.placeholder(
+            tf.float32, shape=[None, self.config.trainer.noise_dim], name="sample"
+        )
+
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
@@ -42,13 +45,12 @@ class GAN_TF(BaseModel):
             dtype=tf.float32, shape=[None, 1], name="gen_labels"
         )
         # Full Model Scope
-        self.logger.info("Building Graph...")
         with tf.variable_scope("DCGAN"):
             self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
             disc_real = self.discriminator(self.image_input + self.real_noise)
             disc_fake = self.discriminator(self.generated_sample, reuse=True)
-            # self.sample_image = self.generator(self.noise_tensor, reuse=True)
-            self.stacked_gan = self.discriminator(self.generated_sample, reuse=True)
+            self.sample_image = self.sampler(self.sample_tensor)
+
             # Losses of the training of Generator and Discriminator
             ########################################################################
             # METRICS
@@ -69,18 +71,13 @@ class GAN_TF(BaseModel):
             self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
 
         with tf.name_scope("Generator_Loss"):
-
-            if self.config.soft_labels:
+            if self.config.trainer.soft_labels:
                 self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(
-                        tf.zeros_like(self.stacked_gan), self.stacked_gan
-                    )
+                    tf.losses.sigmoid_cross_entropy(tf.zeros_like(disc_fake), disc_fake)
                 )
             else:
                 self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(
-                        tf.ones_like(self.stacked_gan), self.stacked_gan
-                    )
+                    tf.losses.sigmoid_cross_entropy(tf.ones_like(disc_fake), disc_fake)
                 )
 
         # Store the loss values for the Tensorboard
@@ -89,34 +86,31 @@ class GAN_TF(BaseModel):
         ########################################################################
         s_gen_loss = tf.summary.scalar("Generator_Loss", self.gen_loss)
         s_gen_img = tf.summary.image(
-            "From_Noise", tf.reshape(self.generated_sample, [-1, 28, 28, 1])
+            "From_Noise", tf.reshape(self.generated_sample, [-1, 28, 28, 1])[-2:-1]
         )
         self.summary_gan = tf.summary.merge(inputs=[s_gen_loss, s_gen_img])
         s_disc_r = tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
         s_disc_f = tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
         s_disc_t = tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         s_disc_img = tf.summary.image(
-            "Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1])
+            "Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1])[-2:-1]
         )
         self.summary_disc = tf.summary.merge(
             inputs=[s_disc_r, s_disc_f, s_disc_t, s_disc_img]
         )
-
         # Sample Operation
 
         ########################################################################
         # OPTIMIZATION
         ########################################################################
         # Build the Optimizers
-
         self.generator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.generator_l_rate,
+            self.config.generator_l_rate,
             beta1=self.config.trainer.optimizer_adam_beta1,
             beta2=self.config.trainer.optimizer_adam_beta2,
         )
-
         self.discriminator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.discriminator_l_rate,
+            self.config.discriminator_l_rate,
             beta1=self.config.trainer.optimizer_adam_beta1,
             beta2=self.config.trainer.optimizer_adam_beta2,
         )
@@ -147,7 +141,6 @@ class GAN_TF(BaseModel):
                 global_step=self.global_step_tensor,
                 var_list=self.generator_vars,
             )
-
         with tf.control_dependencies(self.disc_update_ops):
             self.train_disc = self.discriminator_optimizer.minimize(
                 self.total_disc_loss,
@@ -162,25 +155,23 @@ class GAN_TF(BaseModel):
 
         # self.summary = tf.summary.merge_all()
 
-    def generator(self, noise_tensor, reuse=False):
+    def generator(self, noise_tensor):
         # Make the Generator model
-        with tf.variable_scope("Generator", reuse=reuse) as scope:
+        with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE) as scope:
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.layers.Dense(
                 units=7 * 7 * 256,
                 use_bias=False,
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_dense",
             )(noise_tensor)
             # Normalize the output of the Layer
-
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="g_bn_1",
             )
-
             # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
             x_g = tf.nn.leaky_relu(
                 features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_1"
@@ -196,7 +187,7 @@ class GAN_TF(BaseModel):
                 strides=(1, 1),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_1",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 7, 7, 128]
@@ -204,7 +195,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="g_bn_2",
             )
             x_g = tf.nn.leaky_relu(
@@ -217,7 +208,7 @@ class GAN_TF(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_2",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 14, 14, 128]
@@ -225,7 +216,7 @@ class GAN_TF(BaseModel):
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="g_bn_3",
             )
             x_g = tf.nn.leaky_relu(
@@ -238,15 +229,14 @@ class GAN_TF(BaseModel):
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_3",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 128]
-
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="g_bn_4",
             )
             x_g = tf.nn.leaky_relu(
@@ -260,27 +250,130 @@ class GAN_TF(BaseModel):
                 padding="same",
                 use_bias=False,
                 activation=tf.nn.tanh,
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                name="g_conv2dtr_4",
+            )(x_g)
+            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            return x_g
+
+    def sampler(self, noise_tensor):
+        with tf.variable_scope("Generator") as scope:
+            scope.reuse_variables()
+            # Densely connected Neural Network layer with 12544 Neurons.
+            x_g = tf.layers.Dense(
+                units=7 * 7 * 256,
+                use_bias=False,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                name="g_dense",
+            )(noise_tensor)
+            # Normalize the output of the Layer
+            x_g = tf.layers.batch_normalization(
+                inputs=x_g,
+                momentum=self.config.trainer.batch_momentum,
+                training=False,
+                name="g_bn_1",
+            )
+            # f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
+            x_g = tf.nn.leaky_relu(
+                features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_1"
+            )
+            # Reshaping the output
+            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 256])
+            # Check the size of the current output just in case
+            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
+            # First Conv2DTranspose Layer
+            x_g = tf.layers.Conv2DTranspose(
+                filters=128,
+                kernel_size=5,
+                strides=(1, 1),
+                padding="same",
+                use_bias=False,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                name="g_conv2dtr_1",
+            )(x_g)
+            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
+
+            x_g = tf.layers.batch_normalization(
+                inputs=x_g,
+                momentum=self.config.trainer.batch_momentum,
+                training=False,
+                name="g_bn_2",
+            )
+            x_g = tf.nn.leaky_relu(
+                features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_2"
+            )
+            # Second Conv2DTranspose Layer
+            x_g = tf.layers.Conv2DTranspose(
+                filters=128,
+                kernel_size=5,
+                strides=(2, 2),
+                padding="same",
+                use_bias=False,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                name="g_conv2dtr_2",
+            )(x_g)
+            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+
+            x_g = tf.layers.batch_normalization(
+                inputs=x_g,
+                momentum=self.config.trainer.batch_momentum,
+                training=False,
+                name="g_bn_3",
+            )
+            x_g = tf.nn.leaky_relu(
+                features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_3"
+            )
+            # Third Conv2DTranspose Layer
+            x_g = tf.layers.Conv2DTranspose(
+                filters=128,
+                kernel_size=5,
+                strides=(2, 2),
+                padding="same",
+                use_bias=False,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                name="g_conv2dtr_3",
+            )(x_g)
+            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            x_g = tf.layers.batch_normalization(
+                inputs=x_g,
+                momentum=self.config.trainer.batch_momentum,
+                training=False,
+                name="g_bn_4",
+            )
+            x_g = tf.nn.leaky_relu(
+                features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_4"
+            )
+            # Final Conv2DTranspose Layer
+            x_g = tf.layers.Conv2DTranspose(
+                filters=1,
+                kernel_size=5,
+                strides=(1, 1),
+                padding="same",
+                use_bias=False,
+                activation=tf.nn.tanh,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_4",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 28, 28, 1]
             return x_g
 
     def discriminator(self, image, reuse=False):
-        with tf.variable_scope("Discriminator", reuse=reuse) as scope:
+        with tf.variable_scope("Discriminator") as scope:
+            if reuse:
+                scope.reuse_variables()
             # First Convolutional Layer
             x_d = tf.layers.Conv2D(
                 filters=128,
                 kernel_size=5,
                 strides=(1, 1),
                 padding="same",
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="d_conv1",
             )(image)
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="d_bn_1",
             )
             x_d = tf.nn.leaky_relu(
@@ -292,13 +385,13 @@ class GAN_TF(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="d_conv_2",
             )(x_d)
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="d_bn_2",
             )
             x_d = tf.nn.leaky_relu(
@@ -311,13 +404,13 @@ class GAN_TF(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=self.init_kernel,
+                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="d_conv_3",
             )(x_d)
             x_d = tf.layers.batch_normalization(
                 inputs=x_d,
                 momentum=self.config.trainer.batch_momentum,
-                training=self.is_training,
+                training=True,
                 name="d_bn_3",
             )
             x_d = tf.nn.leaky_relu(
