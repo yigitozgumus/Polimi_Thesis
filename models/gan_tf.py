@@ -47,8 +47,8 @@ class GAN_TF(BaseModel):
             self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
             disc_real = self.discriminator(self.image_input + self.real_noise)
             disc_fake = self.discriminator(self.generated_sample, reuse=True)
-            self.sample_image = self.generator(self.noise_tensor)
-
+            # self.sample_image = self.generator(self.noise_tensor, reuse=True)
+            self.stacked_gan = self.discriminator(self.generated_sample, reuse=True)
             # Losses of the training of Generator and Discriminator
             ########################################################################
             # METRICS
@@ -72,11 +72,15 @@ class GAN_TF(BaseModel):
 
             if self.config.soft_labels:
                 self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(tf.zeros_like(disc_fake), disc_fake)
+                    tf.losses.sigmoid_cross_entropy(
+                        tf.zeros_like(self.stacked_gan), self.stacked_gan
+                    )
                 )
             else:
                 self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(tf.ones_like(disc_fake), disc_fake)
+                    tf.losses.sigmoid_cross_entropy(
+                        tf.ones_like(self.stacked_gan), self.stacked_gan
+                    )
                 )
 
         # Store the loss values for the Tensorboard
@@ -104,16 +108,18 @@ class GAN_TF(BaseModel):
         # OPTIMIZATION
         ########################################################################
         # Build the Optimizers
-        self.generator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.generator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
-        )
-        self.discriminator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.discriminator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
-        )
+        with tf.control_dependencies(self.gen_update_ops):
+            self.generator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.generator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+        with tf.control_dependencies(self.disc_update_ops):
+            self.discriminator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.discriminator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
         # Collect all the variables
         all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         # Generator Network Variables
@@ -154,9 +160,9 @@ class GAN_TF(BaseModel):
 
         # self.summary = tf.summary.merge_all()
 
-    def generator(self, noise_tensor):
+    def generator(self, noise_tensor, reuse=False):
         # Make the Generator model
-        with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE) as scope:
+        with tf.variable_scope("Generator", reuse=reuse) as scope:
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.layers.Dense(
                 units=7 * 7 * 256,
@@ -259,9 +265,7 @@ class GAN_TF(BaseModel):
             return x_g
 
     def discriminator(self, image, reuse=False):
-        with tf.variable_scope("Discriminator") as scope:
-            if reuse:
-                scope.reuse_variables()
+        with tf.variable_scope("Discriminator", reuse=reuse) as scope:
             # First Convolutional Layer
             x_d = tf.layers.Conv2D(
                 filters=128,

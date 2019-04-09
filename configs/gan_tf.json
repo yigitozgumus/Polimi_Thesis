@@ -23,7 +23,7 @@
       28,
       1
     ],
-    "include_noise": true,
+    "include_noise": false,
     "soft_labels": true,
     "discriminator_l_rate": 0.0002,
     "noise_probability": 0.05,
