@@ -146,15 +146,15 @@ class GAN_eager(BaseModelEager):
         # OPTIMIZATION
         ########################################################################
         # Build the Optimizers
-        self.generator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.generator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
+        self.generator_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=self.config.trainer.generator_l_rate,
+            beta_1=self.config.trainer.optimizer_adam_beta1,
+            beta_2=self.config.trainer.optimizer_adam_beta2,
         )
-        self.discriminator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.discriminator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
+        self.discriminator_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=self.config.trainer.discriminator_l_rate,
+            beta_1=self.config.trainer.optimizer_adam_beta1,
+            beta_2=self.config.trainer.optimizer_adam_beta2,
         )
 
     def init_saver(self):

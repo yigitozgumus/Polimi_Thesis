@@ -8,8 +8,8 @@ class Summarizer_eager:
         self.summary_placeholders = {}
         self.summary_ops = {}
         self.train_summary_writer = tf.summary.create_file_writer(
-            os.path.join(self.config.summary_dir, "train")
+            os.path.join(self.config.log.summary_dir, "train")
         )
         self.test_summary_writer = tf.summary.create_file_writer(
-            os.path.join(self.config.summary_dir, "test")
+            os.path.join(self.config.log.summary_dir, "test")
         )

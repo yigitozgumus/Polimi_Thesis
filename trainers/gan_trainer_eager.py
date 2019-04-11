@@ -8,25 +8,22 @@ from time import sleep
 class GANTrainerEager(BaseTrainEager):
     def __init__(self, model, data, config, summarizer):
         super(GANTrainerEager, self).__init__(model, data, config, summarizer)
-        self.logger.train_summary_writer.set_as_default()
-
+        self.summarizer.train_summary_writer.set_as_default()
+        self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     def train_epoch(self):
         """
        implement the logic of epoch:
        -loop on the number of iterations in the config and call the train step
        -add any summaries you want using the summary
         """
-        loop = tqdm(range(self.config.num_iter_per_epoch))
+        loop = self.data.dataset
         # Define the lists for summaries and losses
         gen_losses = []
         total_disc_losses = []
 
         # Get the current epoch
         cur_epoch = self.model.cur_epoch_tensor.numpy()
-        for image_batch in self.data:
-            loop.set_description("Epoch:{} iteration:{}".format(cur_epoch, iter))
-            loop.refresh()  # to show immediately the update
-            sleep(0.01)
+        for image_batch in loop:
             gen_loss, total_dl = self.train_step(image_batch, cur_epoch=cur_epoch)
             gen_losses.append(gen_loss)
             total_disc_losses.append(total_dl)
@@ -93,7 +90,7 @@ class GANTrainerEager(BaseTrainEager):
         )
 
         # Train the Generator
-        noise = tf.random_normal(
+        noise = tf.random.normal(
             mean=0.0,
             stddev=1.0,
             shape=[self.config.data_loader.batch_size, self.config.trainer.noise_dim],
@@ -112,7 +109,7 @@ class GANTrainerEager(BaseTrainEager):
     def gen_compute_loss(self, model_gen, model_disc, noise):
         generated_sample = model_gen(noise, training=True)
         stacked_gan = model_disc(generated_sample, training=True)
-        loss = tf.losses.sigmoid_cross_entropy(tf.zeros_like(stacked_gan), stacked_gan)
+        loss = self.cross_entropy(tf.zeros_like(stacked_gan), stacked_gan)
         return loss
 
     def disc_compute_loss(
@@ -122,12 +119,12 @@ class GANTrainerEager(BaseTrainEager):
         disc_real = model_disc(image, training=True)
         disc_fake = model_disc(generated_sample, training=True)
 
-        disc_loss_real = tf.losses.sigmoid_cross_entropy(
-            multi_class_labels=true_labels, logits=disc_real
+        disc_loss_real = self.cross_entropy(
+            true_labels, disc_real
         )
 
-        disc_loss_fake = tf.losses.sigmoid_cross_entropy(
-            multi_class_labels=generated_labels, logits=disc_fake
+        disc_loss_fake = self.cross_entropy(
+            generated_labels, disc_fake
         )
 
         total_disc_loss = disc_loss_real + disc_loss_fake

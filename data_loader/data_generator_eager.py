@@ -13,9 +13,7 @@ class DataGeneratorEager:
         # load data here
         d = DataLoader(self.config)
         # Get the filenames and labels
-        self.filenames, self.labels = d.get_sub_dataset(
-            self.config.data_loader.image_size
-        )
+        self.filenames = d.get_train_dataset()
         # Create the Dataset using Tensorflow Data API
         self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
         # Apply parse function to get the numpy array of the images
@@ -43,11 +41,11 @@ class DataGeneratorEager:
         """
 
         # Read the image file
-        image_file = tf.read_file(filename)
+        image_file = tf.io.read_file(filename)
         # Decode the image
-        image_decoded = tf.image.decode_jpeg(image_file)
+        image_decoded = tf.io.decode_jpeg(image_file)
         # Resize the image --> 28 is default
-        image_resized = tf.image.resize_images(
+        image_resized = tf.image.resize(
             image_decoded,
             [self.config.data_loader.image_size, self.config.data_loader.image_size],
         )
@@ -57,11 +55,11 @@ class DataGeneratorEager:
         image_normalized = tf.image.per_image_standardization(image_resized)
         # Random image flip left-right
         image_random_flip_lr = tf.image.random_flip_left_right(
-            image_normalized, seed=tf.random.set_random_seed(1234)
+            image_normalized, seed=1234
         )
         # Random image flip up-down
         image_random_flip_ud = tf.image.random_flip_up_down(
-            image_random_flip_lr, seed=tf.random.set_random_seed(1234)
+            image_random_flip_lr, seed=1234
         )
 
         return image_random_flip_ud

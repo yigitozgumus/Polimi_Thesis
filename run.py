@@ -2,7 +2,6 @@ from utils.utils import get_args
 from utils.config import process_config
 
 from mains.main_gan_tf import main
-from mains.main_gan_mark2 import main as main_mark2
 from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras
 from mains.main_gan_tf import main as main_tf
@@ -24,8 +23,6 @@ def run():
 
     if config.model.name == "gan":
         main(config)
-    elif config.model.name == "gan_mark2":
-        main_mark2(config)
 
     elif config.model.name == "gan_eager":
         main_eager(config)

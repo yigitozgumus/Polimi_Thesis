@@ -13,13 +13,11 @@ class BaseTrainEager:
         self.data = data
         log_object = Logger(self.config)
         self.logger = log_object.get_logger(__name__)
-        self.rows = int(np.sqrt(self.config.num_example_imgs_to_generate))
+        self.rows = int(np.sqrt(self.config.log.num_example_imgs_to_generate))
 
     def train(self):
         self.logger.info("Training is started")
-        for cur_epoch in range(
-            self.model.cur_epoch_tensor.numpy(), self.config.num_epochs + 1, 1
-        ):
+        for cur_epoch in range( self.config.data_loader.num_epochs):
             self.train_epoch()
             self.model.increment_cur_epoch_tensor()
 
@@ -50,5 +48,5 @@ class BaseTrainEager:
             plt.axis("off")
 
         plt.savefig(
-            self.config.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch)
+            self.config.log.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch)
         )
