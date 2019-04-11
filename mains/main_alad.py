@@ -3,17 +3,12 @@ import tensorflow as tf
 from data_loader.data_generator import DataGenerator
 from models.alad_tf import ALAD_TF
 from trainers.alad_trainer import ALAD_Trainer
-
 from utils.summarizer import Summarizer
-
 from utils.dirs import create_dirs
 from utils.logger import Logger
 
 
 def main(config):
-
-    l = Logger(config)
-    logger = l.get_logger(__name__)
 
     # create the experiments dirs
     create_dirs(
@@ -22,9 +17,11 @@ def main(config):
             config.log.checkpoint_dir,
             config.log.step_generation_dir,
             config.log.log_file_dir,
-            config.log.results_dir,
+            config.log.result_dir,
         ]
     )
+    l = Logger(config)
+    logger = l.get_logger(__name__)
     logger.info("Experiment has begun")
     # create tensorflow session
     sess = tf.Session()

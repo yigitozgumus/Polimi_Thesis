@@ -38,16 +38,13 @@
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.25,
     "ema_decay": 0.999,
-    "spectral_norm": false,
+    "spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": true,
     "degree": 1
   },
   "log": {
     "name": "ALAD",
-    "file_logging": false,
-    "info_logging": true,
-    "debug_logging": false,
     "enable_summary": true,
     "show_steps": 10,
     "max_to_keep": 5,

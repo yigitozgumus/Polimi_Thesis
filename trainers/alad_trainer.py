@@ -196,7 +196,6 @@ class ALAD_Trainer(BaseTrain):
             self.model.noise_tensor: noise,
             self.model.is_training: True,
         }
-        self.logger.debug("Session for the Discriminator")
         _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
             [
                 self.model.train_dis_op_xz,

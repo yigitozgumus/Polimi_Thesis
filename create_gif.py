@@ -12,7 +12,7 @@ def create_gif(folder_name, output_name):
     images = []
     for filename in files:
         images.append(imageio.imread(folder_name + "/" + filename))
-    imageio.mimsave(output_name +"_"+str(num_epochs)+ ".gif", images)
+    imageio.mimsave(output_name + "_" + str(num_epochs) + ".gif", images)
 
 
 def main():
@@ -21,8 +21,8 @@ def main():
     argparser.add_argument("-n", "--name", metavar="N", help="Name of the gif")
     args = argparser.parse_args()
 
-    #config = process_config(args.config)
-    folder = os.path.join("Logs", args.experiment, "generated")
+    # config = process_config(args.config)
+    folder = os.path.join("Experiments", args.experiment, "generated")
     create_gif(folder, args.name)
 
 

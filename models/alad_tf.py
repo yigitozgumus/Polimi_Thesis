@@ -16,7 +16,7 @@ class ALAD_TF(BaseModel):
 
     def build_model(self):
 
-        # Placeholders
+        # Placeholdersn
         self.is_training = tf.placeholder(tf.bool)
         self.image_tensor = tf.placeholder(
             tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"

@@ -260,7 +260,7 @@ class GAN_TF(BaseModel):
             scope.reuse_variables()
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.layers.Dense(
-                units=7 * 7 * 256,
+                units=7 * 7 * 512,
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_dense",
@@ -277,20 +277,20 @@ class GAN_TF(BaseModel):
                 features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_1"
             )
             # Reshaping the output
-            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 256])
+            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 512])
             # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 256]
+            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
             # First Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
-                filters=128,
-                kernel_size=5,
+                filters=512,
+                kernel_size=4,
                 strides=(1, 1),
                 padding="same",
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_1",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 128]
+            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -303,15 +303,15 @@ class GAN_TF(BaseModel):
             )
             # Second Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
-                filters=128,
-                kernel_size=5,
+                filters=256,
+                kernel_size=4,
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_2",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 128]
+            assert x_g.get_shape().as_list() == [None, 14, 14, 256]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -325,7 +325,7 @@ class GAN_TF(BaseModel):
             # Third Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=128,
-                kernel_size=5,
+                kernel_size=4,
                 strides=(2, 2),
                 padding="same",
                 use_bias=False,
@@ -345,7 +345,7 @@ class GAN_TF(BaseModel):
             # Final Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=1,
-                kernel_size=5,
+                kernel_size=4,
                 strides=(1, 1),
                 padding="same",
                 use_bias=False,
