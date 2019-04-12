@@ -153,7 +153,7 @@ class ANOGAN_Trainer(BaseTrain):
         )
 
         if self.config.log.enable_summary:
-            sm = self.sess.run(self.sum_op, feed_dict=feed_dict)
+            sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)
 
         return ld, lg, sm
 
