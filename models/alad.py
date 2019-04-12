@@ -94,32 +94,32 @@ class ALAD(BaseModel):
         with tf.name_scope("Loss_Functions"):
             # discriminator xz
             loss_dis_enc = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=tf.ones_like(l_encoder), logits=l_encoder
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    labels=tf.ones_like(l_encoder), logits=l_encoder
                 )
             )
             loss_dis_gen = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=tf.zeros_like(l_generator), logits=l_generator
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    labels=tf.zeros_like(l_generator), logits=l_generator
                 )
             )
             self.dis_loss_xz = loss_dis_gen + loss_dis_enc
 
             # discriminator xx
-            x_real_dis = tf.losses.sigmoid_cross_entropy(
-                logits=x_logit_real, multi_class_labels=tf.ones_like(x_logit_real)
+            x_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=x_logit_real, labels=tf.ones_like(x_logit_real)
             )
-            x_fake_dis = tf.losses.sigmoid_cross_entropy(
-                logits=x_logit_fake, multi_class_labels=tf.zeros_like(x_logit_fake)
+            x_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=x_logit_fake, labels=tf.zeros_like(x_logit_fake)
             )
             self.dis_loss_xx = tf.reduce_mean(x_real_dis + x_fake_dis)
 
             # discriminator zz
-            z_real_dis = tf.losses.sigmoid_cross_entropy(
-                logits=z_logit_real, multi_class_labels=tf.ones_like(z_logit_real)
+            z_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=z_logit_real, labels=tf.ones_like(z_logit_real)
             )
-            z_fake_dis = tf.losses.sigmoid_cross_entropy(
-                logits=z_logit_fake, multi_class_labels=tf.zeros_like(z_logit_fake)
+            z_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=z_logit_fake, labels=tf.zeros_like(z_logit_fake)
             )
             self.dis_loss_zz = tf.reduce_mean(z_real_dis + z_fake_dis)
 
@@ -132,26 +132,26 @@ class ALAD(BaseModel):
 
             # generator and encoder
             gen_loss_xz = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=tf.ones_like(l_generator), logits=l_generator
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    labels=tf.ones_like(l_generator), logits=l_generator
                 )
             )
             enc_loss_xz = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=tf.zeros_like(l_encoder), logits=l_encoder
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    labels=tf.zeros_like(l_encoder), logits=l_encoder
                 )
             )
-            x_real_gen = tf.losses.sigmoid_cross_entropy(
-                logits=x_logit_real, multi_class_labels=tf.zeros_like(x_logit_real)
+            x_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=x_logit_real, labels=tf.zeros_like(x_logit_real)
             )
-            x_fake_gen = tf.losses.sigmoid_cross_entropy(
-                logits=x_logit_fake, multi_class_labels=tf.ones_like(x_logit_fake)
+            x_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=x_logit_fake, labels=tf.ones_like(x_logit_fake)
             )
-            z_real_gen = tf.losses.sigmoid_cross_entropy(
-                logits=z_logit_real, multi_class_labels=tf.zeros_like(z_logit_real)
+            z_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=z_logit_real, labels=tf.zeros_like(z_logit_real)
             )
-            z_fake_gen = tf.losses.sigmoid_cross_entropy(
-                logits=z_logit_fake, multi_class_labels=tf.ones_like(z_logit_fake)
+            z_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=z_logit_fake, labels=tf.ones_like(z_logit_fake)
             )
 
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
@@ -297,9 +297,8 @@ class ALAD(BaseModel):
 
         with tf.name_scope("Testing"):
             with tf.variable_scope("Scores"):
-                score_ch = tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=tf.ones_like(l_generator_emaxx),
-                    logits=l_generator_emaxx,
+                score_ch = tf.nn.sigmoid_cross_entropy_with_logits(
+                    labels=tf.ones_like(l_generator_emaxx), logits=l_generator_emaxx
                 )
                 self.score_ch = tf.squeeze(score_ch)
 
