@@ -51,7 +51,7 @@
     "show_steps": 10,
     "max_to_keep": 5,
     "num_example_imgs_to_generate": 25,
-    "num_epochs_to_test": 2,
+    "frequency_test": 10,
     "output_folder": "Experiments"
   }
 }

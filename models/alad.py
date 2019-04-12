@@ -27,31 +27,42 @@ class ALAD(BaseModel):
         # Building the Graph
         with tf.variable_scope("ALAD"):
 
-            # Encoder
+            ########################################################################
+            # ENCODER
+            ########################################################################
             self.z_gen = self.encoder(
                 self.image_tensor, do_spectral_norm=self.config.trainer.do_spectral_norm
             )
-            # Generator
+            ########################################################################
+            # GENERATOR
+            ########################################################################
             self.img_gen = self.generator(self.noise_tensor)
             self.rec_img = self.generator(self.z_gen)
-            # Recreated Noise
+
+            ########################################################################
+            # ENCODER
+            ########################################################################
             self.rec_z = self.encoder(
                 self.img_gen, do_spectral_norm=self.config.spectral_norm
             )
 
-            # Discriminator_xz
-            l_encoder, inter_layer_inp_xz = self.discriminator_xz(
-                self.image_tensor,
-                self.z_gen,
-                do_spectral_norm=self.config.do_spectral_norm,
-            )
+            ########################################################################
+            # DISCRIMINATOR XZ
+            ########################################################################
             l_generator, inter_layer_rct_xz = self.discriminator_xz(
                 self.img_gen,
                 self.noise_tensor,
                 do_spectral_norm=self.config.spectral_norm,
             )
+            l_encoder, inter_layer_inp_xz = self.discriminator_xz(
+                self.image_tensor,
+                self.z_gen,
+                do_spectral_norm=self.config.do_spectral_norm,
+            )
 
-            # Discriminator_xx
+            ########################################################################
+            # DISCRIMINATOR XX
+            ########################################################################
             x_logit_real, inter_layer_inp_xx = self.discriminator_xx(
                 self.image_tensor,
                 self.image_tensor,
@@ -63,7 +74,9 @@ class ALAD(BaseModel):
                 do_spectral_norm=self.config.spectral_norm,
             )
 
-            # Discriminator_zz
+            ########################################################################
+            # DISCRIMINATOR ZZ
+            ########################################################################
             z_logit_real, _ = self.discriminator_zz(
                 self.noise_tensor,
                 self.noise_tensor,
@@ -75,38 +88,42 @@ class ALAD(BaseModel):
                 do_spectral_norm=self.config.spectral_norm,
             )
 
+        ########################################################################
+        # LOSS FUNCTIONS
+        ########################################################################
         with tf.name_scope("Loss_Functions"):
             # discriminator xz
             loss_dis_enc = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_encoder), logits=l_encoder
+                tf.losses.sigmoid_cross_entropy(
+                    multi_class_labels=tf.ones_like(l_encoder), logits=l_encoder
                 )
             )
             loss_dis_gen = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_generator), logits=l_generator
+                tf.losses.sigmoid_cross_entropy(
+                    multi_class_labels=tf.zeros_like(l_generator), logits=l_generator
                 )
             )
             self.dis_loss_xz = loss_dis_gen + loss_dis_enc
 
             # discriminator xx
-            x_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=tf.ones_like(x_logit_real)
+            x_real_dis = tf.losses.sigmoid_cross_entropy(
+                logits=x_logit_real, multi_class_labels=tf.ones_like(x_logit_real)
             )
-            x_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=tf.zeros_like(x_logit_fake)
+            x_fake_dis = tf.losses.sigmoid_cross_entropy(
+                logits=x_logit_fake, multi_class_labels=tf.zeros_like(x_logit_fake)
             )
             self.dis_loss_xx = tf.reduce_mean(x_real_dis + x_fake_dis)
 
             # discriminator zz
-            z_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=tf.ones_like(z_logit_real)
+            z_real_dis = tf.losses.sigmoid_cross_entropy(
+                logits=z_logit_real, multi_class_labels=tf.ones_like(z_logit_real)
             )
-            z_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=tf.zeros_like(z_logit_fake)
+            z_fake_dis = tf.losses.sigmoid_cross_entropy(
+                logits=z_logit_fake, multi_class_labels=tf.zeros_like(z_logit_fake)
             )
             self.dis_loss_zz = tf.reduce_mean(z_real_dis + z_fake_dis)
 
+            # Compute the whole discriminator loss
             self.loss_discriminator = (
                 self.dis_loss_xz + self.dis_loss_xx + self.dis_loss_zz
                 if self.config.trainer.allow_zz
@@ -115,26 +132,26 @@ class ALAD(BaseModel):
 
             # generator and encoder
             gen_loss_xz = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_generator), logits=l_generator
+                tf.losses.sigmoid_cross_entropy(
+                    multi_class_labels=tf.ones_like(l_generator), logits=l_generator
                 )
             )
             enc_loss_xz = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_encoder), logits=l_encoder
+                tf.losses.sigmoid_cross_entropy(
+                    multi_class_labels=tf.zeros_like(l_encoder), logits=l_encoder
                 )
             )
-            x_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=tf.zeros_like(x_logit_real)
+            x_real_gen = tf.losses.sigmoid_cross_entropy(
+                logits=x_logit_real, multi_class_labels=tf.zeros_like(x_logit_real)
             )
-            x_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=tf.ones_like(x_logit_fake)
+            x_fake_gen = tf.losses.sigmoid_cross_entropy(
+                logits=x_logit_fake, multi_class_labels=tf.ones_like(x_logit_fake)
             )
-            z_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=tf.zeros_like(z_logit_real)
+            z_real_gen = tf.losses.sigmoid_cross_entropy(
+                logits=z_logit_real, multi_class_labels=tf.zeros_like(z_logit_real)
             )
-            z_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=tf.ones_like(z_logit_fake)
+            z_fake_gen = tf.losses.sigmoid_cross_entropy(
+                logits=z_logit_fake, multi_class_labels=tf.ones_like(z_logit_fake)
             )
 
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
@@ -146,47 +163,41 @@ class ALAD(BaseModel):
             self.loss_generator = gen_loss_xz + cycle_consistency_loss
             self.loss_encoder = enc_loss_xz + cycle_consistency_loss
 
+        ########################################################################
+        # OPTIMIZATION
+        ########################################################################
         with tf.name_scope("Optimizers"):
 
             # control op dependencies for batch norm and trainable variables
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             self.dxzvars = [
-                v
-                for v in all_variables
-                if v.name.startswith("ALAD/Discriminator_Model_xz")
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_xz")
             ]
             self.dxxvars = [
-                v
-                for v in all_variables
-                if v.name.startswith("ALAD/Discriminator_Model_xx")
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_xx")
             ]
             self.dzzvars = [
-                v
-                for v in all_variables
-                if v.name.startswith("ALAD/Discriminator_Model_zz")
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_zz")
             ]
             self.gvars = [
-                v for v in all_variables if v.name.startswith("ALAD/Generator_Model")
+                v for v in all_variables if v.name.startswith("ALAD/Generator")
             ]
-            self.evars = [
-                v for v in all_variables if v.name.startswith("ALAD/Encoder_Model")
-            ]
+            self.evars = [v for v in all_variables if v.name.startswith("ALAD/Encoder")]
 
-            update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             self.update_ops_gen = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator"
             )
             self.update_ops_enc = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder"
             )
             self.update_ops_dis_xz = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_xz"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_xz"
             )
             self.update_ops_dis_xx = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_xx"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_xx"
             )
             self.update_ops_dis_zz = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_zz"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_zz"
             )
 
             self.optimizer = tf.train.AdamOptimizer(
@@ -286,8 +297,9 @@ class ALAD(BaseModel):
 
         with tf.name_scope("Testing"):
             with tf.variable_scope("Scores"):
-                score_ch = tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_generator_emaxx), logits=l_generator_emaxx
+                score_ch = tf.losses.sigmoid_cross_entropy(
+                    multi_class_labels=tf.ones_like(l_generator_emaxx),
+                    logits=l_generator_emaxx,
                 )
                 self.score_ch = tf.squeeze(score_ch)
 
@@ -320,7 +332,9 @@ class ALAD(BaseModel):
             self.rec_error_valid = tf.reduce_mean(score_fm)
 
         if self.config.log.enable_summary:
-
+            ########################################################################
+            # TENSORBOARD
+            ########################################################################
             with tf.name_scope("summary"):
 
                 with tf.name_scope("dis_summary"):
@@ -350,7 +364,7 @@ class ALAD(BaseModel):
                     heatmap_pl_latent = tf.placeholder(
                         tf.float32, shape=(1, 480, 640, 3), name="heatmap_pl_latent"
                     )
-                    sum_op_latent = tf.summary.image(
+                    self.sum_op_latent = tf.summary.image(
                         "heatmap_latent", heatmap_pl_latent
                     )
 
@@ -376,9 +390,7 @@ class ALAD(BaseModel):
         """
         # Change the layer type if do_spectral_norm is true
         layers = sn if do_spectral_norm else tf.layers
-        with tf.variable_scope(
-            "Encoder_Model", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ) as scope:
+        with tf.variable_scope("Encoder", reuse=tf.AUTO_REUSE, custom_getter=getter):
             img_tensor = tf.reshape(img_tensor, [-1, 28, 28, 1])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
@@ -480,9 +492,7 @@ class ALAD(BaseModel):
             getter: for exponential moving average during inference
             reuse: sharing variables or not
         """
-        with tf.variable_scope(
-            "Generator_Model", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ) as scope:
+        with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE, custom_getter=getter):
             net = tf.reshape(noise_tensor, [-1, self.config.trainer.noise_dim])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
@@ -594,7 +604,7 @@ class ALAD(BaseModel):
         """
         layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope(
-            "Discriminator_Model_xz", reuse=tf.AUTO_REUSE, custom_getter=getter
+            "Discriminator_xz", reuse=tf.AUTO_REUSE, custom_getter=getter
         ):
             net_name = "x_layer_1"
             with tf.variable_scope(net_name):
@@ -789,7 +799,7 @@ class ALAD(BaseModel):
         """
         layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope(
-            "Discriminator_Model_xx", reuse=tf.AUTO_REUSE, custom_getter=getter
+            "Discriminator_xx", reuse=tf.AUTO_REUSE, custom_getter=getter
         ):
             net = tf.concat([img_tensor, recreated_img], axis=1)
             net_name = "layer_1"
@@ -877,7 +887,7 @@ class ALAD(BaseModel):
         layers = sn if do_spectral_norm else tf.layers
 
         with tf.variable_scope(
-            "Discriminator_Model_zz", reuse=tf.AUTO_REUSE, custom_getter=getter
+            "Discriminator_zz", reuse=tf.AUTO_REUSE, custom_getter=getter
         ):
             y = tf.concat([noise_tensor, recreated_noise], axis=-1)
 

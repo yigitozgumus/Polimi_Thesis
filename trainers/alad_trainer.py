@@ -38,22 +38,37 @@ class ALAD_Trainer(BaseTrain):
         summaries = []
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
+        image = self.data.image
         for _ in loop:
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
             # Compute the main losses
             # TODO summary object
-            lg, le, ld, ldxz, ldxx, ldzz, summary = self.train_step(
-                self.data.image, cur_epoch
-            )
+            lg, le, ld, ldxz, ldxx, ldzz, summary = self.train_step(image, cur_epoch)
             gen_losses.append(lg)
             enc_losses.append(le)
             disc_losses.append(ld)
             disc_xz_losses.append(ldxz)
             disc_xx_losses.append(ldxx)
             disc_zz_losses.append(ldzz)
+            summaries.append(summary)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries)
+        # Check for reconstruction
+        if cur_epoch % self.config.log.frequency_test == 0:
+            noise = np.random.normal(
+                loc=0.0,
+                scale=1.0,
+                size=[self.config.data_loader.test_batch, self.noise_dim],
+            )
+            feed_dict = {
+                self.model.image_tensor: image,
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
+            self.summarizer.add_tensorboard(step=cur_epoch, summaries=reconstruction)
         # Get the means of the loss values to display
         gl_m = np.mean(gen_losses)
         el_m = np.mean(enc_losses)
@@ -79,6 +94,7 @@ class ALAD_Trainer(BaseTrain):
 
         # Save the model state
         self.model.save(self.sess)
+        # TODO EARLY STOPPING
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
         scores_ch = []
