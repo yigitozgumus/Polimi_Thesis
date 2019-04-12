@@ -6,6 +6,7 @@ from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras
 from mains.main_gan_tf import main as main_tf
 from mains.main_alad import main as main_alad
+from mains.main_anogan import main as main_anogan
 
 import os
 
@@ -23,6 +24,9 @@ def run():
 
     if config.model.name == "gan":
         main(config)
+
+    if config.model.name == "anogan":
+        main_anogan(config)
 
     elif config.model.name == "gan_eager":
         main_eager(config)
