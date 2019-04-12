@@ -7,8 +7,8 @@ from utils.evaluations import save_results
 
 
 class ALAD_Trainer(BaseTrain):
-    def __init__(self, sess, model, data, config, logger):
-        super(ALAD_Trainer, self).__init__(sess, model, data, config, logger)
+    def __init__(self, sess, model, data, config, summarizer):
+        super(ALAD_Trainer, self).__init__(sess, model, data, config, summarizer)
         # This values are added as variable becaouse they are used a lot and changing it become difficult over time.
         self.batch_size = self.config.data_loader.batch_size
         self.noise_dim = self.config.trainer.noise_dim

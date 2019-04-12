@@ -17,7 +17,7 @@ class BaseTrainEager:
 
     def train(self):
         self.logger.info("Training is started")
-        for cur_epoch in range( self.config.data_loader.num_epochs):
+        for cur_epoch in range(self.config.data_loader.num_epochs):
             self.train_epoch()
             self.model.increment_cur_epoch_tensor()
 
@@ -48,5 +48,6 @@ class BaseTrainEager:
             plt.axis("off")
 
         plt.savefig(
-            self.config.log.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch)
+            self.config.log.step_generation_dir
+            + "image_at_epoch_{:04d}.png".format(epoch)
         )

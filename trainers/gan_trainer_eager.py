@@ -10,6 +10,7 @@ class GANTrainerEager(BaseTrainEager):
         super(GANTrainerEager, self).__init__(model, data, config, summarizer)
         self.summarizer.train_summary_writer.set_as_default()
         self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
     def train_epoch(self):
         """
        implement the logic of epoch:
@@ -119,13 +120,9 @@ class GANTrainerEager(BaseTrainEager):
         disc_real = model_disc(image, training=True)
         disc_fake = model_disc(generated_sample, training=True)
 
-        disc_loss_real = self.cross_entropy(
-            true_labels, disc_real
-        )
+        disc_loss_real = self.cross_entropy(true_labels, disc_real)
 
-        disc_loss_fake = self.cross_entropy(
-            generated_labels, disc_fake
-        )
+        disc_loss_fake = self.cross_entropy(generated_labels, disc_fake)
 
         total_disc_loss = disc_loss_real + disc_loss_fake
 
