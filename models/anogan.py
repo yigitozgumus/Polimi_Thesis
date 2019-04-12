@@ -20,12 +20,8 @@ class ANOGAN(BaseModel):
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
         # Placeholders for the true and fake labels
-        self.true_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="true_labels"
-        )
-        self.generated_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="gen_labels"
-        )
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
         # Building the Graph
         self.logger.info("Building Graph")
         with tf.variable_scope("ANOGAN"):
