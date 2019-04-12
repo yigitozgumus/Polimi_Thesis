@@ -1,11 +1,9 @@
 import importlib
-from logger import Logger
 
 
 def create(cls):
     """expects a string that can be imported as with a module.class name"""
     module_name, class_name = cls.rsplit(".", 1)
-    l = Logger()
     try:
         # print("importing " + module_name)
         somemodule = importlib.import_module(module_name)

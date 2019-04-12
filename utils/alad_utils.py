@@ -40,7 +40,7 @@ def conv2d(
             input=inputs,
             filter=spectral_norm(w),
             strides=[1, strides, strides, 1],
-            padding=padding,
+            padding=str.upper(padding),
         )
         if use_bias:
             x = tf.nn.bias_add(x, bias)
