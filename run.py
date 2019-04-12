@@ -2,7 +2,8 @@ from utils.utils import get_args
 from utils.config import process_config
 
 from mains.main_gan_tf import main
-from mains.main_gan_eager import main as main_eager
+
+# from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras
 from mains.main_gan_tf import main as main_tf
 from mains.main_alad import main as main_alad
@@ -29,7 +30,8 @@ def run():
         main_anogan(config)
 
     elif config.model.name == "gan_eager":
-        main_eager(config)
+        #       main_eager(config)
+        pass
 
     elif config.model.name == "gan_keras":
         main_keras(config)
