@@ -20,12 +20,12 @@ class ANOGAN(BaseModel):
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
         # Placeholders for the true and fake labels
-        self.true_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="true_labels"
-        )
-        self.generated_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="gen_labels"
-        )
+        # self.true_labels = tf.placeholder(
+        #     dtype=tf.float32, shape=[None, 1], name="true_labels"
+        # )
+        # self.generated_labels = tf.placeholder(
+        #     dtype=tf.float32, shape=[None, 1], name="gen_labels"
+        # )
         # Building the Graph
         self.logger.info("Building Graph")
         with tf.variable_scope("ANOGAN"):
@@ -168,7 +168,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope("Discriminator_Scores"):
                 # TODO only one score method
                 dis_score = tf.losses.sigmoid_cross_entropy(
-                    labels=tf.ones_like(fake_d_ema), logits=fake_d_ema
+                    tf.ones_like(fake_d_ema), fake_d_ema
                 )
 
                 dis_score = tf.squeeze(dis_score)
