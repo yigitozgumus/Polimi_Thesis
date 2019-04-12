@@ -1,7 +1,7 @@
 {
   "exp": {},
   "model": {
-    "name": "alad"
+    "name": "alad.ALAD"
   },
   "dirs": {
     "data": "data",
@@ -9,6 +9,7 @@
     "data_anomalous": "data/Anomalous/"
   },
   "data_loader": {
+    "name": "data_generator.DataGenerator",
     "buffer_size": 51200,
     "image_size": 28,
     "batch_size": 128,
@@ -22,6 +23,7 @@
     "test_batch":144
   },
   "trainer": {
+    "name": "alad_trainer.ALAD_Trainer",
     "noise_dim": 100,
     "image_dims": [
       28,
@@ -44,7 +46,7 @@
     "degree": 1
   },
   "log": {
-    "name": "ALAD",
+    "name": "summarizer.Summarizer",
     "enable_summary": true,
     "show_steps": 10,
     "max_to_keep": 5,

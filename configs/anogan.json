@@ -1,7 +1,7 @@
 {
   "exp": {},
   "model": {
-    "name": "anogan"
+    "name": "anogan.ANOGAN"
   },
   "dirs": {
     "data": "data",
@@ -9,6 +9,7 @@
     "data_anomalous": "data/Anomalous/"
   },
   "data_loader": {
+    "name": "data_generator.DataGenerator",
     "buffer_size": 51200,
     "image_size": 28,
     "batch_size": 128,
@@ -22,6 +23,7 @@
     "test_batch":144
   },
   "trainer": {
+    "name": "anogan_trainer.ANOGAN_Trainer",
     "noise_dim": 100,
     "image_dims": [
       28,
@@ -46,7 +48,7 @@
     "steps_number": 500
   },
   "log": {
-    "name": "ANOGAN",
+    "name": "summarizer.Summarizer",
     "enable_summary": true,
     "show_steps": 10,
     "max_to_keep": 5,

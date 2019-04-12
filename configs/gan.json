@@ -1,7 +1,7 @@
 {
   "exp": {},
   "model": {
-    "name": "gan_tf"
+    "name": "gan.GAN"
   },
   "dirs": {
     "data": "data",
@@ -9,6 +9,7 @@
     "data_anomalous": "data/Anomalous/"
   },
   "data_loader": {
+    "name": "data_generator.DataGenerator",
     "buffer_size": 51200,
     "image_size": 28,
     "batch_size": 128,
@@ -17,6 +18,7 @@
     "num_parallel_calls": 8
   },
   "trainer": {
+    "name": "gan_trainer.GANTrainer",
     "noise_dim": 100,
     "image_dims": [
       28,
@@ -40,7 +42,7 @@
     "degree": 1
   },
   "log": {
-    "name": "GAN_TF",
+    "name": "summarizer.Summarizer",
     "enable_summary": true,
     "show_steps": 10,
     "max_to_keep": 5,
