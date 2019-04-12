@@ -68,7 +68,7 @@ class ALAD_Trainer(BaseTrain):
                 self.model.is_training: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
-            self.summarizer.add_tensorboard(step=cur_epoch, summaries=reconstruction)
+            self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
         # Get the means of the loss values to display
         gl_m = np.mean(gen_losses)
         el_m = np.mean(enc_losses)
