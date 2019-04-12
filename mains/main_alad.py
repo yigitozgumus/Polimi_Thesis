@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from data_loader.data_generator import DataGenerator
-from models.alad_tf import ALAD_TF
+from models.alad import ALAD
 from trainers.alad_trainer import ALAD_Trainer
 from utils.summarizer import Summarizer
 from utils.dirs import create_dirs
@@ -28,7 +28,7 @@ def main(config):
     # create your data generator
     data = DataGenerator(config)
     # create an instance of the model you want
-    model = ALAD_TF(config)
+    model = ALAD(config)
     # create tensorboard logger
     summarizer = Summarizer(sess, config)
     # create trainer and pass all the previous components to it

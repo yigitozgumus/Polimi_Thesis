@@ -1,11 +1,11 @@
 from utils.utils import get_args
 from utils.config import process_config
 
-from mains.main_gan_tf import main
+from mains.main_gan import main
 
 # from mains.main_gan_eager import main as main_eager
 from mains.main_gan_keras import main as main_keras
-from mains.main_gan_tf import main as main_tf
+from mains.main_gan import main as main_tf
 from mains.main_alad import main as main_alad
 from mains.main_anogan import main as main_anogan
 

@@ -7,28 +7,38 @@ from utils.config import process_config
 from utils.summarizer import Summarizer
 from utils.utils import get_args
 from utils.dirs import create_dirs
+from utils.logger import Logger
 
 
 def main(config):
-    # capture the config path from the run arguments
-    # then process the json configuration file
-
     # create the experiments dirs
-    create_dirs([config.summary_dir, config.checkpoint_dir, config.step_generation_dir])
+    create_dirs(
+        [
+            config.log.summary_dir,
+            config.log.checkpoint_dir,
+            config.log.step_generation_dir,
+            config.log.log_file_dir,
+        ]
+    )
+    l = Logger(config)
+    logger = l.get_logger(__name__)
+
     # create tensorflow session
+    logger.info("Experiment has begun")
     sess = tf.Session()
-    # create your data generator
     data = DataGenerator(config)
     # create an instance of the model you want
     model = GAN(config)
-    # create tensorboard logger
-    logger = Summarizer(sess, config)
+    # create the Summarizer object
+    summarizer = Summarizer(sess, config)
+    # create your data generator
     # create trainer and pass all the previous components to it
-    trainer = GANTrainer(sess, model, data, config, logger)
+    trainer = GANTrainer(sess, model, data, config, summarizer)
     # load model if exists
     model.load(sess)
     # here you train your model
     trainer.train()
+    logger.info("Experiment has ended.")
 
 
 if __name__ == "__main__":

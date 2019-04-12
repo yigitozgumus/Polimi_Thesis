@@ -4,13 +4,13 @@ from base.base_model import BaseModel
 import utils.alad_utils as sn
 
 
-class ALAD_TF(BaseModel):
+class ALAD(BaseModel):
     def __init__(self, config):
         """
         Args:
             config:
         """
-        super(ALAD_TF, self).__init__(config)
+        super(ALAD, self).__init__(config)
         self.build_model()
         self.init_saver()
 
