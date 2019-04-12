@@ -122,10 +122,10 @@ class ANOGAN(BaseModel):
                 return train_op, ema
 
             self.train_gen_op, self.gen_ema = train_op_with_ema_dependency(
-                self.generator_vars, self.gen_update_ops
+                self.generator_vars, self.train_gen
             )
             self.train_dis_op, self.dis_ema = train_op_with_ema_dependency(
-                self.discriminator_vars, self.disc_update_ops
+                self.discriminator_vars, self.train_disc
             )
         with tf.variable_scope("Latent_variable"):
             self.z_optim = tf.get_variable(
