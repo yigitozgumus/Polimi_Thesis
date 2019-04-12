@@ -62,8 +62,9 @@ class ALAD_Trainer(BaseTrain):
                 scale=1.0,
                 size=[self.config.data_loader.test_batch, self.noise_dim],
             )
+            image_eval = self.sess.run(image)
             feed_dict = {
-                self.model.image_tensor: image,
+                self.model.image_tensor: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
