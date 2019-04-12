@@ -136,26 +136,26 @@ class ANOGAN(BaseModel):
                 ],
                 initializer=tf.truncated_normal_initializer(),
             )
-            reinit_z = z_optim.initializer
+            reinit_z = self.z_optim.initializer
 
         with tf.variable_scope("ANOGAN"):
             x_gen_ema = self.generator(
                 self.noise_tensor, getter=sn.get_getter(self.gen_ema)
             )
             self.rec_gen_ema = self.generator(
-                z_optim, getter=sn.get_getter(self.gen_ema)
+                self.z_optim, getter=sn.get_getter(self.gen_ema)
             )
             # Pass real and fake images into discriminator separately
             real_d_ema, inter_layer_real_ema = self.discriminator(
                 self.image_tensor, getter=sn.get_getter(self.dis_ema)
             )
             fake_d_ema, inter_layer_fake_ema = self.discriminator(
-                rec_gen_ema, getter=sn.get_getter(self.dis_ema)
+                self.rec_gen_ema, getter=sn.get_getter(self.dis_ema)
             )
 
         with tf.variable_scope("Testing"):
             with tf.variable_scope("Reconstruction_Loss"):
-                delta = self.image_tensor - rec_gen_ema
+                delta = self.image_tensor - self.rec_gen_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 self.reconstruction_score = tf.norm(
                     delta_flat,
@@ -167,7 +167,7 @@ class ANOGAN(BaseModel):
 
             with tf.variable_scope("Discriminator_Scores"):
                 # TODO only one score method
-                dis_score = tf.losses.sigmoid_cross_entropy_with_logits(
+                dis_score = tf.losses.sigmoid_cross_entropy(
                     labels=tf.ones_like(fake_d_ema), logits=fake_d_ema
                 )
 
@@ -175,11 +175,11 @@ class ANOGAN(BaseModel):
 
             with tf.variable_scope("Score"):
                 self.loss_invert = (
-                    self.config.trainer.weight * reconstruction_score
+                    self.config.trainer.weight * self.reconstruction_score
                     + (1 - self.config.trainer.weight) * dis_score
                 )
 
-        self.rec_error_valid = tf.reduce_mean(loss_invert)
+        self.rec_error_valid = tf.reduce_mean(self.loss_invert)
 
         with tf.variable_scope("Test_Learning_Rate"):
             step_lr = tf.Variable(0, trainable=False)
@@ -192,7 +192,10 @@ class ANOGAN(BaseModel):
 
         with tf.name_scope("Test_Optimizer"):
             self.invert_op = tf.train.AdamOptimizer(learning_rate_invert).minimize(
-                loss_invert, global_step=step_lr, var_list=[z_optim], name="optimizer"
+                self.loss_invert,
+                global_step=step_lr,
+                var_list=[self.z_optim],
+                name="optimizer",
             )
             reinit_optim = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Optimizer")
@@ -201,7 +204,7 @@ class ANOGAN(BaseModel):
         self.reinit_test_graph_op = [reinit_z, reinit_lr, reinit_optim]
 
         with tf.name_scope("Scores"):
-            list_scores = loss_invert
+            list_scores = self.loss_invert
 
         if self.config.log.enable_summary:
             with tf.name_scope("Training_Summary"):
@@ -226,7 +229,7 @@ class ANOGAN(BaseModel):
                 sum_op_latent = tf.summary.image("heatmap_latent", heatmap_pl_latent)
 
             with tf.name_scope("Validation_Summary"):
-                tf.summary.scalar("valid", rec_error_valid, ["v"])
+                tf.summary.scalar("valid", self.rec_error_valid, ["v"])
 
             with tf.name_scope("image_summary"):
                 tf.summary.image("reconstruct", self.img_gen, 8, ["image"])
@@ -234,7 +237,7 @@ class ANOGAN(BaseModel):
 
             self.sum_op_dis = tf.summary.merge_all("dis")
             self.sum_op_gen = tf.summary.merge_all("gen")
-            self.sum_op = tf.summary.merge([sum_op_dis, sum_op_gen])
+            self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
             self.sum_op_im = tf.summary.merge_all("image")
             self.sum_op_valid = tf.summary.merge_all("v")
 
