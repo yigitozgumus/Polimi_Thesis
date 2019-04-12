@@ -200,41 +200,46 @@ class ALAD(BaseModel):
                 tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_zz"
             )
 
-            self.optimizer = tf.train.AdamOptimizer(
+            self.disc_optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.config.trainer.discriminator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            self.gen_optimizer = tf.train.AdamOptimizer(
+                learning_rate=self.config.trainer.generator_l_rate,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
 
             with tf.control_dependencies(self.update_ops_gen):
-                self.gen_op = self.optimizer.minimize(
+                self.gen_op = self.gen_optimizer.minimize(
                     self.loss_generator,
                     global_step=self.global_step_tensor,
                     var_list=self.gvars,
                 )
             with tf.control_dependencies(self.update_ops_enc):
-                self.enc_op = self.optimizer.minimize(
+                self.enc_op = self.gen_optimizer.minimize(
                     self.loss_encoder,
                     global_step=self.global_step_tensor,
                     var_list=self.evars,
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xz):
-                self.dis_op_xz = self.optimizer.minimize(
+                self.dis_op_xz = self.disc_optimizer.minimize(
                     self.dis_loss_xz,
                     global_step=self.global_step_tensor,
                     var_list=self.dxzvars,
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xx):
-                self.dis_op_xx = self.optimizer.minimize(
+                self.dis_op_xx = self.disc_optimizer.minimize(
                     self.dis_loss_xx,
                     global_step=self.global_step_tensor,
                     var_list=self.dxxvars,
                 )
 
             with tf.control_dependencies(self.update_ops_dis_zz):
-                self.dis_op_zz = self.optimizer.minimize(
+                self.dis_op_zz = self.disc_optimizer.minimize(
                     self.dis_loss_zz,
                     global_step=self.global_step_tensor,
                     var_list=self.dzzvars,
