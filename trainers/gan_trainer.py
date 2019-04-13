@@ -21,46 +21,45 @@ class GANTrainer(BaseTrain):
         # Define the lists for summaries and losses
         gen_losses = []
         disc_losses = []
-        summary_gan = []
-        summary_disc = []
+        summaries = []
 
         # Get the current epoch counter
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         self.sess.run(self.data.iterator.initializer)
+        image = self.data.image
         for _ in loop:
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            gen_loss, disc_loss, summary_g, summary_d = self.train_step(
-                self.data.image, cur_epoch=cur_epoch
-            )
+            gen_loss, disc_loss, summary = self.train_step(image, cur_epoch=cur_epoch)
             gen_losses.append(gen_loss)
             disc_losses.append(disc_loss)
-            summary_gan.append(summary_g)
-            summary_disc.append(summary_d)
+            summaries.append(summary)
         # write the summaries
-        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_gan)
-        self.summarizer.add_tensorboard(cur_epoch, summaries=summary_disc)
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summary)
         # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
         # Generate images between epochs to evaluate
-        rand_noise = np.random.normal(
-            loc=0.0,
-            scale=1.0,
-            size=[
-                self.config.log.num_example_imgs_to_generate,
-                self.config.trainer.noise_dim,
-            ],
-        )
-        feed_dict = {
-            self.model.sample_tensor: rand_noise,
-            self.model.is_training: False,
-        }
-        generator_predictions = self.sess.run(
-            [self.model.sample_image], feed_dict=feed_dict
-        )
-        self.save_generated_images(generator_predictions, cur_epoch)
+        if cur_epoch % self.config.log.frequency_test == 0:
+            noise = np.random.normal(
+                loc=0.0,
+                scale=1.0,
+                size=[
+                    self.config.data_loader.test_batch,
+                    self.config.trainer.noise_dim,
+                ],
+            )
+            image_eval = self.sess.run(image)
+            feed_dict = {
+                self.model.image_tensor: image_eval,
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            reconstruction = self.sess.run(
+                self.model.summary_image, feed_dict=feed_dict
+            )
+            self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
 
         if cur_epoch % self.config.log.show_steps == 0 or cur_epoch == 1:
             self.logger.info(
@@ -109,21 +108,17 @@ class GANTrainer(BaseTrain):
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
         # Train the Discriminator on both real and fake images
-        _, disc_loss, summary_disc = self.sess.run(
-            [
-                self.model.train_disc,
-                self.model.total_disc_loss,
-                self.model.summary_disc,
-            ],
-            feed_dict={
-                self.model.noise_tensor: noise,
-                self.model.image_input: image_eval,
-                self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels,
-                self.model.real_noise: real_noise,
-                self.model.fake_noise: fake_noise,
-                self.model.is_training: True,
-            },
+        feed_dict = {
+            self.model.noise_tensor: noise,
+            self.model.image_input: image_eval,
+            self.model.true_labels: true_labels,
+            self.model.generated_labels: generated_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
+            self.model.is_training: True,
+        }
+        _, disc_loss = self.sess.run(
+            [self.model.train_disc, self.model.total_disc_loss], feed_dict=feed_dict
         )
         # Train the Generator and get the summaries
         # Re create the noise for the generator
@@ -147,18 +142,23 @@ class GANTrainer(BaseTrain):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels
         )
-        _, gen_loss, summary_gan = self.sess.run(
-            [self.model.train_gen, self.model.gen_loss, self.model.summary_gan],
-            feed_dict={
-                self.model.noise_tensor: noise,
-                self.model.image_input: image_eval,
-                self.model.true_labels: true_labels,
-                self.model.generated_labels: generated_labels,
-                self.model.fake_noise: fake_noise,
-                self.model.is_training: True,
-            },
+        feed_dict = {
+            self.model.noise_tensor: noise,
+            self.model.image_input: image_eval,
+            self.model.true_labels: true_labels,
+            self.model.generated_labels: generated_labels,
+            self.model.fake_noise: fake_noise,
+            self.model.is_training: True,
+        }
+        _, gen_loss = self.sess.run(
+            [self.model.train_gen, self.model.gen_loss], feed_dict=feed_dict
         )
-        return gen_loss, disc_loss, summary_gan, summary_disc
+        if self.config.log.enable_summary:
+            sm = self.sess.run(self.model.summary_all, feed_dict=feed_dict)
+        else:
+            sm = None
+
+        return gen_loss, disc_loss, sm
 
     def generate_labels(self, soft_labels):
 

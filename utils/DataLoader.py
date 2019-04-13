@@ -68,7 +68,7 @@ class DataLoader:
                 for idx in range(num_images):
                     top = np.random.randint(0, h - new_h)
                     left = np.random.randint(0, w - new_w)
-                    image = img[top:top + new_h, left:left + new_w]
+                    image = img[top : top + new_h, left : left + new_w]
                     imgs.append(image)
                 self.logger.debug("{} images generated".format(num_images * (ind + 1)))
             # Check if the folder is there
@@ -99,12 +99,12 @@ class DataLoader:
                 for adv_h in range(self.h_turns):
                     for adv_w in range(self.w_turns):
                         image = img_[
-                            adv_h * size: (adv_h + 1) * size,
-                            adv_w * size: (adv_w + 1) * size,
+                            adv_h * size : (adv_h + 1) * size,
+                            adv_w * size : (adv_w + 1) * size,
                         ]
                         tag = tag_[
-                            adv_h * size: (adv_h + 1) * size,
-                            adv_w * size: (adv_w + 1) * size,
+                            adv_h * size : (adv_h + 1) * size,
+                            adv_w * size : (adv_w + 1) * size,
                         ]
                         img_files.append(image)
                         tag_files.append(tag)

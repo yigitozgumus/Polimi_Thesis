@@ -40,10 +40,10 @@
   "log": {
     "name": "summarizer.Summarizer",
     "enable_summary": true,
-    "show_steps": 10,
+    "show_steps": 1,
     "max_to_keep": 5,
     "num_example_imgs_to_generate": 25,
-    "num_epochs_to_test": 1,
+    "frequency_test": 5,
     "output_folder": "Experiments"
   }
 }
