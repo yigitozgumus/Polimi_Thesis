@@ -395,7 +395,7 @@ class ALAD(BaseModel):
         # Change the layer type if do_spectral_norm is true
         layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Encoder", reuse=tf.AUTO_REUSE, custom_getter=getter):
-            img_tensor = tf.reshape(img_tensor, [-1, 28, 28, 1])
+            img_tensor = tf.reshape(img_tensor, [-1, 32, 32, 1])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
@@ -497,33 +497,15 @@ class ALAD(BaseModel):
             reuse: sharing variables or not
         """
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE, custom_getter=getter):
-            net = tf.reshape(noise_tensor, [-1, self.config.trainer.noise_dim])
-            net_name = "layer_1"
-            with tf.variable_scope(net_name):
-                net = tf.layers.dense(
-                    net,
-                    units=7 * 7 * 512,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
-                    name="fc",
-                )
-                net = tf.layers.batch_normalization(
-                    inputs=net,
-                    momentum=self.config.trainer.batch_momentum,
-                    training=self.is_training,
-                    name="dense/bn",
-                )
-                net = tf.nn.relu(features=net, name="dense/relu")
-                net = tf.reshape(net, shape=[-1, 7, 7, 512])
+            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
 
-            net_name = "layer_2"
+            net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=512,
                     kernel_size=4,
-                    strides=(1, 1),
-                    padding="same",
+                    strides=(2, 2),
+                    padding="valid",
                     kernel_initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=0.01
                     ),
@@ -537,7 +519,7 @@ class ALAD(BaseModel):
                 )
                 net = tf.nn.relu(features=net, name="tconv1/relu")
 
-            net_name = "layer_3"
+            net_name = "layer_2"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=256,
@@ -557,7 +539,7 @@ class ALAD(BaseModel):
                 )
                 net = tf.nn.relu(features=net, name="tconv2/relu")
 
-            net_name = "layer_4"
+            net_name = "layer_3"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=128,
@@ -577,12 +559,12 @@ class ALAD(BaseModel):
                 )
                 net = tf.nn.relu(features=net, name="tconv3/relu")
 
-            net_name = "layer_5"
+            net_name = "layer_4"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=1,
                     kernel_size=4,
-                    strides=(1, 1),
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=0.01

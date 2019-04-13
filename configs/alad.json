@@ -11,7 +11,7 @@
   "data_loader": {
     "name": "data_generator.DataGenerator",
     "buffer_size": 51200,
-    "image_size": 28,
+    "image_size": 32,
     "batch_size": 32,
     "num_epochs": 2000,
     "num_iter_per_epoch": 1600,
@@ -25,7 +25,7 @@
   "trainer": {
     "name": "alad_trainer.ALAD_Trainer",
     "noise_dim": 100,
-    "image_dims": [28, 28, 1],
+    "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": true,
     "discriminator_l_rate": 0.00005,
