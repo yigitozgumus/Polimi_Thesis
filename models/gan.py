@@ -166,6 +166,7 @@ class GAN(BaseModel):
         # Make the Generator model
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE):
             # Densely connected Neural Network layer with 12544 Neurons.
+            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
             x_g = tf.layers.Conv2DTranspose(
                 filters=512,
                 kernel_size=4,
@@ -174,7 +175,7 @@ class GAN(BaseModel):
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_0",
-            )(noise_tensor)
+            )(net)
             # Normalize the output of the Layer
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -270,6 +271,7 @@ class GAN(BaseModel):
         with tf.variable_scope("Generator") as scope:
             scope.reuse_variables()
             # Densely connected Neural Network layer with 12544 Neurons.
+            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
             x_g = tf.layers.Conv2DTranspose(
                 filters=512,
                 kernel_size=4,
@@ -278,7 +280,7 @@ class GAN(BaseModel):
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_0",
-            )(noise_tensor)
+            )(net)
             # Normalize the output of the Layer
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
