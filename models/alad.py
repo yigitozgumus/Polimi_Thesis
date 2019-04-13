@@ -498,7 +498,6 @@ class ALAD(BaseModel):
         """
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE, custom_getter=getter):
             net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
-
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(

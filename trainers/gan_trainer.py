@@ -52,7 +52,7 @@ class GANTrainer(BaseTrain):
             )
             image_eval = self.sess.run(image)
             feed_dict = {
-                self.model.image_tensor: image_eval,
+                self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
@@ -84,6 +84,7 @@ class GANTrainer(BaseTrain):
             self.config.trainer.soft_labels
         )
         # Instance noise additions
+
         if self.config.trainer.include_noise:
             # If we want to add this is will add the noises
             real_noise = np.random.normal(
