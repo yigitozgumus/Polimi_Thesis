@@ -156,10 +156,10 @@ class GAN(BaseModel):
 
     def generator(self, noise_tensor):
         # Make the Generator model
-        with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE) as scope:
+        with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE):
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.layers.Dense(
-                units=7 * 7 * 512,
+                units=4 * 4 * 512,
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_dense",
@@ -176,20 +176,20 @@ class GAN(BaseModel):
                 features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_1"
             )
             # Reshaping the output
-            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 512])
+            x_g = tf.reshape(x_g, shape=[-1, 4, 4, 512])
             # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
+            assert x_g.get_shape().as_list() == [None, 4, 4, 512]
             # First Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=512,
                 kernel_size=4,
-                strides=(1, 1),
+                strides=(2, 2),
                 padding="same",
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_1",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
+            assert x_g.get_shape().as_list() == [None, 8, 8, 512]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -210,7 +210,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_2",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 256]
+            assert x_g.get_shape().as_list() == [None, 16, 16, 256]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -231,7 +231,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_3",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            assert x_g.get_shape().as_list() == [None, 32, 32, 128]
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
@@ -252,7 +252,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_4",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            assert x_g.get_shape().as_list() == [None, 32, 32, 1]
             return x_g
 
     def sampler(self, noise_tensor):
@@ -260,7 +260,7 @@ class GAN(BaseModel):
             scope.reuse_variables()
             # Densely connected Neural Network layer with 12544 Neurons.
             x_g = tf.layers.Dense(
-                units=7 * 7 * 512,
+                units=4 * 4 * 512,
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_dense",
@@ -277,20 +277,20 @@ class GAN(BaseModel):
                 features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="g_lr_1"
             )
             # Reshaping the output
-            x_g = tf.reshape(x_g, shape=[-1, 7, 7, 512])
+            x_g = tf.reshape(x_g, shape=[-1, 4, 4, 512])
             # Check the size of the current output just in case
-            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
+            assert x_g.get_shape().as_list() == [None, 4, 4, 512]
             # First Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=512,
                 kernel_size=4,
-                strides=(1, 1),
+                strides=(2, 2),
                 padding="same",
                 use_bias=False,
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_1",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 7, 7, 512]
+            assert x_g.get_shape().as_list() == [None, 8, 8, 512]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -311,7 +311,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_2",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 14, 14, 256]
+            assert x_g.get_shape().as_list() == [None, 16, 16, 256]
 
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -332,7 +332,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_3",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 128]
+            assert x_g.get_shape().as_list() == [None, 32, 32, 128]
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
                 momentum=self.config.trainer.batch_momentum,
@@ -353,7 +353,7 @@ class GAN(BaseModel):
                 kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
                 name="g_conv2dtr_4",
             )(x_g)
-            assert x_g.get_shape().as_list() == [None, 28, 28, 1]
+            assert x_g.get_shape().as_list() == [None, 32, 32, 1]
             return x_g
 
     def discriminator(self, image, reuse=False):
