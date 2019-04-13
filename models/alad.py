@@ -521,7 +521,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=512,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(1, 1),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
@@ -541,7 +541,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
@@ -561,7 +561,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
@@ -581,7 +581,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=1,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(1, 1),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
@@ -687,8 +687,8 @@ class ALAD(BaseModel):
                 z = layers.conv2d(
                     z,
                     filters=512,
-                    kernel_size=1,
-                    strides=1,
+                    kernel_size=4,
+                    strides=2,
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=0.01
@@ -712,8 +712,8 @@ class ALAD(BaseModel):
                 z = layers.conv2d(
                     z,
                     filters=512,
-                    kernel_size=1,
-                    strides=1,
+                    kernel_size=4,
+                    strides=2,
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=0.01
