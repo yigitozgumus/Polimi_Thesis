@@ -86,14 +86,14 @@ class GAN(BaseModel):
         ########################################################################
         s_gen_loss = tf.summary.scalar("Generator_Loss", self.gen_loss)
         s_gen_img = tf.summary.image(
-            "From_Noise", tf.reshape(self.generated_sample, [-1, 28, 28, 1])[-2:-1]
+            "From_Noise", tf.reshape(self.generated_sample, [-1, 32, 32, 1])[-2:-1]
         )
         self.summary_gan = tf.summary.merge(inputs=[s_gen_loss, s_gen_img])
         s_disc_r = tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real)
         s_disc_f = tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake)
         s_disc_t = tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss)
         s_disc_img = tf.summary.image(
-            "Real_Image", tf.reshape(self.image_input, [-1, 28, 28, 1])[-2:-1]
+            "Real_Image", tf.reshape(self.image_input, [-1, 32, 32, 1])[-2:-1]
         )
         self.summary_disc = tf.summary.merge(
             inputs=[s_disc_r, s_disc_f, s_disc_t, s_disc_img]
