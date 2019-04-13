@@ -148,6 +148,7 @@ class GANTrainer(BaseTrain):
             self.model.image_input: image_eval,
             self.model.true_labels: true_labels,
             self.model.generated_labels: generated_labels,
+            self.model.real_noise: real_noise,
             self.model.fake_noise: fake_noise,
             self.model.is_training: True,
         }
