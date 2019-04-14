@@ -248,7 +248,9 @@ class BIGAN(BaseModel):
                     name="conv",
                 )(x_e)
                 x_e = tf.nn.leaky_relu(
-                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    features=x_e,
+                    alpha=self.config.trainer.leakyReLU_alpha,
+                    name="leaky_relu",
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):

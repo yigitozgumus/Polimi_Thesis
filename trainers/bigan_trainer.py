@@ -108,7 +108,8 @@ class BIGANTrainer(BaseTrain):
                 self.config.trainer.weight,
                 self.config.trainer.label,
             ),
-            directory=r"results/bigan/mnist/{}/{}/".format(
+            directory=self.config.log.result_dir
+            + "/bigan/mnist/{}/{}/".format(
                 self.config.trainer.loss_method, self.config.trainer.weight
             ),
         )
