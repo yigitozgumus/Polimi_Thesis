@@ -36,7 +36,7 @@ class GANTrainer(BaseTrain):
             disc_losses.append(disc_loss)
             summaries.append(summary)
         # write the summaries
-        self.summarizer.add_tensorboard(cur_epoch, summaries=summary)
+        self.summarizer.add_tensorboard(cur_epoch, summaries=summaries)
         # Compute the means of the losses
         gen_loss_m = np.mean(gen_losses)
         disc_loss_m = np.mean(disc_losses)
@@ -53,7 +53,7 @@ class GANTrainer(BaseTrain):
             image_eval = self.sess.run(image)
             feed_dict = {
                 self.model.image_input: image_eval,
-                self.model.noise_tensor: noise,
+                self.model.sample_tensor: noise,
                 self.model.is_training: False,
             }
             reconstruction = self.sess.run(
