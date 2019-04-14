@@ -52,7 +52,7 @@ class BIGANTrainer(BaseTrain):
             )
             image_eval = self.sess.run(image)
             feed_dict = {
-                self.model.image_tensor: image_eval,
+                self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
@@ -88,7 +88,7 @@ class BIGANTrainer(BaseTrain):
                 size=[self.config.data_loader.test_batch, self.noise_dim],
             )
             feed_dict = {
-                self.model.image_tensor: test_batch,
+                self.model.image_input: test_batch,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
@@ -121,7 +121,7 @@ class BIGANTrainer(BaseTrain):
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             self.model.is_training: True,
         }
@@ -140,14 +140,14 @@ class BIGANTrainer(BaseTrain):
             loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
         )
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             self.model.is_training: True,
         }
         _, _, le, lg, sm_g = self.sess.run(
             [
                 self.model.train_gen_op,
-                self.model.trian_enc_op,
+                self.model.train_enc_op,
                 self.model.loss_encoder,
                 self.model.loss_generator,
                 self.model.sum_op_gen,

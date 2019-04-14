@@ -248,7 +248,7 @@ class BIGAN(BaseModel):
                     name="conv",
                 )(x_e)
                 x_e = tf.nn.leaky_relu(
-                    x_e, alpha=self.config.trainer.leaky_ReLU_alpha, name="leaky_relu"
+                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
@@ -267,7 +267,7 @@ class BIGAN(BaseModel):
                 )
                 x_e = tf.nn.leaky_relu(
                     features=x_e,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
             net_name = "Layer_3"
@@ -287,7 +287,7 @@ class BIGAN(BaseModel):
                 )
                 x_e = tf.nn.leaky_relu(
                     features=x_e,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
             x_e = tf.layers.Flatten()(x_e)
@@ -409,7 +409,7 @@ class BIGAN(BaseModel):
                 )(image)
                 x_d = tf.nn.leaky_relu(
                     features=x_d,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
                 x_d = tf.layers.dropout(
@@ -430,7 +430,7 @@ class BIGAN(BaseModel):
                 )(x_d)
                 x_d = tf.nn.leaky_relu(
                     features=x_d,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
                 x_d = tf.layers.dropout(
@@ -449,7 +449,7 @@ class BIGAN(BaseModel):
                 )(noise_input)
                 z = tf.nn.leaky_relu(
                     features=z,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
                 z = tf.layers.dropout(
@@ -471,7 +471,7 @@ class BIGAN(BaseModel):
                 )(y)
                 y = tf.nn.leaky_relu(
                     features=y,
-                    alpha=self.config.trainer.leaky_ReLU_alpha,
+                    alpha=self.config.trainer.leakyReLU_alpha,
                     name="leaky_relu",
                 )
                 y = tf.layers.dropout(
