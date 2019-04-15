@@ -80,20 +80,19 @@ class GAN(BaseModel):
                 self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
 
             with tf.name_scope("Generator_Loss"):
-                if self.config.trainer.loss_method == "cross_e":
-                    if self.config.trainer.soft_labels:
-                        labels = tf.zeros_like(disc_fake)
-                    else:
-                        labels = tf.ones_like(disc_fake)
-                    self.gen_loss = tf.reduce_mean(
-                        tf.losses.sigmoid_cross_entropy(labels, disc_fake)
-                    )
-                elif self.config.trainer.loss_method == "fm":
+                # if self.config.trainer.loss_method == "cross_e":
+                if self.config.trainer.soft_labels:
+                    labels = tf.zeros_like(disc_fake)
+                else:
+                    labels = tf.ones_like(disc_fake)
+                self.gen_loss = tf.reduce_mean(
+                    tf.losses.sigmoid_cross_entropy(labels, disc_fake)
+                )
+                if self.config.trainer.loss_method == "fm":
                     fm = inter_layer_real - inter_layer_gen
-                    fm = tf.layers.Flatten()(fm)
-                    self.gen_loss = tf.norm(
-                        fm, ord=self.config.trainer.degree, axis=1, keepdims=False
-                    )
+                    fm = tf.reduce_mean(tf.square(fm))
+
+                    self.gen_loss += fm
 
         # Store the loss values for the Tensorboard
         ########################################################################
@@ -113,8 +112,8 @@ class GAN(BaseModel):
             with tf.name_scope("Gen_Summary"):
                 tf.summary.scalar("Generator_Loss", self.gen_loss, ["gen"])
             with tf.name_scope("Img_Summary"):
-                tf.summary.image("From_Noise", self.sample_image, 8, ["image"])
-                tf.summary.image("Real_Image", self.image_input, 8, ["image"])
+                tf.summary.image("From_Noise", self.sample_image, 3, ["image"])
+                tf.summary.image("Real_Image", self.image_input, 3, ["image"])
 
         self.summary_gen = tf.summary.merge_all("gen")
         self.summary_dis = tf.summary.merge_all("dis")
@@ -451,10 +450,11 @@ class GAN(BaseModel):
             )
 
             x_d = tf.layers.Flatten(name="d_flatten")(x_d)
-            intermediate_layer = x_d
+
             x_d = tf.layers.Dropout(
                 rate=self.config.trainer.dropout_rate, name="d_dropout"
             )(x_d)
+            intermediate_layer = x_d
             x_d = tf.layers.Dense(units=1, name="d_dense")(x_d)
             return x_d, intermediate_layer
 

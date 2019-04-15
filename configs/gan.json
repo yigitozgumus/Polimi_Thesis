@@ -15,7 +15,8 @@
     "batch_size": 32,
     "num_epochs": 1000,
     "num_iter_per_epoch": 1600,
-    "num_parallel_calls": 8
+    "num_parallel_calls": 8,
+    "test_batch": 36
   },
   "trainer": {
     "name": "gan_trainer.GANTrainer",
@@ -35,7 +36,7 @@
     "spectral_norm": false,
     "allow_zz": true,
     "enable_early_stop": true,
-    "loss_methd": "fm",
+    "loss_method": "fm",
     "degree": 1
   },
   "log": {
