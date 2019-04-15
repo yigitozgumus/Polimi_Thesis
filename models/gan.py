@@ -21,6 +21,7 @@ class GAN(BaseModel):
         self.sample_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="sample"
         )
+        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
 
         # Random Noise addition to both image and the noise
         # This makes it harder for the discriminator to do it's job, preventing
@@ -183,16 +184,9 @@ class GAN(BaseModel):
         # Make the Generator model
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE):
             # Densely connected Neural Network layer with 12544 Neurons.
-            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
-            x_g = tf.layers.Conv2DTranspose(
-                filters=512,
-                kernel_size=4,
-                strides=(2, 2),
-                padding="valid",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                name="g_conv2dtr_0",
-            )(net)
+            x_g = tf.layers.Dense(
+                units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="g_dense"
+            )(noise_tensor)
             # Normalize the output of the Layer
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -214,8 +208,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_1",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 8, 8, 512]
@@ -235,8 +228,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_2",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 16, 16, 256]
@@ -256,8 +248,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_3",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 32, 32, 128]
@@ -276,9 +267,8 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(1, 1),
                 padding="same",
-                use_bias=False,
                 activation=tf.nn.tanh,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_4",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 32, 32, 1]
@@ -288,16 +278,9 @@ class GAN(BaseModel):
         with tf.variable_scope("Generator") as scope:
             scope.reuse_variables()
             # Densely connected Neural Network layer with 12544 Neurons.
-            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
-            x_g = tf.layers.Conv2DTranspose(
-                filters=512,
-                kernel_size=4,
-                strides=(2, 2),
-                padding="valid",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                name="g_conv2dtr_0",
-            )(net)
+            x_g = tf.layers.Dense(
+                units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="g_dense"
+            )(noise_tensor)
             # Normalize the output of the Layer
             x_g = tf.layers.batch_normalization(
                 inputs=x_g,
@@ -319,8 +302,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_1",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 8, 8, 512]
@@ -340,8 +322,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_2",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 16, 16, 256]
@@ -361,8 +342,7 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(2, 2),
                 padding="same",
-                use_bias=False,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_3",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 32, 32, 128]
@@ -381,9 +361,8 @@ class GAN(BaseModel):
                 kernel_size=4,
                 strides=(1, 1),
                 padding="same",
-                use_bias=False,
                 activation=tf.nn.tanh,
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_4",
             )(x_g)
             assert x_g.get_shape().as_list() == [None, 32, 32, 1]
@@ -399,7 +378,7 @@ class GAN(BaseModel):
                 kernel_size=5,
                 strides=(1, 1),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv1",
             )(image)
             x_d = tf.layers.batch_normalization(
@@ -417,7 +396,7 @@ class GAN(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv_2",
             )(x_d)
             x_d = tf.layers.batch_normalization(
@@ -436,7 +415,7 @@ class GAN(BaseModel):
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",
-                kernel_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                kernel_initializer=self.init_kernel,
                 name="d_conv_3",
             )(x_d)
             x_d = tf.layers.batch_normalization(
