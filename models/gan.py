@@ -46,39 +46,54 @@ class GAN(BaseModel):
         )
         # Full Model Scope
         with tf.variable_scope("DCGAN"):
-            self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
-            disc_real = self.discriminator(self.image_input + self.real_noise)
-            disc_fake = self.discriminator(self.generated_sample, reuse=True)
-            self.sample_image = self.sampler(self.sample_tensor)
+            with tf.variable_scope("Generator_Model"):
+                self.generated_sample = (
+                    self.generator(self.noise_tensor) + self.fake_noise
+                )
+            with tf.variable_scope("Discriminator_Model"):
+                disc_real, inter_layer_real = self.discriminator(
+                    self.image_input + self.real_noise
+                )
+                disc_fake, inter_layer_gen = self.discriminator(
+                    self.generated_sample, reuse=True
+                )
+            with tf.variable_scope("Generator_Model"):
+                self.sample_image = self.sampler(self.sample_tensor)
 
-            # Losses of the training of Generator and Discriminator
-            ########################################################################
-            # METRICS
-            ########################################################################
+        # Losses of the training of Generator and Discriminator
+        ########################################################################
+        # METRICS
+        ########################################################################
+        with tf.name_scope("Loss_Functions"):
+            with tf.name_scope("Discriminator_Loss"):
+                self.disc_loss_real = tf.reduce_mean(
+                    tf.losses.sigmoid_cross_entropy(
+                        multi_class_labels=self.true_labels, logits=disc_real
+                    )
+                )
+                self.disc_loss_fake = tf.reduce_mean(
+                    tf.losses.sigmoid_cross_entropy(
+                        multi_class_labels=self.generated_labels, logits=disc_fake
+                    )
+                )
+                # Sum the both losses
+                self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
 
-        with tf.name_scope("Discriminator_Loss"):
-            self.disc_loss_real = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=self.true_labels, logits=disc_real
-                )
-            )
-            self.disc_loss_fake = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=self.generated_labels, logits=disc_fake
-                )
-            )
-            # Sum the both losses
-            self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
-
-        with tf.name_scope("Generator_Loss"):
-            if self.config.trainer.soft_labels:
-                self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(tf.zeros_like(disc_fake), disc_fake)
-                )
-            else:
-                self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(tf.ones_like(disc_fake), disc_fake)
-                )
+            with tf.name_scope("Generator_Loss"):
+                if self.config.trainer.loss_method == "cross_e":
+                    if self.config.trainer.soft_labels:
+                        labels = tf.zeros_like(disc_fake)
+                    else:
+                        labels = tf.ones_like(disc_fake)
+                    self.gen_loss = tf.reduce_mean(
+                        tf.losses.sigmoid_cross_entropy(labels, disc_fake)
+                    )
+                elif self.config.trainer.loss_method == "fm":
+                    fm = inter_layer_real - inter_layer_gen
+                    fm = tf.layers.Flatten()(fm)
+                    self.gen_loss = tf.norm(
+                        fm, ord=self.config.trainer.degree, axis=1, keepdims=False
+                    )
 
         # Store the loss values for the Tensorboard
         ########################################################################
@@ -111,50 +126,53 @@ class GAN(BaseModel):
         ########################################################################
         # OPTIMIZATION
         ########################################################################
-        # Build the Optimizers
-        self.generator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.generator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
-        )
-        self.discriminator_optimizer = tf.train.AdamOptimizer(
-            self.config.trainer.discriminator_l_rate,
-            beta1=self.config.trainer.optimizer_adam_beta1,
-            beta2=self.config.trainer.optimizer_adam_beta2,
-        )
-        # Collect all the variables
-        all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-        # Generator Network Variables
-        self.generator_vars = [
-            v for v in all_variables if v.name.startswith("DCGAN/Generator")
-        ]
-        # Discriminator Network Variables
-        self.discriminator_vars = [
-            v for v in all_variables if v.name.startswith("DCGAN/Discriminator")
-        ]
-        # Create Training Operations
-        # Generator Network Operations
-        self.gen_update_ops = tf.get_collection(
-            tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Generator"
-        )
-        # Discriminator Network Operations
-        self.disc_update_ops = tf.get_collection(
-            tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Discriminator"
-        )
-        # Initialization of Optimizers
+        with tf.name_scope("Optimization"):
+            # Build the Optimizers
+            self.generator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.generator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            self.discriminator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.discriminator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            # Collect all the variables
+            all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+            # Generator Network Variables
+            self.generator_vars = [
+                v for v in all_variables if v.name.startswith("DCGAN/Generator_Model")
+            ]
+            # Discriminator Network Variables
+            self.discriminator_vars = [
+                v
+                for v in all_variables
+                if v.name.startswith("DCGAN/Discriminator_Model")
+            ]
+            # Create Training Operations
+            # Generator Network Operations
+            self.gen_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Generator_Model"
+            )
+            # Discriminator Network Operations
+            self.disc_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="DCGAN/Discriminator_Model"
+            )
+            # Initialization of Optimizers
 
-        with tf.control_dependencies(self.gen_update_ops):
-            self.train_gen = self.generator_optimizer.minimize(
-                self.gen_loss,
-                global_step=self.global_step_tensor,
-                var_list=self.generator_vars,
-            )
-        with tf.control_dependencies(self.disc_update_ops):
-            self.train_disc = self.discriminator_optimizer.minimize(
-                self.total_disc_loss,
-                global_step=self.global_step_tensor,
-                var_list=self.discriminator_vars,
-            )
+            with tf.control_dependencies(self.gen_update_ops):
+                self.train_gen = self.generator_optimizer.minimize(
+                    self.gen_loss,
+                    global_step=self.global_step_tensor,
+                    var_list=self.generator_vars,
+                )
+            with tf.control_dependencies(self.disc_update_ops):
+                self.train_disc = self.discriminator_optimizer.minimize(
+                    self.total_disc_loss,
+                    global_step=self.global_step_tensor,
+                    var_list=self.discriminator_vars,
+                )
         for i in range(0, 10):
             with tf.name_scope("layer" + str(i)):
                 pesos = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -433,11 +451,12 @@ class GAN(BaseModel):
             )
 
             x_d = tf.layers.Flatten(name="d_flatten")(x_d)
+            intermediate_layer = x_d
             x_d = tf.layers.Dropout(
                 rate=self.config.trainer.dropout_rate, name="d_dropout"
             )(x_d)
             x_d = tf.layers.Dense(units=1, name="d_dense")(x_d)
-            return x_d
+            return x_d, intermediate_layer
 
     def init_saver(self):
         self.saver = tf.train.Saver(max_to_keep=self.config.log.max_to_keep)

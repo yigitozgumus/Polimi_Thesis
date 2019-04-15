@@ -20,6 +20,7 @@ import seaborn as sns
 import pandas as pd
 import time
 import matplotlib.cm as cm
+from utils.utils import working_directory
 
 # import cv2
 sns.set(color_codes=True)
@@ -50,8 +51,9 @@ def do_prc(scores, true_labels, file_name="", directory="", plot=True):
         plt.title("Precision-Recall curve: AUC=%0.4f" % (prc_auc))
         if not os.path.exists(directory):
             os.makedirs(directory)
-        plt.savefig("results/" + file_name + "_prc.jpg")
-        plt.close()
+        with working_directory(directory):
+            plt.savefig(file_name + "_prc.jpg")
+            plt.close()
 
     return prc_auc
 

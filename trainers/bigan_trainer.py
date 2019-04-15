@@ -103,7 +103,7 @@ class BIGANTrainer(BaseTrain):
         prc_auc = do_prc(
             scores,
             true_labels,
-            file_name=r"bigan/mnist/{}/{}/{}".format(
+            file_name=r"bigan_mnist_{}_{}_{}".format(
                 self.config.trainer.loss_method,
                 self.config.trainer.weight,
                 self.config.trainer.label,

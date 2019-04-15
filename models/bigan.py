@@ -29,9 +29,11 @@ class BIGAN(BaseModel):
         with tf.variable_scope("BIGAN"):
             with tf.variable_scope("Encoder_Model"):
                 self.noise_gen = self.encoder(self.image_input)
+
             with tf.variable_scope("Generator_Model"):
-                self.image_gen = self.decoder(self.noise_tensor)
-                self.reconstructed = self.decoder(self.noise_gen)
+                self.image_gen = self.generator(self.noise_tensor)
+                self.reconstructed = self.generator(self.noise_gen)
+
             with tf.variable_scope("Discriminator_Model"):
                 l_encoder, inter_layer_inp = self.discriminator(
                     self.noise_gen, self.image_input
@@ -178,23 +180,24 @@ class BIGAN(BaseModel):
                     self.image_input, getter=get_getter(self.enc_ema)
                 )
             with tf.variable_scope("Generator_Model"):
-                self.reconstruct_ema = self.decoder(
+                self.reconstruct_ema = self.generator(
                     self.noise_gen_ema, getter=get_getter(self.gen_ema)
                 )
             with tf.variable_scope("Discriminator_Model"):
                 self.l_encoder_ema, self.inter_layer_inp_ema = self.discriminator(
-                    self.noise_gen_ema,
-                    self.image_input,
+                    self.image_input,  # x
+                    self.noise_gen_ema,  # E(x)
                     getter=get_getter(self.dis_ema),
                 )
                 self.l_generator_ema, self.inter_layer_rct_ema = self.discriminator(
-                    self.noise_gen_ema,
-                    self.reconstruct_ema,
+                    self.noise_gen_ema,  # E(x)
+                    self.reconstruct_ema,  # G(E(x))
                     getter=get_getter(self.dis_ema),
                 )
 
         with tf.name_scope("Testing"):
             with tf.variable_scope("Reconstruction_Loss"):
+                # LG(x) = ||x - G(E(x))||_1
                 delta = self.image_input - self.reconstruct_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 self.gen_score = tf.norm(
@@ -207,8 +210,8 @@ class BIGAN(BaseModel):
             with tf.variable_scope("Discriminator_Loss"):
                 if self.config.trainer.loss_method == "cross_e":
                     self.dis_score = tf.nn.sigmoid_cross_entropy_with_logits(
-                        labels=tf.ones_like(self.l_generator_ema),
-                        logits=self.l_generator_ema,
+                        labels=tf.ones_like(self.l_encoder_ema),
+                        logits=self.l_encoder_ema,
                     )
                 elif self.config.trainer.loss_method == "fm":
                     fm = self.inter_layer_inp_ema - self.inter_layer_rct_ema
@@ -224,7 +227,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope("Score"):
                 self.list_scores = (
                     1 - self.config.trainer.weight
-                ) * self.gen_score + self.config.trainer.weight * self.dis_score
+                ) * self.dis_score + self.config.trainer.weight * self.gen_score
 
     def encoder(self, image_input, getter=None):
         """Encoder architecture in tensorflow Maps the data into the latent
@@ -302,7 +305,7 @@ class BIGAN(BaseModel):
                 )(x_e)
         return x_e
 
-    def decoder(self, noise_input, getter=None):
+    def generator(self, noise_input, getter=None):
         """Decoder architecture in tensorflow Generates data from the latent
         space
 

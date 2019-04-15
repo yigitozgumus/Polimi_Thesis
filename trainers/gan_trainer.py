@@ -67,14 +67,13 @@ class GANTrainer(BaseTrain):
                     cur_epoch + 1, gen_loss_m, disc_loss_m
                 )
             )
-
         self.model.save(self.sess)
 
     def train_step(self, image, cur_epoch):
         # Generate noise from uniform  distribution between -1 and 1
         # New Noise Generation
         # noise = np.random.uniform(-1., 1.,size=[self.config.batch_size, self.config.noise_dim])
-        sigma = max(0.75 * (10.0 - cur_epoch) / (10), 0.05)
+
         noise = np.random.normal(
             loc=0.0,
             scale=1.0,
@@ -84,27 +83,9 @@ class GANTrainer(BaseTrain):
             self.config.trainer.soft_labels
         )
         # Instance noise additions
-
-        if self.config.trainer.include_noise:
-            # If we want to add this is will add the noises
-            real_noise = np.random.normal(
-                scale=sigma,
-                size=[self.config.data_loader.batch_size]
-                + self.config.trainer.image_dims,
-            )
-            fake_noise = np.random.normal(
-                scale=sigma,
-                size=[self.config.data_loader.batch_size]
-                + self.config.trainer.image_dims,
-            )
-        else:
-            # Otherwise we are just going to add zeros which will not break anything
-            real_noise = np.zeros(
-                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
-            )
-            fake_noise = np.zeros(
-                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
-            )
+        real_noise, fake_noise = self.generate_noise(
+            self.config.trainer.include_noise, cur_epoch
+        )
         # Evaluation of the image
         image_eval = self.sess.run(image)
         # Construct the Feed Dictionary
@@ -128,18 +109,9 @@ class GANTrainer(BaseTrain):
             scale=1.0,
             size=[self.config.data_loader.batch_size, self.config.trainer.noise_dim],
         )
-        if self.config.include_noise:
-            # If we want to add this is will add the noises
-            fake_noise = np.random.normal(
-                scale=sigma,
-                size=[self.config.data_loader.batch_size]
-                + self.config.trainer.image_dims,
-            )
-        else:
-            # Otherwise we are just going to add zeros which will not break anything
-            fake_noise = np.zeros(
-                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
-            )
+        real_noise, fake_noise = self.generate_noise(
+            self.config.trainer.include_noise, cur_epoch
+        )
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels
         )
@@ -190,3 +162,27 @@ class GANTrainer(BaseTrain):
             generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
 
         return true_labels, generated_labels
+
+    def generate_noise(self, include_noise, cur_epoch):
+        sigma = max(0.75 * (10.0 - cur_epoch) / (10), 0.05)
+        if include_noise:
+            # If we want to add this is will add the noises
+            real_noise = np.random.normal(
+                scale=sigma,
+                size=[self.config.data_loader.batch_size]
+                + self.config.trainer.image_dims,
+            )
+            fake_noise = np.random.normal(
+                scale=sigma,
+                size=[self.config.data_loader.batch_size]
+                + self.config.trainer.image_dims,
+            )
+        else:
+            # Otherwise we are just going to add zeros which will not break anything
+            real_noise = np.zeros(
+                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
+            )
+            fake_noise = np.zeros(
+                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
+            )
+        return real_noise, fake_noise
