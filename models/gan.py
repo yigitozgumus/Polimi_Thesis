@@ -27,37 +27,23 @@ class GAN(BaseModel):
         # This makes it harder for the discriminator to do it's job, preventing
         # it from always "winning" the GAN min/max contest
         self.real_noise = tf.placeholder(
-            dtype=tf.float32,
-            shape=[None] + self.config.trainer.image_dims,
-            name="real_noise",
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
         )
         self.fake_noise = tf.placeholder(
-            dtype=tf.float32,
-            shape=[None] + self.config.trainer.image_dims,
-            name="fake_noise",
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
         )
 
         # self.real_image = self.image_input + self.fake_noise
         # Placeholders for the true and fake labels
-        self.true_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="true_labels"
-        )
-        self.generated_labels = tf.placeholder(
-            dtype=tf.float32, shape=[None, 1], name="gen_labels"
-        )
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         # Full Model Scope
         with tf.variable_scope("DCGAN"):
             with tf.variable_scope("Generator_Model"):
-                self.generated_sample = (
-                    self.generator(self.noise_tensor) + self.fake_noise
-                )
+                self.generated_sample = self.generator(self.noise_tensor) + self.fake_noise
             with tf.variable_scope("Discriminator_Model"):
-                disc_real, inter_layer_real = self.discriminator(
-                    self.image_input + self.real_noise
-                )
-                disc_fake, inter_layer_gen = self.discriminator(
-                    self.generated_sample, reuse=True
-                )
+                disc_real, inter_layer_real = self.discriminator(self.image_input + self.real_noise)
+                disc_fake, inter_layer_gen = self.discriminator(self.generated_sample, reuse=True)
             with tf.variable_scope("Generator_Model"):
                 self.sample_image = self.sampler(self.sample_tensor)
 
@@ -86,9 +72,7 @@ class GAN(BaseModel):
                     labels = tf.zeros_like(disc_fake)
                 else:
                     labels = tf.ones_like(disc_fake)
-                self.gen_loss = tf.reduce_mean(
-                    tf.losses.sigmoid_cross_entropy(labels, disc_fake)
-                )
+                self.gen_loss = tf.reduce_mean(tf.losses.sigmoid_cross_entropy(labels, disc_fake))
                 self.total_gen_loss = self.gen_loss
 
                 if self.config.trainer.loss_method == "fm":
@@ -103,19 +87,13 @@ class GAN(BaseModel):
         ########################################################################
         with tf.name_scope("Summary"):
             with tf.name_scope("Dis_Summary"):
-                tf.summary.scalar(
-                    "Discriminator_Real_Loss", self.disc_loss_real, ["dis"]
-                )
-                tf.summary.scalar(
-                    "Discriminator_Gen_Loss", self.disc_loss_fake, ["dis"]
-                )
-                tf.summary.scalar(
-                    "Discriminator_Total_Loss", self.total_disc_loss, ["dis"]
-                )
+                tf.summary.scalar("Discriminator_Real_Loss", self.disc_loss_real, ["dis"])
+                tf.summary.scalar("Discriminator_Gen_Loss", self.disc_loss_fake, ["dis"])
+                tf.summary.scalar("Discriminator_Total_Loss", self.total_disc_loss, ["dis"])
             with tf.name_scope("Gen_Summary"):
                 tf.summary.scalar("Generator_Total_loss", self.total_gen_loss, ["gen"])
                 if self.config.trainer.loss_method == "fm":
-                    tf.summary_scalar("Generator_fm_loss", self.fm, ["gen"])
+                    tf.summary.scalar("Generator_fm_loss", self.fm, ["gen"])
                     tf.summary.scalar("Generator_Loss", self.gen_loss, ["gen"])
 
             with tf.name_scope("Img_Summary"):
@@ -152,9 +130,7 @@ class GAN(BaseModel):
             ]
             # Discriminator Network Variables
             self.discriminator_vars = [
-                v
-                for v in all_variables
-                if v.name.startswith("DCGAN/Discriminator_Model")
+                v for v in all_variables if v.name.startswith("DCGAN/Discriminator_Model")
             ]
             # Create Training Operations
             # Generator Network Operations
@@ -444,9 +420,7 @@ class GAN(BaseModel):
 
             x_d = tf.layers.Flatten(name="d_flatten")(x_d)
 
-            x_d = tf.layers.Dropout(
-                rate=self.config.trainer.dropout_rate, name="d_dropout"
-            )(x_d)
+            x_d = tf.layers.Dropout(rate=self.config.trainer.dropout_rate, name="d_dropout")(x_d)
             intermediate_layer = x_d
             x_d = tf.layers.Dense(units=1, name="d_dense")(x_d)
             return x_d, intermediate_layer
