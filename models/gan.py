@@ -89,11 +89,13 @@ class GAN(BaseModel):
                 self.gen_loss = tf.reduce_mean(
                     tf.losses.sigmoid_cross_entropy(labels, disc_fake)
                 )
+                self.total_gen_loss = self.gen_loss
+
                 if self.config.trainer.loss_method == "fm":
                     fm = inter_layer_real - inter_layer_gen
-                    fm = tf.reduce_mean(tf.square(fm))
+                    self.fm = tf.reduce_mean(tf.square(fm))
 
-                    self.gen_loss += fm
+                    self.total_gen_loss += self.fm
 
         # Store the loss values for the Tensorboard
         ########################################################################
@@ -111,7 +113,11 @@ class GAN(BaseModel):
                     "Discriminator_Total_Loss", self.total_disc_loss, ["dis"]
                 )
             with tf.name_scope("Gen_Summary"):
-                tf.summary.scalar("Generator_Loss", self.gen_loss, ["gen"])
+                tf.summary.scalar("Generator_Total_loss", self.total_gen_loss, ["gen"])
+                if self.config.trainer.loss_method == "fm":
+                    tf.summary_scalar("Generator_fm_loss", self.fm, ["gen"])
+                    tf.summary.scalar("Generator_Loss", self.gen_loss, ["gen"])
+
             with tf.name_scope("Img_Summary"):
                 tf.summary.image("From_Noise", self.sample_image, 3, ["image"])
                 tf.summary.image("Real_Image", self.image_input, 3, ["image"])
@@ -163,7 +169,7 @@ class GAN(BaseModel):
 
             with tf.control_dependencies(self.gen_update_ops):
                 self.train_gen = self.generator_optimizer.minimize(
-                    self.gen_loss,
+                    self.total_gen_loss,
                     global_step=self.global_step_tensor,
                     var_list=self.generator_vars,
                 )
@@ -207,6 +213,7 @@ class GAN(BaseModel):
                 filters=512,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_1",
@@ -227,6 +234,7 @@ class GAN(BaseModel):
                 filters=256,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_2",
@@ -247,6 +255,7 @@ class GAN(BaseModel):
                 filters=128,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_3",
@@ -266,6 +275,7 @@ class GAN(BaseModel):
                 filters=1,
                 kernel_size=4,
                 strides=(1, 1),
+                use_bias=False,
                 padding="same",
                 activation=tf.nn.tanh,
                 kernel_initializer=self.init_kernel,
@@ -301,6 +311,7 @@ class GAN(BaseModel):
                 filters=512,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_1",
@@ -321,6 +332,7 @@ class GAN(BaseModel):
                 filters=256,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_2",
@@ -341,6 +353,7 @@ class GAN(BaseModel):
                 filters=128,
                 kernel_size=4,
                 strides=(2, 2),
+                use_bias=False,
                 padding="same",
                 kernel_initializer=self.init_kernel,
                 name="g_conv2dtr_3",
@@ -360,6 +373,7 @@ class GAN(BaseModel):
                 filters=1,
                 kernel_size=4,
                 strides=(1, 1),
+                use_bias=False,
                 padding="same",
                 activation=tf.nn.tanh,
                 kernel_initializer=self.init_kernel,
@@ -374,7 +388,7 @@ class GAN(BaseModel):
                 scope.reuse_variables()
             # First Convolutional Layer
             x_d = tf.layers.Conv2D(
-                filters=128,
+                filters=32,
                 kernel_size=5,
                 strides=(1, 1),
                 padding="same",
@@ -411,7 +425,7 @@ class GAN(BaseModel):
 
             # Third Convolutional Layer
             x_d = tf.layers.Conv2D(
-                filters=32,
+                filters=128,
                 kernel_size=5,
                 strides=(2, 2),
                 padding="same",

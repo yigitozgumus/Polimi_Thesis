@@ -125,7 +125,7 @@ class GANTrainer(BaseTrain):
             self.model.is_training: True,
         }
         _, gen_loss = self.sess.run(
-            [self.model.train_gen, self.model.gen_loss], feed_dict=feed_dict
+            [self.model.train_gen, self.model.total_gen_loss], feed_dict=feed_dict
         )
         if self.config.log.enable_summary:
             sm = self.sess.run(self.model.summary_all, feed_dict=feed_dict)
