@@ -159,16 +159,16 @@ class BIGANTrainer(BaseTrain):
                 (self.config.data_loader.batch_size, 1)
             ) + np.random.uniform(low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1])
             flipped_idx = np.random.choice(
-                np.arange(len(true_labels)),
-                size=int(self.config.trainer.noise_probability * len(true_labels)),
+                np.arange(len(generated_labels)),
+                size=int(self.config.trainer.noise_probability * len(generated_labels)),
             )
             generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
             true_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
                 low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
             )
             flipped_idx = np.random.choice(
-                np.arange(len(generated_labels)),
-                size=int(self.config.trainer.noise_probability * len(generated_labels)),
+                np.arange(len(true_labels)),
+                size=int(self.config.trainer.noise_probability * len(true_labels)),
             )
             true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
 
