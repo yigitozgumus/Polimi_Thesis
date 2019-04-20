@@ -13,7 +13,7 @@
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
-    "num_epochs": 2000,
+    "num_epochs": 500,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 840,
