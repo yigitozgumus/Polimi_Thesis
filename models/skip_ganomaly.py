@@ -16,7 +16,7 @@ class SkipGANomaly(BaseModel):
 
     def build_model(self):
         # Place holders
-        self.img_size = self.config.data_loader.image_size
+        self.img_size = self.config.data_loader.image_sizen
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
             dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"
@@ -30,20 +30,81 @@ class SkipGANomaly(BaseModel):
         # GRAPH
         ########################################################################
         self.logger.info("Building Training Graph")
-        with tf.variable_scope("Skip_Ganomaly"):
-            with tf.variable_scope("Generator"):
+        with tf.variable_scope("Skip_GANomaly"):
+            with tf.variable_scope("Generator_Model"):
                 self.reconstructed_image = self.generator(self.image_input)
-            with tf.variable_scope("Discriminator"):
-                self.disc_real, inter_layer_real = self.discriminator(self.image_input)
-                self.disc_fake, inter_layer_fake = self.discriminator(self.reconstructed_image)
+            with tf.variable_scope("Discriminator_Model"):
+                self.disc_real, self.inter_layer_real = self.discriminator(self.image_input)
+                self.disc_fake, self.inter_layer_fake = self.discriminator(self.reconstructed_image)
         ########################################################################
         # METRICS
         ########################################################################
+        with tf.variable_scope("Loss_Functions"):
+            with tf.variable_scope("Discriminator_Loss"):
+                # According to the paper we invert the values for the normal/fake. So normal images should be labeled
+                # as zeros
+                self.disc_loss_real = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=tf.zeros_like(self.disc_real), logits=self.disc_real
+                    )
+                )
+                self.disc_loss_fake = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=tf.ones_like(self.disc_fake), logits=self.disc_fake
+                    )
+                )
+                self.disc_loss_total = self.disc_loss_real + self.disc_loss_fake
 
+            with tf.variable_scope("Generator_Loss"):
+                # Adversarial Loss
+                self.gen_adv_loss = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.disc_fake, labels=tf.zeros_like(self.disc_fake)
+                    )
+                )
+                # Contextual Loss
+                context_layers = self.image_input - self.reconstructed_image
+                self.contextual_loss = tf.norm(
+                    context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss"
+                )
+                # Latent Loss
+                layer_diff = self.inter_layer_real - self.inter_layer_fake
+                self.latent_lostt = tf.norm(
+                    layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss"
+                )
         ########################################################################
         # OPTIMIZATION
         ########################################################################
-
+        # Build the Optimizers
+        with tf.name_scope("Optimization"):
+            self.generator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.generator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            self.discriminator_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.discriminator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            # Collect all the variables
+            all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+            # Generator Network Variables
+            self.generator_vars = [
+                v for v in all_variables if v.name.startswith("Skip_GANomaly/Generator_Model")
+            ]
+            # Discriminator Network Variables
+            self.discriminator_vars = [
+                v for v in all_variables if v.name.startswith("Skip_GANomaly/Discriminator_Model")
+            ]
+            # Generator Network Operations
+            self.gen_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="Skip_GANomaly/Generator_Model"
+            )
+            # Discriminator Network Operations
+            self.disc_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="Skip_GANomaly/Discriminator_Model"
+            )
         ########################################################################
         # TESTING
         ########################################################################
@@ -222,6 +283,7 @@ class SkipGANomaly(BaseModel):
                         kernel_size=5,
                         strides=(2, 2),
                         padding="same",
+                        activation=tf.nn.tanh,
                         kernel_initializer=self.init_kernel,
                         name="dec_convt1",
                     )(dec_layer_4)

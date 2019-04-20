@@ -38,9 +38,7 @@ class ANOGAN(BaseModel):
         with tf.variable_scope("Loss_Functions"):
             self.disc_loss_real = tf.reduce_mean(
                 tf.losses.sigmoid_cross_entropy(
-                    multi_class_labels=self.true_labels,
-                    logits=disc_real,
-                    scope="real_disc_loss",
+                    multi_class_labels=self.true_labels, logits=disc_real, scope="real_disc_loss"
                 )
             )
             self.disc_loss_fake = tf.reduce_mean(
@@ -56,9 +54,7 @@ class ANOGAN(BaseModel):
             else:
                 labels = tf.ones_like(disc_fake)
             self.gen_loss = tf.reduce_mean(
-                tf.losses.sigmoid_cross_entropy(
-                    labels, disc_fake, scope="generator_loss"
-                )
+                tf.losses.sigmoid_cross_entropy(labels, disc_fake, scope="generator_loss")
             )
         ########################################################################
         # OPTIMIZATION
@@ -97,9 +93,7 @@ class ANOGAN(BaseModel):
             )
             with tf.control_dependencies(self.gen_update_ops):
                 self.train_gen = self.generator_optimizer.minimize(
-                    self.gen_loss,
-                    global_step=self.global_step_tensor,
-                    var_list=self.generator_vars,
+                    self.gen_loss, global_step=self.global_step_tensor, var_list=self.generator_vars
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.train_disc = self.discriminator_optimizer.minimize(
@@ -109,9 +103,7 @@ class ANOGAN(BaseModel):
                 )
 
             def train_op_with_ema_dependency(vars, op):
-                ema = tf.train.ExponentialMovingAverage(
-                    decay=self.config.trainer.ema_decay
-                )
+                ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
                 maintain_averages_op = ema.apply(vars)
                 with tf.control_dependencies([op]):
                     train_op = tf.group(maintain_averages_op)
@@ -126,21 +118,14 @@ class ANOGAN(BaseModel):
         with tf.variable_scope("Latent_variable"):
             self.z_optim = tf.get_variable(
                 name="z_optim",
-                shape=[
-                    self.config.data_loader.test_batch,
-                    self.config.trainer.noise_dim,
-                ],
+                shape=[self.config.data_loader.test_batch, self.config.trainer.noise_dim],
                 initializer=tf.truncated_normal_initializer(),
             )
             reinit_z = self.z_optim.initializer
 
         with tf.variable_scope("ANOGAN"):
-            x_gen_ema = self.generator(
-                self.noise_tensor, getter=sn.get_getter(self.gen_ema)
-            )
-            self.rec_gen_ema = self.generator(
-                self.z_optim, getter=sn.get_getter(self.gen_ema)
-            )
+            x_gen_ema = self.generator(self.noise_tensor, getter=sn.get_getter(self.gen_ema))
+            self.rec_gen_ema = self.generator(self.z_optim, getter=sn.get_getter(self.gen_ema))
             # Pass real and fake images into discriminator separately
             real_d_ema, inter_layer_real_ema = self.discriminator(
                 self.image_tensor, getter=sn.get_getter(self.dis_ema)
@@ -162,36 +147,37 @@ class ANOGAN(BaseModel):
                 )
 
             with tf.variable_scope("Discriminator_Scores"):
-                # TODO only one score method
-                dis_score = tf.losses.sigmoid_cross_entropy(
-                    tf.ones_like(fake_d_ema), fake_d_ema
-                )
+                if self.config.trainer.loss_method == "c_entropy":
+                    dis_score = tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=tf.ones_like(fake_d_ema), logits=fake_d_ema
+                    )
+                elif self.config.trainer.loss_method == "fm":
+                    fm = inter_layer_real_ema - inter_layer_fake_ema
+                    fm = tf.layers.Flatten()(fm)
+                    dis_score = tf.norm(
+                        fm, ord=self.config.trainer.degree, axis=1, keepdims=False, name="d_loss"
+                    )
 
-                dis_score = tf.squeeze(dis_score)
+                self.dis_score = tf.squeeze(dis_score)
 
             with tf.variable_scope("Score"):
                 self.loss_invert = (
                     self.config.trainer.weight * self.reconstruction_score
-                    + (1 - self.config.trainer.weight) * dis_score
+                    + (1 - self.config.trainer.weight) * self.dis_score
                 )
 
-        self.rec_error_valid = tf.reduce_mean(self.loss_invert)
+        self.recj_error_valid = tf.reduce_mean(self.loss_invert)
 
         with tf.variable_scope("Test_Learning_Rate"):
             step_lr = tf.Variable(0, trainable=False)
             learning_rate_invert = 0.001
             reinit_lr = tf.variables_initializer(
-                tf.get_collection(
-                    tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Learning_Rate"
-                )
+                tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Learning_Rate")
             )
 
         with tf.name_scope("Test_Optimizer"):
             self.invert_op = tf.train.AdamOptimizer(learning_rate_invert).minimize(
-                self.loss_invert,
-                global_step=step_lr,
-                var_list=[self.z_optim],
-                name="optimizer",
+                self.loss_invert, global_step=step_lr, var_list=[self.z_optim], name="optimizer"
             )
             reinit_optim = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Optimizer")
@@ -200,20 +186,14 @@ class ANOGAN(BaseModel):
         self.reinit_test_graph_op = [reinit_z, reinit_lr, reinit_optim]
 
         with tf.name_scope("Scores"):
-            list_scores = self.loss_invert
+            self.list_scores = self.loss_invert
 
         if self.config.log.enable_summary:
             with tf.name_scope("Training_Summary"):
                 with tf.name_scope("Dis_Summary"):
-                    tf.summary.scalar(
-                        "Real_Discriminator_Loss", self.disc_loss_real, ["dis"]
-                    )
-                    tf.summary.scalar(
-                        "Fake_Discriminator_Loss", self.disc_loss_fake, ["dis"]
-                    )
-                    tf.summary.scalar(
-                        "Discriminator_Loss", self.total_disc_loss, ["dis"]
-                    )
+                    tf.summary.scalar("Real_Discriminator_Loss", self.disc_loss_real, ["dis"])
+                    tf.summary.scalar("Fake_Discriminator_Loss", self.disc_loss_fake, ["dis"])
+                    tf.summary.scalar("Discriminator_Loss", self.total_disc_loss, ["dis"])
 
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("Loss_Generator", self.gen_loss, ["gen"])
@@ -253,9 +233,7 @@ class ANOGAN(BaseModel):
                 net = tf.layers.dense(
                     net,
                     units=7 * 7 * 512,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
                 net = tf.layers.batch_normalization(
@@ -274,9 +252,7 @@ class ANOGAN(BaseModel):
                     kernel_size=5,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv1",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -294,9 +270,7 @@ class ANOGAN(BaseModel):
                     kernel_size=5,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv2",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -314,9 +288,7 @@ class ANOGAN(BaseModel):
                     kernel_size=5,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv3",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -334,9 +306,7 @@ class ANOGAN(BaseModel):
                     kernel_size=5,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv4",
                 )(net)
                 net = tf.nn.tanh(net, name="tconv4/tanh")
@@ -354,9 +324,7 @@ class ANOGAN(BaseModel):
             reuse: sharing variables or not
             do_spectral_norm:
         """
-        with tf.variable_scope(
-            "Discriminator", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ):
+        with tf.variable_scope("Discriminator", reuse=tf.AUTO_REUSE, custom_getter=getter):
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
@@ -365,15 +333,11 @@ class ANOGAN(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv1",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv1/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv1/leaky_relu"
                 )
 
             net_name = "layer_2"
@@ -384,9 +348,7 @@ class ANOGAN(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -396,9 +358,7 @@ class ANOGAN(BaseModel):
                     name="tconv2/bn",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv2/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
                 )
             net_name = "layer_3"
             with tf.variable_scope(net_name):
@@ -408,9 +368,7 @@ class ANOGAN(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -420,9 +378,7 @@ class ANOGAN(BaseModel):
                     name="tconv3/bn",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv3/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv3/leaky_relu"
                 )
 
             net = tf.layers.Flatten()(x)
@@ -433,9 +389,7 @@ class ANOGAN(BaseModel):
                 net = tf.layers.dense(
                     net,
                     units=1,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
 

@@ -45,7 +45,8 @@
     "enable_early_stop": true,
     "degree": 1,
     "weight": 1,
-    "steps_number": 500
+    "steps_number": 500,
+    "loss_method": "fm"
   },
   "log": {
     "name": "summarizer.Summarizer",

@@ -42,50 +42,36 @@ class ALAD(BaseModel):
             ########################################################################
             # ENCODER
             ########################################################################
-            self.rec_z = self.encoder(
-                self.img_gen, do_spectral_norm=self.config.spectral_norm
-            )
+            self.rec_z = self.encoder(self.img_gen, do_spectral_norm=self.config.spectral_norm)
 
             ########################################################################
             # DISCRIMINATOR XZ
             ########################################################################
             l_generator, inter_layer_rct_xz = self.discriminator_xz(
-                self.img_gen,
-                self.noise_tensor,
-                do_spectral_norm=self.config.spectral_norm,
+                self.img_gen, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
             )
             l_encoder, inter_layer_inp_xz = self.discriminator_xz(
-                self.image_tensor,
-                self.z_gen,
-                do_spectral_norm=self.config.do_spectral_norm,
+                self.image_tensor, self.z_gen, do_spectral_norm=self.config.do_spectral_norm
             )
 
             ########################################################################
             # DISCRIMINATOR XX
             ########################################################################
             x_logit_real, inter_layer_inp_xx = self.discriminator_xx(
-                self.image_tensor,
-                self.image_tensor,
-                do_spectral_norm=self.config.spectral_norm,
+                self.image_tensor, self.image_tensor, do_spectral_norm=self.config.spectral_norm
             )
             x_logit_fake, inter_layer_rct_xx = self.discriminator_xx(
-                self.image_tensor,
-                self.rec_img,
-                do_spectral_norm=self.config.spectral_norm,
+                self.image_tensor, self.rec_img, do_spectral_norm=self.config.spectral_norm
             )
 
             ########################################################################
             # DISCRIMINATOR ZZ
             ########################################################################
             z_logit_real, _ = self.discriminator_zz(
-                self.noise_tensor,
-                self.noise_tensor,
-                do_spectral_norm=self.config.spectral_norm,
+                self.noise_tensor, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
             )
             z_logit_fake, _ = self.discriminator_zz(
-                self.noise_tensor,
-                self.rec_z,
-                do_spectral_norm=self.config.spectral_norm,
+                self.noise_tensor, self.rec_z, do_spectral_norm=self.config.spectral_norm
             )
 
         ########################################################################
@@ -157,9 +143,7 @@ class ALAD(BaseModel):
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
             cost_z = tf.reduce_mean(z_real_gen + z_fake_gen)
 
-            cycle_consistency_loss = (
-                cost_x + cost_z if self.config.trainer.allow_zz else cost_x
-            )
+            cycle_consistency_loss = cost_x + cost_z if self.config.trainer.allow_zz else cost_x
             self.loss_generator = gen_loss_xz + cycle_consistency_loss
             self.loss_encoder = enc_loss_xz + cycle_consistency_loss
 
@@ -170,26 +154,14 @@ class ALAD(BaseModel):
 
             # control op dependencies for batch norm and trainable variables
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            self.dxzvars = [
-                v for v in all_variables if v.name.startswith("ALAD/Discriminator_xz")
-            ]
-            self.dxxvars = [
-                v for v in all_variables if v.name.startswith("ALAD/Discriminator_xx")
-            ]
-            self.dzzvars = [
-                v for v in all_variables if v.name.startswith("ALAD/Discriminator_zz")
-            ]
-            self.gvars = [
-                v for v in all_variables if v.name.startswith("ALAD/Generator")
-            ]
+            self.dxzvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_xz")]
+            self.dxxvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_xx")]
+            self.dzzvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_zz")]
+            self.gvars = [v for v in all_variables if v.name.startswith("ALAD/Generator")]
             self.evars = [v for v in all_variables if v.name.startswith("ALAD/Encoder")]
 
-            self.update_ops_gen = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator"
-            )
-            self.update_ops_enc = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder"
-            )
+            self.update_ops_gen = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator")
+            self.update_ops_enc = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder")
             self.update_ops_dis_xz = tf.get_collection(
                 tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_xz"
             )
@@ -213,54 +185,38 @@ class ALAD(BaseModel):
 
             with tf.control_dependencies(self.update_ops_gen):
                 self.gen_op = self.gen_optimizer.minimize(
-                    self.loss_generator,
-                    global_step=self.global_step_tensor,
-                    var_list=self.gvars,
+                    self.loss_generator, global_step=self.global_step_tensor, var_list=self.gvars
                 )
             with tf.control_dependencies(self.update_ops_enc):
                 self.enc_op = self.gen_optimizer.minimize(
-                    self.loss_encoder,
-                    global_step=self.global_step_tensor,
-                    var_list=self.evars,
+                    self.loss_encoder, global_step=self.global_step_tensor, var_list=self.evars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xz):
                 self.dis_op_xz = self.disc_optimizer.minimize(
-                    self.dis_loss_xz,
-                    global_step=self.global_step_tensor,
-                    var_list=self.dxzvars,
+                    self.dis_loss_xz, global_step=self.global_step_tensor, var_list=self.dxzvars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xx):
                 self.dis_op_xx = self.disc_optimizer.minimize(
-                    self.dis_loss_xx,
-                    global_step=self.global_step_tensor,
-                    var_list=self.dxxvars,
+                    self.dis_loss_xx, global_step=self.global_step_tensor, var_list=self.dxxvars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_zz):
                 self.dis_op_zz = self.disc_optimizer.minimize(
-                    self.dis_loss_zz,
-                    global_step=self.global_step_tensor,
-                    var_list=self.dzzvars,
+                    self.dis_loss_zz, global_step=self.global_step_tensor, var_list=self.dzzvars
                 )
 
             # Exponential Moving Average for inference
             def train_op_with_ema_dependency(vars, op):
-                ema = tf.train.ExponentialMovingAverage(
-                    decay=self.config.trainer.ema_decay
-                )
+                ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
                 maintain_averages_op = ema.apply(vars)
                 with tf.control_dependencies([op]):
                     train_op = tf.group(maintain_averages_op)
                 return train_op, ema
 
-            self.train_gen_op, self.gen_ema = train_op_with_ema_dependency(
-                self.gvars, self.gen_op
-            )
-            self.train_enc_op, self.enc_ema = train_op_with_ema_dependency(
-                self.evars, self.enc_op
-            )
+            self.train_gen_op, self.gen_ema = train_op_with_ema_dependency(self.gvars, self.gen_op)
+            self.train_enc_op, self.enc_ema = train_op_with_ema_dependenc(self.evars, self.enc_op)
             self.train_dis_op_xz, self.xz_ema = train_op_with_ema_dependency(
                 self.dxzvars, self.dis_op_xz
             )
@@ -280,12 +236,8 @@ class ALAD(BaseModel):
             )
 
             # with tf.variable_scope("Generator_Model"):
-            self.rec_x_ema = self.generator(
-                self.z_gen_ema, getter=sn.get_getter(self.gen_ema)
-            )
-            self.x_gen_ema = self.generator(
-                self.noise_tensor, getter=sn.get_getter(self.gen_ema)
-            )
+            self.rec_x_ema = self.generator(self.z_gen_ema, getter=sn.get_getter(self.gen_ema))
+            self.x_gen_ema = self.generator(self.noise_tensor, getter=sn.get_getter(self.gen_ema))
             # with tf.variable_scope("Discriminator_Model_xx"):
             l_encoder_emaxx, inter_layer_inp_emaxx = self.discriminator_xx(
                 self.image_tensor,
@@ -317,18 +269,11 @@ class ALAD(BaseModel):
                 score_l2 = tf.norm(rec, ord=2, axis=1, keepdims=False, name="d_loss")
                 self.score_l2 = tf.squeeze(score_l2)
 
-                inter_layer_inp, inter_layer_rct = (
-                    inter_layer_inp_emaxx,
-                    inter_layer_rct_emaxx,
-                )
+                inter_layer_inp, inter_layer_rct = (inter_layer_inp_emaxx, inter_layer_rct_emaxx)
                 fm = inter_layer_inp - inter_layer_rct
                 fm = tf.layers.Flatten()(fm)
                 score_fm = tf.norm(
-                    fm,
-                    ord=self.config.trainer.degree,
-                    axis=1,
-                    keepdims=False,
-                    name="d_loss",
+                    fm, ord=self.config.trainer.degree, axis=1, keepdims=False, name="d_loss"
                 )
                 self.score_fm = tf.squeeze(score_fm)
 
@@ -342,9 +287,7 @@ class ALAD(BaseModel):
             with tf.name_scope("summary"):
 
                 with tf.name_scope("dis_summary"):
-                    tf.summary.scalar(
-                        "loss_discriminator", self.loss_discriminator, ["dis"]
-                    )
+                    tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
                     tf.summary.scalar("loss_dis_encoder", loss_dis_enc, ["dis"])
                     tf.summary.scalar("loss_dis_gen", loss_dis_gen, ["dis"])
                     tf.summary.scalar("loss_dis_xz", self.dis_loss_xz, ["dis"])
@@ -368,9 +311,7 @@ class ALAD(BaseModel):
                     heatmap_pl_latent = tf.placeholder(
                         tf.float32, shape=(1, 480, 640, 3), name="heatmap_pl_latent"
                     )
-                    self.sum_op_latent = tf.summary.image(
-                        "heatmap_latent", heatmap_pl_latent
-                    )
+                    self.sum_op_latent = tf.summary.image("heatmap_latent", heatmap_pl_latent)
 
                 with tf.name_scope("image_summary"):
                     tf.summary.image("reconstruct", self.rec_img, 8, ["image"])
@@ -404,9 +345,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -416,9 +355,7 @@ class ALAD(BaseModel):
                     name="bn",
                 )
                 net = tf.nn.leaky_relu(
-                    features=net,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
 
             net_name = "layer_2"
@@ -429,9 +366,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -441,9 +376,7 @@ class ALAD(BaseModel):
                     name="bn",
                 )
                 net = tf.nn.leaky_relu(
-                    features=net,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
 
             net_name = "layer_3"
@@ -454,9 +387,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -466,9 +397,7 @@ class ALAD(BaseModel):
                     name="bn",
                 )
                 net = tf.nn.leaky_relu(
-                    features=net,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
 
             net_name = "layer_4"
@@ -479,9 +408,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=1,
                     padding="valid",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 net = tf.squeeze(net, [1, 2])
@@ -505,9 +432,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="valid",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv1",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -525,9 +450,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv2",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -545,9 +468,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv3",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -565,18 +486,14 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv4",
                 )(net)
                 net = tf.nn.tanh(net, name="tconv4/tanh")
 
         return net
 
-    def discriminator_xz(
-        self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True
-    ):
+    def discriminator_xz(self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True):
         """ Discriminator architecture in tensorflow
 
         Discriminates between pairs (E(x), x) and (z, G(z))
@@ -588,9 +505,7 @@ class ALAD(BaseModel):
             do_spectral_norm:
         """
         layers = sn if do_spectral_norm else tf.layers
-        with tf.variable_scope(
-            "Discriminator_xz", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ):
+        with tf.variable_scope("Discriminator_xz", reuse=tf.AUTO_REUSE, custom_getter=getter):
             net_name = "x_layer_1"
             with tf.variable_scope(net_name):
                 x = layers.conv2d(
@@ -599,15 +514,11 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv1",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv1/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv1/leaky_relu"
                 )
 
             net_name = "x_layer_2"
@@ -618,9 +529,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -630,9 +539,7 @@ class ALAD(BaseModel):
                     name="tconv2/bn",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv2/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
                 )
             net_name = "x_layer_3"
             with tf.variable_scope(net_name):
@@ -642,9 +549,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -654,9 +559,7 @@ class ALAD(BaseModel):
                     name="tconv3/bn",
                 )
                 x = tf.nn.leaky_relu(
-                    features=x,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv3/leaky_relu",
+                    features=x, alpha=self.config.trainer.leakyReLU_alpha, name="conv3/leaky_relu"
                 )
 
             x = tf.reshape(x, [-1, 1, 1, 512 * 4 * 4])
@@ -671,15 +574,11 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 z = tf.nn.leaky_relu(
-                    features=z,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=z, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
                 z = tf.layers.dropout(
                     z,
@@ -696,15 +595,11 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 z = tf.nn.leaky_relu(
-                    features=z,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=z, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
                 z = tf.layers.dropout(
                     z,
@@ -721,15 +616,11 @@ class ALAD(BaseModel):
                     kernel_size=1,
                     strides=1,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 y = tf.nn.leaky_relu(
-                    features=y,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=y, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
                 y = tf.layers.dropout(
                     y,
@@ -748,15 +639,11 @@ class ALAD(BaseModel):
                     kernel_size=1,
                     strides=1,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
                 y = tf.nn.leaky_relu(
-                    features=y,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="leaky_relu",
+                    features=y, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
                 y = tf.layers.dropout(
                     y,
@@ -769,9 +656,7 @@ class ALAD(BaseModel):
 
             return logits, intermediate_layer
 
-    def discriminator_xx(
-        self, img_tensor, recreated_img, getter=None, do_spectral_norm=True
-    ):
+    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=True):
         """ Discriminator architecture in tensorflow
 
         Discriminates between (x, x) and (x, rec_x)
@@ -783,9 +668,7 @@ class ALAD(BaseModel):
             do_spectral_norm:
         """
         layers = sn if do_spectral_norm else tf.layers
-        with tf.variable_scope(
-            "Discriminator_xx", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ):
+        with tf.variable_scope("Discriminator_xx", reuse=tf.AUTO_REUSE, custom_getter=getter):
             net = tf.concat([img_tensor, recreated_img], axis=1)
             net_name = "layer_1"
             with tf.variable_scope(net_name):
@@ -795,15 +678,11 @@ class ALAD(BaseModel):
                     kernel_size=5,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv1",
                 )
                 net = tf.nn.leaky_relu(
-                    features=net,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv2/leaky_relu",
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
                 )
                 net = tf.layers.dropout(
                     net,
@@ -822,15 +701,11 @@ class ALAD(BaseModel):
                     kernel_size=5,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv2",
                 )
                 net = tf.nn.leaky_relu(
-                    features=net,
-                    alpha=self.config.trainer.leakyReLU_alpha,
-                    name="conv2/leaky_relu",
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
                 )
                 net = tf.layers.dropout(
                     net,
@@ -847,18 +722,14 @@ class ALAD(BaseModel):
                 net = tf.layers.dense(
                     net,
                     units=1,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
                 logits = tf.squeeze(net)
 
         return logits, intermediate_layer
 
-    def discriminator_zz(
-        self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True
-    ):
+    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True):
         """ Discriminator architecture in tensorflow
 
         Discriminates between (z, z) and (z, rec_z)
@@ -871,9 +742,7 @@ class ALAD(BaseModel):
         """
         layers = sn if do_spectral_norm else tf.layers
 
-        with tf.variable_scope(
-            "Discriminator_zz", reuse=tf.AUTO_REUSE, custom_getter=getter
-        ):
+        with tf.variable_scope("Discriminator_zz", reuse=tf.AUTO_REUSE, custom_getter=getter):
             y = tf.concat([noise_tensor, recreated_noise], axis=-1)
 
             net_name = "y_layer_1"
@@ -881,14 +750,10 @@ class ALAD(BaseModel):
                 y = layers.dense(
                     y,
                     units=64,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
-                y = tf.nn.leaky_relu(
-                    features=y, alpha=self.config.trainer.leakyReLU_alpha
-                )
+                y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
                 y = tf.layers.dropout(
                     y,
                     rate=self.config.trainer.dropout_rate,
@@ -901,14 +766,10 @@ class ALAD(BaseModel):
                 y = layers.dense(
                     y,
                     units=32,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
-                y = tf.nn.leaky_relu(
-                    features=y, alpha=self.config.trainer.leakyReLU_alpha
-                )
+                y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
                 y = tf.layers.dropout(
                     y,
                     rate=self.config.trainer.dropout_rate,
@@ -923,9 +784,7 @@ class ALAD(BaseModel):
                 y = layers.dense(
                     y,
                     units=1,
-                    kernel_initializer=tf.random_normal_initializer(
-                        mean=0.0, stddev=0.01
-                    ),
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="fc",
                 )
                 logits = tf.squeeze(y)
