@@ -119,11 +119,16 @@ class BIGANTrainer(BaseTrain):
         noise = np.random.normal(
             loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
         )
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels
+        )
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
+            self.model.generated_labels : generated_labels,
+            self.model.true_labels : true_labels,
             self.model.is_training: True,
         }
         # Train Discriminator
@@ -140,9 +145,15 @@ class BIGANTrainer(BaseTrain):
         noise = np.random.normal(
             loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
         )
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels
+        )
+
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
+            self.model.generated_labels : generated_labels,
+            self.model.true_labels : true_labels,
             self.model.is_training: True,
         }
         _, _, le, lg, sm_g = self.sess.run(

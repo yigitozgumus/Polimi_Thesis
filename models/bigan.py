@@ -25,6 +25,9 @@ class BIGAN(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
+
         self.logger.info("Building training graph...")
         with tf.variable_scope("BIGAN"):
             with tf.variable_scope("Encoder_Model"):
@@ -43,12 +46,12 @@ class BIGAN(BaseModel):
             # Discriminator
             self.loss_dis_enc = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_encoder), logits=l_encoder
+                    labels=self.true_labels, logits=l_encoder
                 )
             )
             self.loss_dis_gen = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_generator), logits=l_generator
+                    labels=self.generated_labels, logits=l_generator
                 )
             )
             self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
