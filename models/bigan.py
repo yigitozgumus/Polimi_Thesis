@@ -168,8 +168,8 @@ class BIGAN(BaseModel):
                 )
             with tf.variable_scope("Discriminator_Model"):
                 self.l_encoder_ema, self.inter_layer_inp_ema = self.discriminator(
-                    self.image_input,  # x
                     self.noise_gen_ema,  # E(x)
+                    self.image_input,  # x
                     getter=get_getter(self.dis_ema),
                 )
                 self.l_generator_ema, self.inter_layer_rct_ema = self.discriminator(
