@@ -46,9 +46,7 @@ class BIGANTrainer(BaseTrain):
         # Check for reconstruction
         if cur_epoch % self.config.log.frequency_test == 0:
             noise = np.random.normal(
-                loc=0.0,
-                scale=1.0,
-                size=[self.config.data_loader.test_batch, self.noise_dim],
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             image_eval = self.sess.run(image)
             feed_dict = {
@@ -77,24 +75,18 @@ class BIGANTrainer(BaseTrain):
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         for _ in test_loop:
             test_batch_begin = time()
-            test_batch, test_labels = self.sess.run(
-                [self.data.test_image, self.data.test_label]
-            )
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
             test_loop.refresh()  # to show immediately the update
             sleep(0.01)
             noise = np.random.normal(
-                loc=0.0,
-                scale=1.0,
-                size=[self.config.data_loader.test_batch, self.noise_dim],
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             feed_dict = {
                 self.model.image_input: test_batch,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
-            scores += self.sess.run(
-                self.model.list_scores, feed_dict=feed_dict
-            ).tolist()
+            scores += self.sess.run(self.model.list_scores, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         true_labels = np.asarray(true_labels)
@@ -116,44 +108,32 @@ class BIGANTrainer(BaseTrain):
         self.logger.info("Testing | PRC AUC = {:.4f}".format(prc_auc))
 
     def train_step(self, image, cur_epoch):
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
-        )
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels
-        )
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
-            self.model.generated_labels : generated_labels,
-            self.model.true_labels : true_labels,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
             self.model.is_training: True,
         }
         # Train Discriminator
         _, ld, sm_d = self.sess.run(
-            [
-                self.model.train_dis_op,
-                self.model.loss_discriminator,
-                self.model.sum_op_dis,
-            ],
+            [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
             feed_dict=feed_dict,
         )
 
         # Train Generator and Encoder
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
-        )
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels
-        )
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
 
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
-            self.model.generated_labels : generated_labels,
-            self.model.true_labels : true_labels,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
             self.model.is_training: True,
         }
         _, _, le, lg, sm_g = self.sess.run(
@@ -168,25 +148,22 @@ class BIGANTrainer(BaseTrain):
         )
 
         return lg, ld, le, sm_g, sm_d
+
     def generate_labels(self, soft_labels):
 
         if not soft_labels:
             true_labels = np.ones((self.config.data_loader.batch_size, 1))
             generated_labels = np.zeros((self.config.data_loader.batch_size, 1))
         else:
-            true_labels = np.zeros(
+            generated_labels = np.zeros(
                 (self.config.data_loader.batch_size, 1)
-            ) + np.random.uniform(
-                low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
-            )
+            ) + np.random.uniform(low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1])
             flipped_idx = np.random.choice(
                 np.arange(len(true_labels)),
                 size=int(self.config.trainer.noise_probability * len(true_labels)),
             )
             true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-            generated_labels = np.ones(
-                (self.config.data_loader.batch_size, 1)
-            ) - np.random.uniform(
+            true_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
                 low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
             )
             flipped_idx = np.random.choice(
@@ -196,5 +173,4 @@ class BIGANTrainer(BaseTrain):
             generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
 
         return true_labels, generated_labels
-
 
