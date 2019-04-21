@@ -103,7 +103,7 @@ def do_cumdist(scores, file_name="", directory="", plot=True):
 def get_percentile(scores, dataset):
     if dataset == "material":
         # Highest 20% are anomalous
-        per = np.percentile(scores, 80)
+        per = np.percentile(scores, 94)
     return per
 
 
