@@ -24,120 +24,115 @@ class ALAD(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         # Building the Graph
         with tf.variable_scope("ALAD"):
+            # Generated noise from the encoder
+            with tf.variable_scope("Encoder_Model"):
+                self.z_gen = self.encoder(
+                    self.image_tensor, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
+            # Generated image and reconstructed image from the Generator
+            with tf.variable_scope("Generator_Model"):
+                self.img_gen = self.generator(self.noise_tensor)
+                self.rec_img = self.generator(self.z_gen)
 
-            ########################################################################
-            # ENCODER
-            ########################################################################
-            self.z_gen = self.encoder(
-                self.image_tensor, do_spectral_norm=self.config.trainer.do_spectral_norm
-            )
-            ########################################################################
-            # GENERATOR
-            ########################################################################
-            self.img_gen = self.generator(self.noise_tensor)
-            self.rec_img = self.generator(self.z_gen)
+            # Reconstructed image of generated image from the encoder
+            with tf.variable_scope("Encoder_Model"):
+                self.rec_z = self.encoder(self.img_gen, do_spectral_norm=self.config.spectral_norm)
 
-            ########################################################################
-            # ENCODER
-            ########################################################################
-            self.rec_z = self.encoder(self.img_gen, do_spectral_norm=self.config.spectral_norm)
+            # Discriminator results of (G(z),z) and (x, E(x))
+            with tf.variable_scope("Discriminator_Model_XZ"):
+                l_generator, inter_layer_rct_xz = self.discriminator_xz(
+                    self.img_gen, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
+                )
+                l_encoder, inter_layer_inp_xz = self.discriminator_xz(
+                    self.image_tensor, self.z_gen, do_spectral_norm=self.config.do_spectral_norm
+                )
 
-            ########################################################################
-            # DISCRIMINATOR XZ
-            ########################################################################
-            l_generator, inter_layer_rct_xz = self.discriminator_xz(
-                self.img_gen, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
-            )
-            l_encoder, inter_layer_inp_xz = self.discriminator_xz(
-                self.image_tensor, self.z_gen, do_spectral_norm=self.config.do_spectral_norm
-            )
-
-            ########################################################################
-            # DISCRIMINATOR XX
-            ########################################################################
-            x_logit_real, inter_layer_inp_xx = self.discriminator_xx(
-                self.image_tensor, self.image_tensor, do_spectral_norm=self.config.spectral_norm
-            )
-            x_logit_fake, inter_layer_rct_xx = self.discriminator_xx(
-                self.image_tensor, self.rec_img, do_spectral_norm=self.config.spectral_norm
-            )
-
-            ########################################################################
-            # DISCRIMINATOR ZZ
-            ########################################################################
-            z_logit_real, _ = self.discriminator_zz(
-                self.noise_tensor, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
-            )
-            z_logit_fake, _ = self.discriminator_zz(
-                self.noise_tensor, self.rec_z, do_spectral_norm=self.config.spectral_norm
-            )
-
+            # Discrimeinator results of (x, x) and (x, G(E(x))
+            with tf.variable_scope("Discriminator_Model_XX"):
+                x_logit_real, inter_layer_inp_xx = self.discriminator_xx(
+                    self.image_tensor, self.image_tensor, do_spectral_norm=self.config.spectral_norm
+                )
+                x_logit_fake, inter_layer_rct_xx = self.discriminator_xx(
+                    self.image_tensor, self.rec_img, do_spectral_norm=self.config.spectral_norm
+                )
+            # Discriminator results of (z, z) and (z, E(G(z))
+            with tf.variable_scope("Discriminator_Model_ZZ"):
+                z_logit_real, _ = self.discriminator_zz(
+                    self.noise_tensor, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
+                )
+                z_logit_fake, _ = self.discriminator_zz(
+                    self.noise_tensor, self.rec_z, do_spectral_norm=self.config.spectral_norm
+                )
         ########################################################################
         # LOSS FUNCTIONS
         ########################################################################
         with tf.name_scope("Loss_Functions"):
             # discriminator xz
+
+            # Discriminator should classify encoder pair as real
             loss_dis_enc = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_encoder), logits=l_encoder
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=l_encoder)
             )
+            # Discriminator should classify generator pair as fake
             loss_dis_gen = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_generator), logits=l_generator
+                    labels=self.generated_labels, logits=l_generator
                 )
             )
             self.dis_loss_xz = loss_dis_gen + loss_dis_enc
 
             # discriminator xx
             x_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=tf.ones_like(x_logit_real)
+                logits=x_logit_real, labels=self.true_labels
             )
             x_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=tf.zeros_like(x_logit_fake)
+                logits=x_logit_fake, labels=self.generated_labels
             )
             self.dis_loss_xx = tf.reduce_mean(x_real_dis + x_fake_dis)
-
             # discriminator zz
             z_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=tf.ones_like(z_logit_real)
+                logits=z_logit_real, labels=self.true_labels
             )
             z_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=tf.zeros_like(z_logit_fake)
+                logits=z_logit_fake, labels=self.generated_labels
             )
             self.dis_loss_zz = tf.reduce_mean(z_real_dis + z_fake_dis)
-
             # Compute the whole discriminator loss
             self.loss_discriminator = (
                 self.dis_loss_xz + self.dis_loss_xx + self.dis_loss_zz
                 if self.config.trainer.allow_zz
                 else self.dis_loss_xz + self.dis_loss_xx
             )
-
             # generator and encoder
+            if self.config.trainer.flip_labels:
+                labels_gen = tf.zeros_like(l_generator)
+                labels_enc = tf.ones_like(l_encoder)
+            else:
+                labels_gen = tf.ones_like(l_generator)
+                labels_enc = tf.zeros_like(l_encoder)
+
             gen_loss_xz = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_generator), logits=l_generator
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
             )
             enc_loss_xz = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_encoder), logits=l_encoder
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_enc, logits=l_encoder)
             )
+
             x_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=tf.zeros_like(x_logit_real)
+                logits=x_logit_real, labels=self.generated_labels
             )
             x_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=tf.ones_like(x_logit_fake)
+                logits=x_logit_fake, labels=self.true_labels
             )
             z_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=tf.zeros_like(z_logit_real)
+                logits=z_logit_real, labels=self.generated_labels
             )
             z_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=tf.ones_like(z_logit_fake)
+                logits=z_logit_fake, labels=self.true_labels
             )
 
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
@@ -154,24 +149,33 @@ class ALAD(BaseModel):
 
             # control op dependencies for batch norm and trainable variables
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            self.dxzvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_xz")]
-            self.dxxvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_xx")]
-            self.dzzvars = [v for v in all_variables if v.name.startswith("ALAD/Discriminator_zz")]
-            self.gvars = [v for v in all_variables if v.name.startswith("ALAD/Generator")]
-            self.evars = [v for v in all_variables if v.name.startswith("ALAD/Encoder")]
+            self.dxzvars = [
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_Model_XZ")
+            ]
+            self.dxxvars = [
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_Model_XX")
+            ]
+            self.dzzvars = [
+                v for v in all_variables if v.name.startswith("ALAD/Discriminator_Model_ZZ")
+            ]
+            self.gvars = [v for v in all_variables if v.name.startswith("ALAD/Generator_Model")]
+            self.evars = [v for v in all_variables if v.name.startswith("ALAD/Encoder_Model")]
 
-            self.update_ops_gen = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator")
-            self.update_ops_enc = tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder")
+            self.update_ops_gen = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Generator_Model"
+            )
+            self.update_ops_enc = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Encoder_Model"
+            )
             self.update_ops_dis_xz = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_xz"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_XZ"
             )
             self.update_ops_dis_xx = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_xx"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_XX"
             )
             self.update_ops_dis_zz = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_zz"
+                tf.GraphKeys.UPDATE_OPS, scope="ALAD/Discriminator_Model_ZZ"
             )
-
             self.disc_optimizer = tf.train.AdamOptimizer(
                 learning_rate=self.config.trainer.discriminator_l_rate,
                 beta1=self.config.trainer.optimizer_adam_beta1,
@@ -182,13 +186,18 @@ class ALAD(BaseModel):
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
+            self.enc_optimizer = tf.train.AdamOptimizer(
+                learning_rate=self.config.trainer.generator_l_rate,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
 
             with tf.control_dependencies(self.update_ops_gen):
                 self.gen_op = self.gen_optimizer.minimize(
                     self.loss_generator, global_step=self.global_step_tensor, var_list=self.gvars
                 )
             with tf.control_dependencies(self.update_ops_enc):
-                self.enc_op = self.gen_optimizer.minimize(
+                self.enc_op = self.enc_optimizer.minimize(
                     self.loss_encoder, global_step=self.global_step_tensor, var_list=self.evars
                 )
 
@@ -216,7 +225,8 @@ class ALAD(BaseModel):
                 return train_op, ema
 
             self.train_gen_op, self.gen_ema = train_op_with_ema_dependency(self.gvars, self.gen_op)
-            self.train_enc_op, self.enc_ema = train_op_with_ema_dependenc(self.evars, self.enc_op)
+            self.train_enc_op, self.enc_ema = train_op_with_ema_dependency(self.evars, self.enc_op)
+
             self.train_dis_op_xz, self.xz_ema = train_op_with_ema_dependency(
                 self.dxzvars, self.dis_op_xz
             )
@@ -228,29 +238,31 @@ class ALAD(BaseModel):
             )
 
         with tf.variable_scope("ALAD"):
-            # with tf.variable_scope("Encoder_Model"):
-            self.z_gen_ema = self.encoder(
-                self.image_tensor,
-                getter=sn.get_getter(self.enc_ema),
-                do_spectral_norm=self.config.trainer.spectral_norm,
-            )
+            with tf.variable_scope("Encoder_Model"):
+                self.z_gen_ema = self.encoder(
+                    self.image_tensor,
+                    getter=sn.get_getter(self.enc_ema),
+                    do_spectral_norm=self.config.trainer.spectral_norm,
+                )
 
-            # with tf.variable_scope("Generator_Model"):
-            self.rec_x_ema = self.generator(self.z_gen_ema, getter=sn.get_getter(self.gen_ema))
-            self.x_gen_ema = self.generator(self.noise_tensor, getter=sn.get_getter(self.gen_ema))
-            # with tf.variable_scope("Discriminator_Model_xx"):
-            l_encoder_emaxx, inter_layer_inp_emaxx = self.discriminator_xx(
-                self.image_tensor,
-                self.image_tensor,
-                getter=sn.get_getter(self.xx_ema),
-                do_spectral_norm=self.config.trainer.spectral_norm,
-            )
-            l_generator_emaxx, inter_layer_rct_emaxx = self.discriminator_xx(
-                self.image_tensor,
-                self.rec_x_ema,
-                getter=sn.get_getter(self.xx_ema),
-                do_spectral_norm=self.config.trainer.spectral_norm,
-            )
+            with tf.variable_scope("Generator_Model"):
+                self.rec_x_ema = self.generator(self.z_gen_ema, getter=sn.get_getter(self.gen_ema))
+                self.x_gen_ema = self.generator(
+                    self.noise_tensor, getter=sn.get_getter(self.gen_ema)
+                )
+            with tf.variable_scope("Discriminator_Model_XX"):
+                l_encoder_emaxx, inter_layer_inp_emaxx = self.discriminator_xx(
+                    self.image_tensor,
+                    self.image_tensor,
+                    getter=sn.get_getter(self.xx_ema),
+                    do_spectral_norm=self.config.trainer.spectral_norm,
+                )
+                l_generator_emaxx, inter_layer_rct_emaxx = self.discriminator_xx(
+                    self.image_tensor,
+                    self.rec_x_ema,
+                    getter=sn.get_getter(self.xx_ema),
+                    do_spectral_norm=self.config.trainer.spectral_norm,
+                )
 
         with tf.name_scope("Testing"):
             with tf.variable_scope("Scores"):
@@ -279,11 +291,11 @@ class ALAD(BaseModel):
 
         if self.config.trainer.enable_early_stop:
             self.rec_error_valid = tf.reduce_mean(score_fm)
-
+        ########################################################################
+        # TENSORBOARD
+        ########################################################################
         if self.config.log.enable_summary:
-            ########################################################################
-            # TENSORBOARD
-            ########################################################################
+
             with tf.name_scope("summary"):
 
                 with tf.name_scope("dis_summary"):

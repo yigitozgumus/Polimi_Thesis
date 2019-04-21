@@ -45,9 +45,7 @@ class BIGAN(BaseModel):
         with tf.name_scope("Loss_Functions"):
             # Discriminator
             self.loss_dis_enc = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=self.true_labels, logits=l_encoder
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=l_encoder)
             )
             self.loss_dis_gen = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
@@ -55,17 +53,20 @@ class BIGAN(BaseModel):
                 )
             )
             self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
+
+            if self.config.trainer.flip_labels:
+                labels_gen = tf.zeros_like(l_generator)
+                labels_enc = tf.ones_like(l_encoder)
+            else:
+                labels_gen = tf.ones_like(l_generator)
+                labels_enc = tf.zeros_like(l_encoder)
             # Generator
             self.loss_generator = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.ones_like(l_generator), logits=l_generator
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
             )
             # Encoder
             self.loss_encoder = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=tf.zeros_like(l_encoder), logits=l_encoder
-                )
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_enc, logits=l_encoder)
             )
         # Optimizer Implementations
         with tf.name_scope("Optimizers"):

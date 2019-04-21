@@ -109,7 +109,9 @@ class BIGANTrainer(BaseTrain):
 
     def train_step(self, image, cur_epoch):
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
@@ -127,7 +129,9 @@ class BIGANTrainer(BaseTrain):
 
         # Train Generator and Encoder
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
 
         feed_dict = {
             self.model.image_input: image_eval,
@@ -149,7 +153,7 @@ class BIGANTrainer(BaseTrain):
 
         return lg, ld, le, sm_g, sm_d
 
-    def generate_labels(self, soft_labels):
+    def generate_labels(self, soft_labels, flip_labels):
 
         if not soft_labels:
             true_labels = np.ones((self.config.data_loader.batch_size, 1))
@@ -171,6 +175,7 @@ class BIGANTrainer(BaseTrain):
                 size=int(self.config.trainer.noise_probability * len(true_labels)),
             )
             true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-
-        return true_labels, generated_labels
-
+        if flip_labels:
+            return generated_labels, true_labels
+        else:
+            return true_labels, generated_labels

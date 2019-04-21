@@ -68,7 +68,7 @@ class GAN(BaseModel):
 
             with tf.name_scope("Generator_Loss"):
                 # if self.config.trainer.loss_method == "cross_e":
-                if self.config.trainer.soft_labels:
+                if self.config.trainer.flip_labels:
                     labels = tf.zeros_like(disc_fake)
                 else:
                     labels = tf.ones_like(disc_fake)

@@ -58,9 +58,7 @@ class ALAD_Trainer(BaseTrain):
         # Check for reconstruction
         if cur_epoch % self.config.log.frequency_test == 0:
             noise = np.random.normal(
-                loc=0.0,
-                scale=1.0,
-                size=[self.config.data_loader.test_batch, self.noise_dim],
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             image_eval = self.sess.run(image)
             feed_dict = {
@@ -108,33 +106,21 @@ class ALAD_Trainer(BaseTrain):
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         for _ in test_loop:
             test_batch_begin = time()
-            test_batch, test_labels = self.sess.run(
-                [self.data.test_image, self.data.test_label]
-            )
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
             test_loop.refresh()  # to show immediately the update
             sleep(0.01)
             noise = np.random.normal(
-                loc=0.0,
-                scale=1.0,
-                size=[self.config.data_loader.test_batch, self.noise_dim],
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             feed_dict = {
                 self.model.image_tensor: test_batch,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
-            scores_ch += self.sess.run(
-                self.model.score_ch, feed_dict=feed_dict
-            ).tolist()
-            scores_l1 += self.sess.run(
-                self.model.score_l1, feed_dict=feed_dict
-            ).tolist()
-            scores_l2 += self.sess.run(
-                self.model.score_l2, feed_dict=feed_dict
-            ).tolist()
-            scores_fm += self.sess.run(
-                self.model.score_fm, feed_dict=feed_dict
-            ).tolist()
+            scores_ch += self.sess.run(self.model.score_ch, feed_dict=feed_dict).tolist()
+            scores_l1 += self.sess.run(self.model.score_l1, feed_dict=feed_dict).tolist()
+            scores_l2 += self.sess.run(self.model.score_l2, feed_dict=feed_dict).tolist()
+            scores_fm += self.sess.run(self.model.score_fm, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         true_labels = np.asarray(true_labels)
@@ -203,14 +189,17 @@ class ALAD_Trainer(BaseTrain):
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
             self.model.image_tensor: image_eval,
             self.model.noise_tensor: noise,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
             self.model.is_training: True,
         }
         _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
@@ -226,12 +215,15 @@ class ALAD_Trainer(BaseTrain):
             feed_dict=feed_dict,
         )
         # Train the Generator and Encoder
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
         feed_dict = {
             self.model.image_tensor: image_eval,
             self.model.noise_tensor: noise,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
             self.model.is_training: True,
         }
         _, _, le, lg = self.sess.run(
@@ -251,3 +243,30 @@ class ALAD_Trainer(BaseTrain):
             # TODO add reconstruction code
 
         return lg, le, ld, ldxz, ldxx, ldzz, sm
+
+    def generate_labels(self, soft_labels, flip_labels):
+
+        if not soft_labels:
+            true_labels = np.ones((self.config.data_loader.batch_size, 1))
+            generated_labels = np.zeros((self.config.data_loader.batch_size, 1))
+        else:
+            generated_labels = np.zeros(
+                (self.config.data_loader.batch_size, 1)
+            ) + np.random.uniform(low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1])
+            flipped_idx = np.random.choice(
+                np.arange(len(generated_labels)),
+                size=int(self.config.trainer.noise_probability * len(generated_labels)),
+            )
+            generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+            true_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
+                low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
+            )
+            flipped_idx = np.random.choice(
+                np.arange(len(true_labels)),
+                size=int(self.config.trainer.noise_probability * len(true_labels)),
+            )
+            true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
+        if flip_labels:
+            return generated_labels, true_labels
+        else:
+            return true_labels, generated_labels
