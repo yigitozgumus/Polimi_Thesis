@@ -104,6 +104,7 @@ def get_percentile(scores, dataset):
     if dataset == "material":
         # Highest 20% are anomalous
         per = np.percentile(scores, 80)
+    return per
 
 
 def do_hist(scores, true_labels, directory, dataset, random_seed, display=False):
