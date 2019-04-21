@@ -59,12 +59,13 @@ class GANomaly(BaseModel):
             self.gen_loss_ce = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=l_fake)
             )
+
             l1_norm = self.image_input - self.img_rec
             l1_norm = tf.layers.Flatten()(l1_norm)
-            self.gen_loss_con = tf.reduce_mean(tf.norm(l1_norm, ord=1, axis=1, keepdims=False))
+            self.gen_loss_con = tf.reduce_mean(tf.abs(l1_norm))
             l2_norm = self.noise_gen - self.noise_rec
             l2_norm = tf.layers.Flatten()(l2_norm)
-            self.gen_loss_enc = tf.reduce_mean(tf.norm(l2_norm, ord=2, axis=1, keepdims=False))
+            self.gen_loss_enc = tf.reduce_mean(tf.square(l2_norm))
 
             self.gen_loss_total = (
                 self.config.trainer.weight_adv * self.gen_loss_ce

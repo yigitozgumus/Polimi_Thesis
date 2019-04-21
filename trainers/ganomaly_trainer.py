@@ -50,7 +50,7 @@ class GANomalyTrainer(BaseTrain):
         gen_m = np.mean(gen_losses)
         dis_m = np.mean(disc_losses)
         self.logger.info(
-            "Epoch: {} | time = {} s | loss gen= {:4f} | loss dis = {:4f} }".format(
+            "Epoch: {} | time = {} s | loss gen= {:4f} | loss dis = {:4f}".format(
                 cur_epoch, time() - begin, gen_m, dis_m
             )
         )
@@ -72,6 +72,7 @@ class GANomalyTrainer(BaseTrain):
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         true_labels = np.asarray(true_labels)
+        inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         scores = np.asarray(scores)
         scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
@@ -102,7 +103,7 @@ class GANomalyTrainer(BaseTrain):
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.generated_labels: generated_labels,
             self.model.true_labels: true_labels,
             self.model.is_training: True,
@@ -117,7 +118,7 @@ class GANomalyTrainer(BaseTrain):
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.generated_labels: generated_labels,
             self.model.true_labels: true_labels,
             self.model.is_training: True,
