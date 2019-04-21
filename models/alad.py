@@ -353,7 +353,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     img_tensor,
-                    filters=128,
+                    filters=64,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -374,7 +374,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
-                    filters=256,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -395,7 +395,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
-                    filters=512,
+                    filters=256,
                     kernel_size=4,
                     strides=2,
                     padding="same",
