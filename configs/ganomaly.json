@@ -1,0 +1,60 @@
+{
+  "exp": {},
+  "model": {
+    "name": "ganomaly.GANomaly"
+  },
+  "dirs": {
+    "data": "data",
+    "data_normal": "data/Normal/",
+    "data_anomalous": "data/Anomalous/"
+  },
+  "data_loader": {
+    "name": "data_generator.DataGenerator",
+    "buffer_size": 51200,
+    "image_size": 32,
+    "batch_size": 64,
+    "num_epochs": 50,
+    "num_iter_per_epoch": 800,
+    "num_parallel_calls": 8,
+    "num_iter_per_test": 840,
+    "mode": "anomaly",
+    "dataset_name": "material",
+    "binary_location": "offload",
+    "test_batch": 36
+  },
+  "trainer": {
+    "name": "ganomaly_trainer.GANomalyTrainer",
+    "noise_dim": 100,
+    "image_dims": [32, 32, 1],
+    "include_noise": false,
+    "soft_labels": true,
+    "flip_labels": false,
+    "weight_adv": 1,
+    "weight_cont": 50,
+    "weight_enc": 1,
+    "loss_method": "fm",,
+    "discriminator_l_rate": 2e-3,
+    "generator_l_rate": 2e-3,
+    "optimizer_adam_beta1": 0.5,
+    "optimizer_adam_beta2": 0.999,
+    "batch_momentum": 0.8,
+    "batch_epsilon": 1e-5,
+    "leakyReLU_alpha": 0.2,
+    "dropout_rate": 0.25,
+    "ema_decay": 0.999,
+    "spectral_norm": true,
+    "allow_zz": true,
+    "enable_early_stop": true,
+    "degree": 1,
+    "label": 1
+  },
+  "log": {
+    "name": "summarizer.Summarizer",
+    "enable_summary": true,
+    "show_steps": 10,
+    "max_to_keep": 5,
+    "num_example_imgs_to_generate": 25,
+    "frequency_test": 5,
+    "output_folder": "Experiments"
+  }
+}
