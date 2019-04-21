@@ -9,12 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from sklearn import manifold
-from sklearn.metrics import (
-    roc_curve,
-    auc,
-    precision_recall_fscore_support,
-    precision_recall_curve,
-)
+from sklearn.metrics import roc_curve, auc, precision_recall_fscore_support, precision_recall_curve
 import matplotlib.gridspec as gridspec
 import seaborn as sns
 import pandas as pd
@@ -106,16 +101,9 @@ def do_cumdist(scores, file_name="", directory="", plot=True):
 
 
 def get_percentile(scores, dataset):
-    if dataset == "kdd":
+    if dataset == "material":
         # Highest 20% are anomalous
         per = np.percentile(scores, 80)
-    elif dataset == "arrhythmia":
-        # Highest 15% are anomalous
-        per = np.percentile(scores, 85)
-    else:
-        c = 90
-        per = np.percentile(scores, 100 - c)
-    return per
 
 
 def do_hist(scores, true_labels, directory, dataset, random_seed, display=False):
@@ -201,9 +189,7 @@ def make_meshgrid(x_min, x_max, y_min, y_max, h=0.02):
     return xx, yy
 
 
-def save_grid_plot(
-    samples, samples_rec, name_model, dataset, nb_images=50, grid_width=10
-):
+def save_grid_plot(samples, samples_rec, name_model, dataset, nb_images=50, grid_width=10):
     args = name_model.split("/")[:-1]
     directory = os.path.join(*args)
     if not os.path.exists(directory):
@@ -217,8 +203,7 @@ def save_grid_plot(
     gs.update(wspace=0.05, hspace=0.05)
     list_samples = []
     for x, x_rec in zip(
-        np.split(samples, nb_images // grid_width),
-        np.split(samples_rec, nb_images // grid_width),
+        np.split(samples, nb_images // grid_width), np.split(samples_rec, nb_images // grid_width)
     ):
         list_samples += np.split(x, grid_width) + np.split(x_rec, grid_width)
     list_samples = [np.squeeze(sample) for sample in list_samples]
@@ -238,16 +223,7 @@ def save_grid_plot(
 
 
 def save_results(
-    location,
-    scores,
-    true_labels,
-    model,
-    dataset,
-    method,
-    weight,
-    label,
-    random_seed,
-    step=-1,
+    location, scores, true_labels, model, dataset, method, weight, label, random_seed, step=-1
 ):
     directory = location + "{}/{}/{}/w{}/".format(model, dataset, method, weight)
     if not os.path.exists(directory):
@@ -350,31 +326,12 @@ def save_results_csv(fname, results, header=0):
                 writer.writerows([["Precision", "Recall", "F1 score", "Random Seed"]])
             elif header == 2:
                 writer.writerows(
-                    [
-                        [
-                            "Step",
-                            "AUROC",
-                            "Precision",
-                            "Recall",
-                            "F1 score",
-                            "Random Seed",
-                        ]
-                    ]
+                    [["Step", "AUROC", "Precision", "Recall", "F1 score", "Random Seed"]]
                 )
 
             elif header == 5:
                 writer.writerows(
-                    [
-                        [
-                            "Model",
-                            "Dataset",
-                            "Method",
-                            "Weight",
-                            "Label",
-                            "Step",
-                            "Scores",
-                        ]
-                    ]
+                    [["Model", "Dataset", "Method", "Weight", "Label", "Step", "Scores"]]
                 )
 
     with open(fname, "at") as f:

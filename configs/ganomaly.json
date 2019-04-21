@@ -27,7 +27,7 @@
     "noise_dim": 100,
     "image_dims": [32, 32, 1],
     "include_noise": false,
-    "soft_labels": true,
+    "soft_labels": false,
     "flip_labels": false,
     "weight_adv": 1,
     "weight_cont": 50,
