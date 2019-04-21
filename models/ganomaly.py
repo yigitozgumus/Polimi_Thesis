@@ -173,7 +173,7 @@ class GANomaly(BaseModel):
         # This generator will take the image from the input dataset, and first it will
         # it will create a latent representation of that image then with the decoder part,
         # it will reconstruct the image.
-        with tf.variable_scope("Generator", custom_getter=getter, resuse=tf.AUTO_REUSE):
+        with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             with tf.variable_scope("Encoder_1"):
                 x_e = tf.reshape(image_input, [-1, 32, 32, 1])
                 net_name = "Layer_1"
@@ -304,61 +304,65 @@ class GANomaly(BaseModel):
 
             # Second Encoder
             with tf.variable_scope("Encoder_2"):
-                x_e = tf.reshape(image_rec, [-1, 32, 32, 1])
+                x_e_2 = tf.reshape(image_rec, [-1, 32, 32, 1])
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e_2 = tf.layers.Conv2D(
                         filters=64,
                         kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
-                    x_e = tf.nn.leaky_relu(
-                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )(x_e_2)
+                    x_e_2 = tf.nn.leaky_relu(
+                        features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e_2 = tf.layers.Conv2D(
                         filters=128,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
-                    x_e = tf.layers.batch_normalization(
-                        x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
+                    )(x_e_2)
+                    x_e_2 = tf.layers.batch_normalization(
+                        x_e_2,
+                        momentum=self.config.trainer.batch_momentum,
+                        training=self.is_training,
                     )
-                    x_e = tf.nn.leaky_relu(
-                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    x_e_2 = tf.nn.leaky_relu(
+                        features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e_2 = tf.layers.Conv2D(
                         filters=256,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
-                    x_e = tf.layers.batch_normalization(
-                        x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
+                    )(x_e_2)
+                    x_e_2 = tf.layers.batch_normalization(
+                        x_e_2,
+                        momentum=self.config.trainer.batch_momentum,
+                        training=self.is_training,
                     )
-                    x_e = tf.nn.leaky_relu(
-                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    x_e_2 = tf.nn.leaky_relu(
+                        features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
-                x_e = tf.layers.Flatten()(x_e)
+                x_e_2 = tf.layers.Flatten()(x_e_2)
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Dense(
+                    x_e_2 = tf.layers.Dense(
                         units=self.config.trainer.noise_dim,
                         kernel_initializer=self.init_kernel,
                         name="fc",
-                    )(x_e)
-            noise_rec = x_e
+                    )(x_e_2)
+            noise_rec = x_e_2
             return noise_gen, image_rec, noise_rec
 
     def discriminator(self, image, getter=None):
