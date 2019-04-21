@@ -30,14 +30,12 @@ class DataGenerator:
         # Shuffle the dataset
         self.dataset = self.dataset.shuffle(self.config.data_loader.buffer_size)
         # Repeat the dataset indefinitely
-        self.dataset = self.dataset.repeat(self.config.data_loader.num_epochs)
+        self.dataset = self.dataset.repeat()
         # Apply batching
         self.dataset = self.dataset.batch(self.config.data_loader.batch_size)
         # Applying prefetch to increase the performance
         # Prefetch the next 10 batches
-        self.dataset = self.dataset.prefetch(
-            buffer_size=10 * self.config.data_loader.batch_size
-        )
+        self.dataset = self.dataset.prefetch(buffer_size=10 * self.config.data_loader.batch_size)
         self.iterator = self.dataset.make_initializable_iterator()
         self.image = self.iterator.get_next()
 
@@ -54,13 +52,9 @@ class DataGenerator:
             # Shuffle the dataset
             # self.test_dataset = self.test_dataset.shuffle(self.config.data_loader.buffer_size)
             # Repeat the dataset indefinitely
-            self.test_dataset = self.test_dataset.repeat(
-                self.config.data_loader.num_epochs
-            )
+            self.test_dataset = self.test_dataset.repeat()
             # Apply batching
-            self.test_dataset = self.test_dataset.batch(
-                self.config.data_loader.test_batch
-            )
+            self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
             self.test_iterator = self.test_dataset.make_initializable_iterator()
             self.test_image, self.test_label = self.test_iterator.get_next()
 
@@ -77,8 +71,7 @@ class DataGenerator:
         image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
         image_resized = tf.image.resize_images(
-            image_decoded,
-            [self.config.data_loader.image_size, self.config.data_loader.image_size],
+            image_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         # Normalize the values of the pixels. The function that is applied is below
         # (x - mean) / adjusted_stddev
@@ -100,8 +93,7 @@ class DataGenerator:
         # Decode the image and the label
         img_decoded = tf.image.decode_jpeg(img)
         image_resized = tf.image.resize_images(
-            img_decoded,
-            [self.config.data_loader.image_size, self.config.data_loader.image_size],
+            img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         image_normalized = tf.image.per_image_standardization(image_resized)
 
