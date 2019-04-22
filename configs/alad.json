@@ -28,7 +28,7 @@
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": true,
-    "flip_labels": false,
+    "flip_labels": true,
     "noise_probability": 0.05,
     "discriminator_l_rate": 2e-4,
     "generator_l_rate": 2e-4,

@@ -131,7 +131,7 @@ class ALAD_Trainer(BaseTrain):
             self.config.trainer.do_spectral_norm, self.config.trainer.allow_zz
         )
         random_seed = 42
-        label = 1
+        label = 0
         step = self.sess.run(self.model.global_step_tensor)
 
         save_results(
