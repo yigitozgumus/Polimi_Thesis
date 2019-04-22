@@ -21,56 +21,63 @@ class SkipGANomaly(BaseModel):
         self.image_input = tf.placeholder(
             dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"
         )
-        self.noise_tensor = tf.placeholder(
-            dtype=tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
-        )
         self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
-
+        self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
+        self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
         #######################################################################
         # GRAPH
         ########################################################################
         self.logger.info("Building Training Graph")
         with tf.variable_scope("Skip_GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                self.reconstructed_image = self.generator(self.image_input)
+                self.img_rec = self.generator(self.image_input)
             with tf.variable_scope("Discriminator_Model"):
                 self.disc_real, self.inter_layer_real = self.discriminator(self.image_input)
-                self.disc_fake, self.inter_layer_fake = self.discriminator(self.reconstructed_image)
+                self.disc_fake, self.inter_layer_fake = self.discriminator(self.img_rec)
         ########################################################################
         # METRICS
         ########################################################################
         with tf.variable_scope("Loss_Functions"):
             with tf.variable_scope("Discriminator_Loss"):
-                # According to the paper we invert the values for the normal/fake. So normal images should be labeled
+                # According to the paper we invert the values for the normal/fake.
+                # So normal images should be labeled
                 # as zeros
-                self.disc_loss_real = tf.reduce_mean(
+                self.loss_dis_real = tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(
-                        labels=tf.zeros_like(self.disc_real), logits=self.disc_real
+                        labels=self.true_labels, logits=self.disc_real
                     )
                 )
-                self.disc_loss_fake = tf.reduce_mean(
+                self.loss_dis_fake = tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(
-                        labels=tf.ones_like(self.disc_fake), logits=self.disc_fake
+                        labels=self.generated_labels, logits=self.disc_fake
                     )
                 )
-                self.disc_loss_total = self.disc_loss_real + self.disc_loss_fake
+                # Adversarial Loss Part for Discriminator
+                self.loss_discriminator = self.loss_dis_real + self.loss_dis_fake
 
             with tf.variable_scope("Generator_Loss"):
                 # Adversarial Loss
+                if self.config.trainer.flip_labels:
+                    labels = tf.zeros_like(self.disc_fake)
+                else:
+                    labels = tf.ones_like(self.disc_fake)
                 self.gen_adv_loss = tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(
-                        logits=self.disc_fake, labels=tf.zeros_like(self.disc_fake)
-                    )
+                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.disc_fake, labels=labels)
                 )
                 # Contextual Loss
-                context_layers = self.image_input - self.reconstructed_image
-                self.contextual_loss = tf.norm(
-                    context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss"
+                context_layers = self.image_input - self.img_rec
+                self.contextual_loss = tf.reduce_mean(
+                    tf.norm(context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss")
                 )
                 # Latent Loss
                 layer_diff = self.inter_layer_real - self.inter_layer_fake
-                self.latent_lostt = tf.norm(
-                    layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss"
+                self.latent_loss = tf.reduce_mean(
+                    tf.norm(layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss")
+                )
+                self.gen_loss_total = (
+                    self.config.trainer.weight_adv * self.gen_adv_loss
+                    + self.config.trainer.weight_cont * self.contextual_loss
+                    + self.config.trainer.weight_lat * self.latent_loss
                 )
         ########################################################################
         # OPTIMIZATION
@@ -105,13 +112,80 @@ class SkipGANomaly(BaseModel):
             self.disc_update_ops = tf.get_collection(
                 tf.GraphKeys.UPDATE_OPS, scope="Skip_GANomaly/Discriminator_Model"
             )
-        ########################################################################
-        # TESTING
-        ########################################################################
+            # Initialization of Optimizers
+            with tf.control_dependencies(self.gen_update_ops):
+                self.gen_op = self.generator_optimizer.minimize(
+                    self.gen_loss_total, var_list=self.generator_vars
+                )
+            with tf.control_dependencies(self.disc_update_ops):
+                self.disc_op = self.discriminator_optimizer.minimize(
+                    self.loss_discriminator, var_list=self.discriminator_vars
+                )
+            # Exponential Moving Average for Estimation
+            self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_dis = self.dis_ema.apply(self.discriminator_vars)
 
+            self.gen_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_gen = self.gen_ema.apply(self.generator_vars)
+
+            with tf.control_dependencies([self.disc_op]):
+                self.train_dis_op = tf.group(maintain_averages_op_dis)
+
+            with tf.control_dependencies([self.gen_op]):
+                self.train_gen_op = tf.group(maintain_averages_op_gen)
         ########################################################################
         # TENSORBOARD
         ########################################################################
+        with tf.name_scope("Summary"):
+            with tf.name_scope("Disc_Summary"):
+                tf.summary.scalar("loss_discriminator_total", self.loss_discriminator, ["dis"])
+                tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
+                tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
+            with tf.name_scope("Gen_Summary"):
+                tf.summary.scalar("loss_generator_total", self.gen_loss_total, ["gen"])
+                tf.summary.scalar("loss_gen_adv", self.gen_adv_loss, ["gen"])
+                tf.summary.scalar("loss_gen_con", self.contextual_loss, ["gen"])
+                tf.summary.scalar("loss_gen_enc", self.latent_loss, ["gen"])
+            with tf.name_scope("Image_Summary"):
+                tf.summary.image("reconstruct", self.img_rec, 5, ["image"])
+                tf.summary.image("input_images", self.image_input, 5, ["image"])
+        self.sum_op_dis = tf.summary.merge_all("dis")
+        self.sum_op_gen = tf.summary.merge_all("gen")
+        self.sum_op_im = tf.summary.merge_all("image")
+
+        ########################################################################
+        # TESTING
+        ########################################################################
+        self.logger.info("Building Testing Graph...")
+        with tf.variable_scope("GANomaly"):
+            with tf.variable_scope("Skip_GANomaly"):
+                with tf.variable_scope("Generator_Model"):
+                    self.img_rec_ema = self.generator(
+                        self.image_input, getter=get_getter(self.gen_ema)
+                    )
+                with tf.variable_scope("Discriminator_Model"):
+                    self.disc_real_ema, self.inter_layer_real_ema = self.discriminator(
+                        self.image_input, getter=get_getter(self.disc_real_ema)
+                    )
+                    self.disc_fake_ema, self.inter_layer_fake_ema = self.discriminator(
+                        self.img_rec, getter=get_getter(self.disc_fake_ema)
+                    )
+        with tf.name_scope("Testing"):
+            with tf.variable_scope("Reconstruction Loss"):
+                # Contextual Loss
+                context_layers = self.image_input - self.img_rec_ema
+                self.contextual_loss_ema = tf.reduce_mean(
+                    tf.norm(context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss")
+                )
+            with tf.variable_scope("Latent_Loss"):
+                # Latent Loss
+                layer_diff = self.inter_layer_real_ema - self.inter_layer_fake_ema
+                self.latent_loss_ema = tf.reduce_mean(
+                    tf.norm(layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss")
+                )
+            self.anomaly_score = self.config.trainer.weight * self.contextual_loss_ema + (
+                1 - self.config.trainer.weight * self.latent_loss_ema
+            )
 
     def generator(self, image_input, getter=None):
         # Make the generator model

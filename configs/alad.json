@@ -46,7 +46,7 @@
     "name": "summarizer.Summarizer",
     "enable_summary": true,
     "show_steps": 10,
-    "max_to_keep": 5,
+    "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
     "output_folder": "Experiments"
