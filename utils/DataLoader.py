@@ -99,12 +99,10 @@ class DataLoader:
                 for adv_h in range(self.h_turns):
                     for adv_w in range(self.w_turns):
                         image = img_[
-                            adv_h * size : (adv_h + 1) * size,
-                            adv_w * size : (adv_w + 1) * size,
+                            adv_h * size : (adv_h + 1) * size, adv_w * size : (adv_w + 1) * size
                         ]
                         tag = tag_[
-                            adv_h * size : (adv_h + 1) * size,
-                            adv_w * size : (adv_w + 1) * size,
+                            adv_h * size : (adv_h + 1) * size, adv_w * size : (adv_w + 1) * size
                         ]
                         img_files.append(image)
                         tag_files.append(tag)
@@ -166,7 +164,7 @@ class DataLoader:
         labels = []
         for label in tag_list_merged:
             im2arr = io.imread(label)
-            labels.append(0) if np.sum(im2arr) else labels.append(1)
+            labels.append(1) if np.sum(im2arr) else labels.append(0)
         labels_f = tf.constant(labels)
 
         return [img_names, labels_f]
