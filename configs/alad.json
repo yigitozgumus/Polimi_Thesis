@@ -29,6 +29,7 @@
     "include_noise": false,
     "soft_labels": true,
     "flip_labels": false,
+    "noise_probability": 0.05,
     "discriminator_l_rate": 2e-4,
     "generator_l_rate": 2e-4,
     "optimizer_adam_beta1": 0.5,

@@ -28,6 +28,7 @@ class SkipGANomaly(BaseModel):
         # GRAPH
         ########################################################################
         self.logger.info("Building Training Graph")
+
         with tf.variable_scope("Skip_GANomaly"):
             with tf.variable_scope("Generator_Model"):
                 self.img_rec = self.generator(self.image_input)
@@ -149,6 +150,7 @@ class SkipGANomaly(BaseModel):
             with tf.name_scope("Image_Summary"):
                 tf.summary.image("reconstruct", self.img_rec, 5, ["image"])
                 tf.summary.image("input_images", self.image_input, 5, ["image"])
+
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_im = tf.summary.merge_all("image")
@@ -157,6 +159,7 @@ class SkipGANomaly(BaseModel):
         # TESTING
         ########################################################################
         self.logger.info("Building Testing Graph...")
+
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Skip_GANomaly"):
                 with tf.variable_scope("Generator_Model"):
@@ -170,6 +173,7 @@ class SkipGANomaly(BaseModel):
                     self.disc_fake_ema, self.inter_layer_fake_ema = self.discriminator(
                         self.img_rec, getter=get_getter(self.disc_fake_ema)
                     )
+
         with tf.name_scope("Testing"):
             with tf.variable_scope("Reconstruction Loss"):
                 # Contextual Loss
@@ -191,7 +195,7 @@ class SkipGANomaly(BaseModel):
         # Make the generator model
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             # Encoder Part
-            with tf.variable_scope("Encoder", reuse=tf.AUTO_REUSE):
+            with tf.variable_scope("Encoder"):
                 model_entry = tf.reshape(image_input, [-1, self.img_size, self.img_size, 1])
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
@@ -284,7 +288,7 @@ class SkipGANomaly(BaseModel):
                         name="enc_conv5",
                     )(enc_layer_4)
             # Decoder Part
-            with tf.variable_scope("Decoder", reuse=tf.AUTO_REUSE):
+            with tf.variable_scope("Decoder"):
                 gen_noise_entry = enc_layer_5
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
@@ -300,8 +304,8 @@ class SkipGANomaly(BaseModel):
                         dec_layer_1, momentum=self.config.trainer.batch_momentum, name="dec_bn1"
                     )
                     dec_layer_1 = tf.nn.relu(dec_layer_1, name="dec_relu1")
-                    dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
-                    # Current layer is Batch_size x 2 x 2 x 1024
+                dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
+                # Current layer is Batch_size x 2 x 2 x 1024
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     dec_layer_2 = tf.layers.Conv2DTranspose(
@@ -316,8 +320,8 @@ class SkipGANomaly(BaseModel):
                         dec_layer_2, momentum=self.config.trainer.batch_momentum, name="dec_bn2"
                     )
                     dec_layer_2 = tf.nn.relu(dec_layer_2, name="dec_relu1")
-                    dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
-                    # Current layer is Batch_size x 4 x 4 x 512
+                dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
+                # Current layer is Batch_size x 4 x 4 x 512
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
                     dec_layer_3 = tf.layers.Conv2DTranspose(
@@ -332,8 +336,8 @@ class SkipGANomaly(BaseModel):
                         dec_layer_3, momentum=self.config.trainer.batch_momentum, name="dec_bn3"
                     )
                     dec_layer_3 = tf.nn.relu(dec_layer_3, name="dec_relu3")
-                    dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
-                    # Current layer is Batch_size x 8 x 8 x 256
+                dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
+                # Current layer is Batch_size x 8 x 8 x 256
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
                     dec_layer_4 = tf.layers.Conv2DTranspose(
@@ -348,8 +352,8 @@ class SkipGANomaly(BaseModel):
                         dec_layer_4, momentum=self.config.trainer.batch_momentum, name="dec_bn4"
                     )
                     dec_layer_4 = tf.nn.relu(dec_layer_4, name="dec_relu4")
-                    dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
-                    # Current layer is Batch_size x 16 x 16 x 128
+                dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
+                # Current layer is Batch_size x 16 x 16 x 128
                 net_name = "Layer_5"
                 with tf.variable_scope(net_name):
                     dec_layer_5 = tf.layers.Conv2DTranspose(
