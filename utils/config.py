@@ -38,15 +38,11 @@ def create_parameter_file(config: object) -> None:
 def process_config(json_file: str, exp_name: str) -> object:
     config, _ = get_config_from_json(json_file)
     config.exp.name = exp_name
-    config.log.summary_dir = os.path.join(
-        config.log.output_folder, config.exp.name, "summary/"
-    )
+    config.log.summary_dir = os.path.join(config.log.output_folder, config.exp.name, "summary/")
     config.log.checkpoint_dir = os.path.join(
         config.log.output_folder, config.exp.name, "checkpoint/"
     )
-    config.log.log_file_dir = os.path.join(
-        config.log.output_folder, config.exp.name, "logs/"
-    )
+    config.log.log_file_dir = os.path.join(config.log.output_folder, config.exp.name, "logs/")
     config.log.checkpoint_prefix = os.path.join(config.log.checkpoint_dir, "ckpt")
     config.log.step_generation_dir = os.path.join(
         config.log.output_folder, config.exp.name, "generated/"
@@ -54,9 +50,8 @@ def process_config(json_file: str, exp_name: str) -> object:
     config.log.parameter_dir = os.path.join(
         config.log.output_folder, config.exp.name, "parameters/"
     )
-    config.log.result_dir = os.path.join(
-        config.log.output_folder, config.exp.name, "results/"
-    )
+    config.log.result_dir = os.path.join(config.log.output_folder, config.exp.name, "results/")
+    config.log.codebase_dir = os.path.join(config.log.output_folder, config.exp.name, "codebase/")
     create_parameter_file(config)
     return config
 
