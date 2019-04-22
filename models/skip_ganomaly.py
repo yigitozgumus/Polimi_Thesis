@@ -195,177 +195,176 @@ class SkipGANomaly(BaseModel):
         # Make the generator model
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             # Encoder Part
-            with tf.variable_scope("Encoder"):
-                model_entry = tf.reshape(image_input, [-1, self.img_size, self.img_size, 1])
-                net_name = "Layer_1"
-                with tf.variable_scope(net_name):
-                    enc_layer_1 = tf.layers.Conv2D(
-                        filters=64,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="enc_conv1",
-                    )(model_entry)
-                    enc_layer_1 = tf.layers.batch_normalization(
-                        enc_layer_1,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="enc_bn1",
-                    )
-                    enc_layer_1 = tf.nn.leaky_relu(
-                        enc_layer_1, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_1"
-                    )
-                    # Current layer is  Batch_size x 16 x 16 x 64
-                net_name = "Layer_2"
-                with tf.variable_scope(net_name):
-                    enc_layer_2 = tf.layers.Conv2D(
-                        filters=128,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="enc_conv2",
-                    )(enc_layer_1)
-                    enc_layer_2 = tf.layers.batch_normalization(
-                        enc_layer_2,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="enc_bn2",
-                    )
-                    enc_layer_2 = tf.nn.leaky_relu(
-                        enc_layer_2, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_2"
-                    )
-                    # Current layer is  Batch_size x 8 x 8 x 128
-                net_name = "Layer_3"
-                with tf.variable_scope(net_name):
-                    enc_layer_3 = tf.layers.Conv2D(
-                        filters=256,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="enc_conv3",
-                    )(enc_layer_2)
-                    enc_layer_3 = tf.layers.batch_normalization(
-                        enc_layer_3,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="enc_bn3",
-                    )
-                    enc_layer_3 = tf.nn.leaky_relu(
-                        enc_layer_3, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_3"
-                    )
-                    # Current layer is  Batch_size x 4 x 4 x 256
-                net_name = "Layer_4"
-                with tf.variable_scope(net_name):
-                    enc_layer_4 = tf.layers.Conv2D(
-                        filters=512,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="enc_conv4",
-                    )(enc_layer_3)
-                    enc_layer_4 = tf.layers.batch_normalization(
-                        enc_layer_4,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="enc_bn4",
-                    )
-                    enc_layer_4 = tf.nn.leaky_relu(
-                        enc_layer_4, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_4"
-                    )
-                    # Current layer is  Batch_size x 2 x 2 x 512
-                net_name = "Layer_5"
-                with tf.variable_scope(net_name):
-                    enc_layer_5 = tf.layers.Conv2D(
-                        filters=512,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="enc_conv5",
-                    )(enc_layer_4)
+
+            model_entry = tf.reshape(image_input, [-1, self.img_size, self.img_size, 1])
+            net_name = "Encoder_Layer_1"
+            with tf.variable_scope(net_name):
+                enc_layer_1 = tf.layers.Conv2D(
+                    filters=64,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="enc_conv1",
+                )(model_entry)
+                enc_layer_1 = tf.layers.batch_normalization(
+                    enc_layer_1,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="enc_bn1",
+                )
+                enc_layer_1 = tf.nn.leaky_relu(
+                    enc_layer_1, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_1"
+                )
+                # Current layer is  Batch_size x 16 x 16 x 64
+            net_name = "Encoder_Layer_2"
+            with tf.variable_scope(net_name):
+                enc_layer_2 = tf.layers.Conv2D(
+                    filters=128,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="enc_conv2",
+                )(enc_layer_1)
+                enc_layer_2 = tf.layers.batch_normalization(
+                    enc_layer_2,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="enc_bn2",
+                )
+                enc_layer_2 = tf.nn.leaky_relu(
+                    enc_layer_2, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_2"
+                )
+                # Current layer is  Batch_size x 8 x 8 x 128
+            net_name = "Encoder_Layer_3"
+            with tf.variable_scope(net_name):
+                enc_layer_3 = tf.layers.Conv2D(
+                    filters=256,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="enc_conv3",
+                )(enc_layer_2)
+                enc_layer_3 = tf.layers.batch_normalization(
+                    enc_layer_3,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="enc_bn3",
+                )
+                enc_layer_3 = tf.nn.leaky_relu(
+                    enc_layer_3, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_3"
+                )
+                # Current layer is  Batch_size x 4 x 4 x 256
+            net_name = "Encoder_Layer_4"
+            with tf.variable_scope(net_name):
+                enc_layer_4 = tf.layers.Conv2D(
+                    filters=512,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="enc_conv4",
+                )(enc_layer_3)
+                enc_layer_4 = tf.layers.batch_normalization(
+                    enc_layer_4,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="enc_bn4",
+                )
+                enc_layer_4 = tf.nn.leaky_relu(
+                    enc_layer_4, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_4"
+                )
+                # Current layer is  Batch_size x 2 x 2 x 512
+            net_name = "Encoder_Layer_5"
+            with tf.variable_scope(net_name):
+                enc_layer_5 = tf.layers.Conv2D(
+                    filters=512,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="enc_conv5",
+                )(enc_layer_4)
             # Decoder Part
-            with tf.variable_scope("Decoder"):
-                gen_noise_entry = enc_layer_5
-                net_name = "Layer_1"
-                with tf.variable_scope(net_name):
-                    dec_layer_1 = tf.layers.Conv2DTranspose(
-                        filters=512,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="dec_convt1",
-                    )(gen_noise_entry)
-                    dec_layer_1 = tf.layers.batch_normalization(
-                        dec_layer_1, momentum=self.config.trainer.batch_momentum, name="dec_bn1"
-                    )
-                    dec_layer_1 = tf.nn.relu(dec_layer_1, name="dec_relu1")
-                dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
-                # Current layer is Batch_size x 2 x 2 x 1024
-                net_name = "Layer_2"
-                with tf.variable_scope(net_name):
-                    dec_layer_2 = tf.layers.Conv2DTranspose(
-                        filters=256,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="dec_convt2",
-                    )(dec_layer_1)
-                    dec_layer_2 = tf.layers.batch_normalization(
-                        dec_layer_2, momentum=self.config.trainer.batch_momentum, name="dec_bn2"
-                    )
-                    dec_layer_2 = tf.nn.relu(dec_layer_2, name="dec_relu1")
-                dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
-                # Current layer is Batch_size x 4 x 4 x 512
-                net_name = "Layer_3"
-                with tf.variable_scope(net_name):
-                    dec_layer_3 = tf.layers.Conv2DTranspose(
-                        filters=128,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="dec_convt3",
-                    )(dec_layer_2)
-                    dec_layer_3 = tf.layers.batch_normalization(
-                        dec_layer_3, momentum=self.config.trainer.batch_momentum, name="dec_bn3"
-                    )
-                    dec_layer_3 = tf.nn.relu(dec_layer_3, name="dec_relu3")
-                dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
-                # Current layer is Batch_size x 8 x 8 x 256
-                net_name = "Layer_4"
-                with tf.variable_scope(net_name):
-                    dec_layer_4 = tf.layers.Conv2DTranspose(
-                        filters=64,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="dec_convt4",
-                    )(dec_layer_3)
-                    dec_layer_4 = tf.layers.batch_normalization(
-                        dec_layer_4, momentum=self.config.trainer.batch_momentum, name="dec_bn4"
-                    )
-                    dec_layer_4 = tf.nn.relu(dec_layer_4, name="dec_relu4")
-                dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
-                # Current layer is Batch_size x 16 x 16 x 128
-                net_name = "Layer_5"
-                with tf.variable_scope(net_name):
-                    dec_layer_5 = tf.layers.Conv2DTranspose(
-                        filters=1,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        activation=tf.nn.tanh,
-                        kernel_initializer=self.init_kernel,
-                        name="dec_convt1",
-                    )(dec_layer_4)
-                    # Current layer is Batch_size x 32 x 32 x 1
+            gen_noise_entry = enc_layer_5
+            net_name = "Decoder_Layer_1"
+            with tf.variable_scope(net_name):
+                dec_layer_1 = tf.layers.Conv2DTranspose(
+                    filters=512,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="dec_convt1",
+                )(gen_noise_entry)
+                dec_layer_1 = tf.layers.batch_normalization(
+                    dec_layer_1, momentum=self.config.trainer.batch_momentum, name="dec_bn1"
+                )
+                dec_layer_1 = tf.nn.relu(dec_layer_1, name="dec_relu1")
+            dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
+            # Current layer is Batch_size x 2 x 2 x 1024
+            net_name = "Decoder_Layer_2"
+            with tf.variable_scope(net_name):
+                dec_layer_2 = tf.layers.Conv2DTranspose(
+                    filters=256,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="dec_convt2",
+                )(dec_layer_1)
+                dec_layer_2 = tf.layers.batch_normalization(
+                    dec_layer_2, momentum=self.config.trainer.batch_momentum, name="dec_bn2"
+                )
+                dec_layer_2 = tf.nn.relu(dec_layer_2, name="dec_relu1")
+            dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
+            # Current layer is Batch_size x 4 x 4 x 512
+            net_name = "Decoder_Layer_3"
+            with tf.variable_scope(net_name):
+                dec_layer_3 = tf.layers.Conv2DTranspose(
+                    filters=128,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="dec_convt3",
+                )(dec_layer_2)
+                dec_layer_3 = tf.layers.batch_normalization(
+                    dec_layer_3, momentum=self.config.trainer.batch_momentum, name="dec_bn3"
+                )
+                dec_layer_3 = tf.nn.relu(dec_layer_3, name="dec_relu3")
+            dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
+            # Current layer is Batch_size x 8 x 8 x 256
+            net_name = "Decoder_Layer_4"
+            with tf.variable_scope(net_name):
+                dec_layer_4 = tf.layers.Conv2DTranspose(
+                    filters=64,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="dec_convt4",
+                )(dec_layer_3)
+                dec_layer_4 = tf.layers.batch_normalization(
+                    dec_layer_4, momentum=self.config.trainer.batch_momentum, name="dec_bn4"
+                )
+                dec_layer_4 = tf.nn.relu(dec_layer_4, name="dec_relu4")
+            dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
+            # Current layer is Batch_size x 16 x 16 x 128
+            net_name = "Decoder_Layer_5"
+            with tf.variable_scope(net_name):
+                dec_layer_5 = tf.layers.Conv2DTranspose(
+                    filters=1,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    activation=tf.nn.tanh,
+                    kernel_initializer=self.init_kernel,
+                    name="dec_convt1",
+                )(dec_layer_4)
+                # Current layer is Batch_size x 32 x 32 x 1
         return dec_layer_5
 
     def discriminator(self, image_input, getter=None):
