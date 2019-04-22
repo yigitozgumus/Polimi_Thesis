@@ -38,12 +38,15 @@ class BIGAN(BaseModel):
                 self.reconstructed = self.generator(self.noise_gen)
 
             with tf.variable_scope("Discriminator_Model"):
+                # E(x) and x --> This being real is the output of discriminator
                 l_encoder, inter_layer_inp = self.discriminator(self.noise_gen, self.image_input)
+                # z and G(z)
                 l_generator, inter_layer_rct = self.discriminator(self.noise_tensor, self.image_gen)
 
         # Loss Function Implementations
         with tf.name_scope("Loss_Functions"):
             # Discriminator
+            # Discriminator sees the encoder result as true because it discriminates E(x), x as the real pair
             self.loss_dis_enc = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=l_encoder)
             )
@@ -61,10 +64,12 @@ class BIGAN(BaseModel):
                 labels_gen = tf.ones_like(l_generator)
                 labels_enc = tf.zeros_like(l_encoder)
             # Generator
+            # Generator is considered as the true ones here because it tries to fool discriminator
             self.loss_generator = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
             )
             # Encoder
+            # Encoder is considered as the fake one because it tries to fool the discriminator also
             self.loss_encoder = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_enc, logits=l_encoder)
             )
@@ -82,7 +87,7 @@ class BIGAN(BaseModel):
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
             self.encoder_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.discriminator_l_rate,
+                self.config.trainer.generator_l_rate,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
@@ -116,15 +121,15 @@ class BIGAN(BaseModel):
             # Initialization of Optimizers
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
-                    self.loss_generator, var_list=self.generator_vars
+                    self.loss_generator, var_list=self.generator_vars, step=self.global_step_tensor
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.disc_op = self.discriminator_optimizer.minimize(
-                    self.loss_discriminator, var_list=self.discriminator_vars
+                    self.loss_discriminator, var_list=self.discriminator_vars, step=self.global_step_tensor
                 )
             with tf.control_dependencies(self.enc_update_ops):
                 self.enc_op = self.encoder_optimizer.minimize(
-                    self.loss_encoder, var_list=self.encoder_vars
+                    self.loss_encoder, var_list=self.encoder_vars, step=self.global_step_tensor
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
@@ -318,7 +323,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=256,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -335,7 +340,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=128,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -352,7 +357,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=64,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -369,7 +374,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=1,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=1,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -411,7 +416,7 @@ class BIGAN(BaseModel):
             net_name = "X_Layer_2"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
-                    filters=64,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -427,7 +432,7 @@ class BIGAN(BaseModel):
                     name="dropout",
                     training=self.is_training,
                 )
-            x_d = tf.reshape(x_d, [-1, 8 * 8 * 64])
+            x_d = tf.reshape(x_d, [-1, 8 * 8 * 128])
 
             # D(z)
             net_name = "Z_Layer_1"

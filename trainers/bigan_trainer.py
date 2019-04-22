@@ -1,7 +1,6 @@
 from base.base_train import BaseTrain
 from tqdm import tqdm
 import numpy as np
-import tensorflow as tf
 from time import sleep
 from time import time
 from utils.evaluations import do_prc
