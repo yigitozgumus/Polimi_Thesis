@@ -87,18 +87,18 @@ class ALAD(BaseModel):
 
             # discriminator xx
             x_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=self.true_labels
+                logits=x_logit_real, labels=tf.ones_like(x_logit_real)
             )
             x_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=self.generated_labels
+                logits=x_logit_fake, labels=tf.zeros_like(x_logit_fake)
             )
             self.dis_loss_xx = tf.reduce_mean(x_real_dis + x_fake_dis)
             # discriminator zz
             z_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=self.true_labels
+                logits=z_logit_real, labels=tf.ones_like(z_logit_real)
             )
             z_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=self.generated_labels
+                logits=z_logit_fake, labels=tf.zeros_like(z_logit_fake)
             )
             self.dis_loss_zz = tf.reduce_mean(z_real_dis + z_fake_dis)
             # Compute the whole discriminator loss
@@ -416,6 +416,27 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
+                    filters=512,
+                    kernel_size=4,
+                    strides=2,
+                    padding="same",
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    name="conv",
+                )
+                net = tf.layers.batch_normalization(
+                    inputs=net,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="bn",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                )
+
+            net_name = "layer_5"
+            with tf.variable_scope(net_name):
+                net = layers.conv2d(
+                    net,
                     filters=self.config.trainer.noise_dim,
                     kernel_size=4,
                     strides=1,
@@ -490,18 +511,35 @@ class ALAD(BaseModel):
                     name="tconv3/bn",
                 )
                 net = tf.nn.relu(features=net, name="tconv3/relu")
-
             net_name = "layer_4"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
-                    filters=1,
+                    filters=64,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv4",
                 )(net)
-                net = tf.nn.tanh(net, name="tconv4/tanh")
+                net = tf.layers.batch_normalization(
+                    inputs=net,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="tconv4/bn",
+                )
+                net = tf.nn.relu(features=net, name="tconv4/relu")
+
+            net_name = "layer_5"
+            with tf.variable_scope(net_name):
+                net = tf.layers.Conv2DTranspose(
+                    filters=1,
+                    kernel_size=4,
+                    strides=(1, 1),
+                    padding="same",
+                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    name="tconv5",
+                )(net)
+                net = tf.nn.tanh(net, name="tconv5/tanh")
 
         return net
 
