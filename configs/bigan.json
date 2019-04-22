@@ -13,7 +13,7 @@
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
-    "num_epochs": 500,
+    "num_epochs": 50,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 840,
@@ -30,7 +30,7 @@
     "soft_labels": true,
     "flip_labels": false,
     "noise_probability": 0.05,
-    "discriminator_l_rate": 1e-4,
+    "discriminator_l_rate": 2e-5,
     "generator_l_rate": 1e-4,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
@@ -45,7 +45,7 @@
     "enable_early_stop": true,
     "degree": 1,
     "weight": 0.1,
-    "label": 1
+    "label": 0
   },
   "log": {
     "name": "summarizer.Summarizer",
