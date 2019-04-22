@@ -160,30 +160,29 @@ class SkipGANomaly(BaseModel):
         ########################################################################
         self.logger.info("Building Testing Graph...")
 
-        with tf.variable_scope("GANomaly"):
-            with tf.variable_scope("Skip_GANomaly"):
-                with tf.variable_scope("Generator_Model"):
-                    self.img_rec_ema = self.generator(
-                        self.image_input, getter=get_getter(self.gen_ema)
-                    )
-                with tf.variable_scope("Discriminator_Model"):
-                    self.disc_real_ema, self.inter_layer_real_ema = self.discriminator(
-                        self.image_input, getter=get_getter(self.dis_ema)
-                    )
-                    self.disc_fake_ema, self.inter_layer_fake_ema = self.discriminator(
-                        self.img_rec, getter=get_getter(self.dis_ema)
-                    )
+        with tf.variable_scope("Skip_GANomaly"):
+            with tf.variable_scope("Generator_Model"):
+                self.img_rec_ema = self.generator(self.image_input, getter=get_getter(self.gen_ema))
+            with tf.variable_scope("Discriminator_Model"):
+                self.disc_real_ema, self.inter_layer_real_ema = self.discriminator(
+                    self.image_input, getter=get_getter(self.dis_ema)
+                )
+                self.disc_fake_ema, self.inter_layer_fake_ema = self.discriminator(
+                    self.img_rec, getter=get_getter(self.dis_ema)
+                )
 
         with tf.name_scope("Testing"):
-            with tf.variable_scope("Reconstruction Loss"):
+            with tf.variable_scope("Reconstruction_Loss"):
                 # Contextual Loss
                 context_layers = self.image_input - self.img_rec_ema
+                context_layers = tf.layers.Flatten()(context_layers)
                 self.contextual_loss_ema = tf.reduce_mean(
                     tf.norm(context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss")
                 )
             with tf.variable_scope("Latent_Loss"):
                 # Latent Loss
                 layer_diff = self.inter_layer_real_ema - self.inter_layer_fake_ema
+                layer_diff = tf.layers.Flatten()(layer_diff)
                 self.latent_loss_ema = tf.reduce_mean(
                     tf.norm(layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss")
                 )
