@@ -99,13 +99,13 @@ class ALAD_Trainer(BaseTrain):
             cur_epoch + 1
         ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:
             valid_loss = 0
-            image_valid = self.sess(self.data.valid_image)
+            image_valid = self.sess.run(self.data.valid_image)
             noise = np.random.normal(
                 loc=0.0, scale=1.0, size=[image_valid.shape[0], self.noise_dim]
             )
             feed_dict = {
                 self.model.image_tensor: image_valid,
-                self.model_noise_tensor: noise,
+                self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
             vl, lat = self.sess.run(

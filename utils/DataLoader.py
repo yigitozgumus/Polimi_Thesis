@@ -85,7 +85,7 @@ class DataLoader:
                     im.save("img_{}.jpg".format(str(idx)))
 
     def populate_train_valid(self):
-        if "train" in self.dir_names and "valid" not in self.dir_names:
+        if "train" in self.dir_names and "valid" in self.dir_names:
             self.logger.info("Train and Validation datasets are already populated")
         else:
             # Remove train dataset from the previous run

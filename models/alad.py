@@ -294,7 +294,7 @@ class ALAD(BaseModel):
         ########################################################################
         if self.config.log.enable_summary:
 
-            with tf.name_scope("summary"):
+            with tf.name_scope("train_summary"):
 
                 with tf.name_scope("dis_summary"):
                     tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
@@ -313,10 +313,6 @@ class ALAD(BaseModel):
                     if self.config.trainer.allow_zz:
                         tf.summary.scalar("loss_encgen_dzz", cost_z, ["gen"])
 
-                if self.config.trainer.enable_early_stop:
-                    with tf.name_scope("validation_summary"):
-                        tf.summary.scalar("valid", self.rec_error_valid, ["v"])
-
                 with tf.name_scope("img_summary"):
                     heatmap_pl_latent = tf.placeholder(
                         tf.float32, shape=(1, 480, 640, 3), name="heatmap_pl_latent"
@@ -326,6 +322,10 @@ class ALAD(BaseModel):
                 with tf.name_scope("image_summary"):
                     tf.summary.image("reconstruct", self.rec_img, 8, ["image"])
                     tf.summary.image("input_images", self.image_tensor, 8, ["image"])
+
+        if self.config.trainer.enable_early_stop:
+            with tf.name_scope("validation_summary"):
+                tf.summary.scalar("valid", self.rec_error_valid, ["v"])
 
                 self.sum_op_dis = tf.summary.merge_all("dis")
                 self.sum_op_gen = tf.summary.merge_all("gen")

@@ -11,7 +11,7 @@
   "data_loader": {
     "name": "data_generator.DataGenerator",
     "random_seed": 42,
-    "buffer_size_train": 51200,
+    "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
     "num_epochs": 500,
