@@ -80,6 +80,8 @@ class SkipGANomaly(BaseModel):
                     + self.config.trainer.weight_cont * self.contextual_loss
                     + self.config.trainer.weight_lat * self.latent_loss
                 )
+            if self.config.trainer.enable_early_stop:
+                self.rec_error_valid = tf.reduce_mean(self.latent_loss)
         ########################################################################
         # OPTIMIZATION
         ########################################################################
@@ -122,9 +124,7 @@ class SkipGANomaly(BaseModel):
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.disc_op = self.discriminator_optimizer.minimize(
-                    self.loss_discriminator,
-                    global_step=self.global_step_tensor,
-                    var_list=self.discriminator_vars,
+                    self.loss_discriminator, var_list=self.discriminator_vars
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
@@ -141,23 +141,29 @@ class SkipGANomaly(BaseModel):
         ########################################################################
         # TENSORBOARD
         ########################################################################
-        with tf.name_scope("Summary"):
-            with tf.name_scope("Disc_Summary"):
-                tf.summary.scalar("loss_discriminator_total", self.loss_discriminator, ["dis"])
-                tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
-                tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
-            with tf.name_scope("Gen_Summary"):
-                tf.summary.scalar("loss_generator_total", self.gen_loss_total, ["gen"])
-                tf.summary.scalar("loss_gen_adv", self.gen_adv_loss, ["gen"])
-                tf.summary.scalar("loss_gen_con", self.contextual_loss, ["gen"])
-                tf.summary.scalar("loss_gen_enc", self.latent_loss, ["gen"])
-            with tf.name_scope("Image_Summary"):
-                tf.summary.image("reconstruct", self.img_rec, 5, ["image"])
-                tf.summary.image("input_images", self.image_input, 5, ["image"])
+        if self.config.log.enable_summary:
+            with tf.name_scope("summary"):
+                with tf.name_scope("disc_summary"):
+                    tf.summary.scalar("loss_discriminator_total", self.loss_discriminator, ["dis"])
+                    tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
+                    tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
+                with tf.name_scope("gen_summary"):
+                    tf.summary.scalar("loss_generator_total", self.gen_loss_total, ["gen"])
+                    tf.summary.scalar("loss_gen_adv", self.gen_adv_loss, ["gen"])
+                    tf.summary.scalar("loss_gen_con", self.contextual_loss, ["gen"])
+                    tf.summary.scalar("loss_gen_enc", self.latent_loss, ["gen"])
+                with tf.name_scope("image_summary"):
+                    tf.summary.image("reconstruct", self.img_rec, 5, ["image"])
+                    tf.summary.image("input_images", self.image_input, 5, ["image"])
+
+        if self.config.trainer.enable_early_stop:
+            with tf.name_scope("validation_summary"):
+                tf.summary.scalar("valid", self.rec_error_valid, ["v"])
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_valid = tf.summary.merge_all("v")
 
         ########################################################################
         # TESTING
