@@ -114,7 +114,7 @@ class ALAD_Trainer(BaseTrain):
             valid_loss += vl
             if self.config.log.enable_summary:
                 sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
-                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], scope="valid")
+                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], summarizer="valid")
 
             self.logger.info("Validation: valid loss {:.4f}".format(valid_loss))
             if (
