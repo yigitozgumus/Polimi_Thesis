@@ -80,8 +80,7 @@ class SkipGANomaly(BaseModel):
                     + self.config.trainer.weight_cont * self.contextual_loss
                     + self.config.trainer.weight_lat * self.latent_loss
                 )
-            if self.config.trainer.enable_early_stop:
-                self.rec_error_valid = tf.reduce_mean(self.latent_loss)
+
         ########################################################################
         # OPTIMIZATION
         ########################################################################
@@ -186,21 +185,25 @@ class SkipGANomaly(BaseModel):
                 # Contextual Loss
                 context_layers = self.image_input - self.img_rec_ema
                 context_layers = tf.layers.Flatten()(context_layers)
-                self.contextual_loss_ema = tf.norm(
+                contextual_loss_ema = tf.norm(
                     context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss"
                 )
+                self.contextual_loss_ema = tf.squeeze(contextual_loss_ema)
 
             with tf.variable_scope("Latent_Loss"):
                 # Latent Loss
                 layer_diff = self.inter_layer_real_ema - self.inter_layer_fake_ema
                 layer_diff = tf.layers.Flatten()(layer_diff)
-                self.latent_loss_ema = tf.norm(
+                latent_loss_ema = tf.norm(
                     layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss"
                 )
+                self.latent_loss_ema = tf.squeeze(latent_loss_ema)
 
             self.anomaly_score = self.config.trainer.weight * self.contextual_loss_ema + (
                 1 - self.config.trainer.weight * self.latent_loss_ema
             )
+        if self.config.trainer.enable_early_stop:
+            self.rec_error_valid = tf.reduce_mean(self.latent_loss_ema)
 
     def generator(self, image_input, getter=None):
         # Make the generator model
