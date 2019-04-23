@@ -87,18 +87,18 @@ class ALAD(BaseModel):
 
             # discriminator xx
             x_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=tf.ones_like(x_logit_real)
+                logits=x_logit_real, labels=self.true_labels
             )
             x_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=tf.zeros_like(x_logit_fake)
+                logits=x_logit_fake, labels=self.generated_labels
             )
             self.dis_loss_xx = tf.reduce_mean(x_real_dis + x_fake_dis)
             # discriminator zz
             z_real_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=tf.ones_like(z_logit_real)
+                logits=z_logit_real, labels=self.true_labels
             )
             z_fake_dis = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=tf.zeros_like(z_logit_fake)
+                logits=z_logit_fake, labels=self.generated_labels
             )
             self.dis_loss_zz = tf.reduce_mean(z_real_dis + z_fake_dis)
             # Compute the whole discriminator loss
