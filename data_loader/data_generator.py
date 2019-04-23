@@ -18,17 +18,24 @@ class DataGenerator:
         d = DataLoader(self.config)
         self.logger.info("Data is loading...")
         # Get the filenames and labels
-        self.filenames = d.get_train_dataset()
+        self.filenames_train = d.get_train_dataset()
         # assert len(self.filenames) == len(self.labels)
         # Create the Dataset using Tensorflow Data API
-        self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames)
+        self.dataset = tf.data.Dataset.from_tensor_slices(self.filenames_train)
         # Apply parse function to get the numpy array of the images
         self.dataset = self.dataset.map(
             map_func=self._parse_function,
             num_parallel_calls=self.config.data_loader.num_parallel_calls,
         )
         # Shuffle the dataset
-        self.dataset = self.dataset.shuffle(self.config.data_loader.buffer_size)
+        if self.config.data_loader_validation:
+            buffer_size = int(
+                self.config.data_loader.buffer_size
+                * ((100 - self.config.data_loader.validation_percent) / 100)
+            )
+        else:
+            buffer_size = self.config.data_loader.buffer_size
+        self.dataset = self.dataset.shuffle(buffer_size)
         # Repeat the dataset indefinitely
         self.dataset = self.dataset.repeat()
         # Apply batching
@@ -38,6 +45,27 @@ class DataGenerator:
         self.dataset = self.dataset.prefetch(buffer_size=10 * self.config.data_loader.batch_size)
         self.iterator = self.dataset.make_initializable_iterator()
         self.image = self.iterator.get_next()
+
+        # Validation Dataset
+        if self.config.data_loader.validation:
+            self.filenames_valid = d.get_valid_dataset()
+            # Create the Dataset using Tensorflow Data API
+            self.valid_dataset = tf.data.Dataset.from_tensor_slices(self.filenames_valid)
+            # Apply parse function to get the numpy array of the images
+            self.valid_dataset = self.valid_dataset.map(
+                map_func=self._parse_function,
+                num_parallel_calls=self.config.data_loader.num_parallel_calls,
+            )
+            buffer_size = int(
+                (self.config.data_loader.buffer_size * self.config.data_loader.validation_percent)
+                / 100
+            )
+            self.valid_dataset = self.valid_dataset.shuffle(buffer_size)
+            self.valid_dataset = self.valid_dataset.repeat()
+            # Apply batching
+            self.valid_dataset = self.valid_dataset.batch(buffer_size)
+            self.valid_iterator = self.valid_dataset.make_initializable_iterator()
+            self.valid_image = self.valid_iterator.get_next()
 
         # If the mode is anomaly create the test dataset
         if self.config.data_loader.mode == "anomaly":

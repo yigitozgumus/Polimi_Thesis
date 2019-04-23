@@ -197,9 +197,7 @@ class ALAD(BaseModel):
                     self.loss_generator, global_step=self.global_step_tensor, var_list=self.gvars
                 )
             with tf.control_dependencies(self.update_ops_enc):
-                self.enc_op = self.enc_optimizer.minimize(
-                    self.loss_encoder, var_list=self.evars
-                )
+                self.enc_op = self.enc_optimizer.minimize(self.loss_encoder, var_list=self.evars)
 
             with tf.control_dependencies(self.update_ops_dis_xz):
                 self.dis_op_xz = self.disc_optimizer.minimize(

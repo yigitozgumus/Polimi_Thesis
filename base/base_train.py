@@ -18,21 +18,20 @@ class BaseTrain:
         self.logger = log_object.get_logger(__name__)
         self.sess = sess
         self.data = data
-        self.init = tf.group(
-            tf.global_variables_initializer(), tf.local_variables_initializer()
-        )
+        self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         self.sess.run(self.init)
         self.rows = int(np.sqrt(self.config.log.num_example_imgs_to_generate))
+        self.patience_lost = False
 
     def train(self):
         self.logger.info("Training is started")
         for cur_epoch in range(
-            self.model.cur_epoch_tensor.eval(self.sess),
-            self.config.data_loader.num_epochs + 1,
-            1,
+            self.model.cur_epoch_tensor.eval(self.sess), self.config.data_loader.num_epochs + 1, 1
         ):
             self.train_epoch()
             self.sess.run(self.model.increment_cur_epoch_tensor)
+            if self.patience_lost:
+                break
 
     def train_epoch(self):
         """
@@ -60,8 +59,5 @@ class BaseTrain:
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap="gray")
             plt.axis("off")
 
-        plt.savefig(
-            self.config.log.step_generation_dir
-            + "image_at_epoch_{:04d}.png".format(epoch)
-        )
+        plt.savefig(self.config.log.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch))
         plt.close()

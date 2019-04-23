@@ -10,7 +10,8 @@
   },
   "data_loader": {
     "name": "data_generator.DataGenerator",
-    "buffer_size": 51200,
+    "random_seed": 42,
+    "buffer_size_train": 51200,
     "image_size": 32,
     "batch_size": 64,
     "num_epochs": 500,
@@ -20,14 +21,16 @@
     "mode": "anomaly",
     "dataset_name": "material",
     "binary_location": "offload",
-    "test_batch": 36
+    "test_batch": 36,
+    "validation": true,
+    "validation_percent": 10
   },
   "trainer": {
     "name": "alad_trainer.ALAD_Trainer",
     "noise_dim": 100,
     "image_dims": [32, 32, 1],
     "include_noise": false,
-    "soft_labels": false,
+    "soft_labels": true,
     "flip_labels": false,
     "noise_probability": 0.05,
     "discriminator_l_rate": 2e-4,
@@ -41,7 +44,9 @@
     "spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": true,
-    "degree": 1
+    "degree": 1,
+    "frequency_eval": 1,
+    "patience": 10
   },
   "log": {
     "name": "summarizer.Summarizer",

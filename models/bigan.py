@@ -121,15 +121,17 @@ class BIGAN(BaseModel):
             # Initialization of Optimizers
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
-                    self.loss_generator, var_list=self.generator_vars, global_step=self.global_step_tensor
+                    self.loss_generator,
+                    var_list=self.generator_vars,
+                    global_step=self.global_step_tensor,
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.disc_op = self.discriminator_optimizer.minimize(
-                    self.loss_discriminator, var_list=self.discriminator_vars,
+                    self.loss_discriminator, var_list=self.discriminator_vars
                 )
             with tf.control_dependencies(self.enc_update_ops):
                 self.enc_op = self.encoder_optimizer.minimize(
-                    self.loss_encoder, var_list=self.encoder_vars,
+                    self.loss_encoder, var_list=self.encoder_vars
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)

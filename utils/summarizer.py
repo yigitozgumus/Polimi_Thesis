@@ -11,8 +11,8 @@ class Summarizer:
         self.train_summary_writer = tf.summary.FileWriter(
             os.path.join(self.config.log.summary_dir, "train"), self.sess.graph
         )
-        self.test_summary_writer = tf.summary.FileWriter(
-            os.path.join(self.config.log.summary_dir, "test")
+        self.valid_summary_writer = tf.summary.FileWriter(
+            os.path.join(self.config.log.summary_dir, "valid"), self.sess.graph
         )
 
     # it can summarize scalars and images.
@@ -25,9 +25,7 @@ class Summarizer:
         :return:
         """
         summary_writer = (
-            self.train_summary_writer
-            if summarizer == "train"
-            else self.test_summary_writer
+            self.train_summary_writer if summarizer == "train" else self.valid_summary_writer
         )
         with tf.variable_scope(scope):
             for summary in summaries:

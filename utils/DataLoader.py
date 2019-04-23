@@ -19,10 +19,12 @@ class DataLoader:
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.config = config
+
         log_object = Logger(self.config)
         self.logger = log_object.get_logger(__name__)
         self.data_dir = self.config.dirs.data
         self.train_dataset = os.path.join(self.data_dir, "train")
+        self.valid_dataset = os.path.join(self.data_dir, "valid")
         self.img_location = os.path.join(self.data_dir, "test", "imgs/")
         self.tag_location = os.path.join(self.data_dir, "test", "labels/")
         if not os.path.exists(self.data_dir):
@@ -49,7 +51,10 @@ class DataLoader:
         self.anorm_img_array = self.create_image_array(anorm_img_names, save=False)
         self.anorm_tag_array = self.create_image_array(anorm_tag_names, save=False)
         self.image_tag_list = list(zip(self.anorm_img_array, self.anorm_tag_array))
-        self.populate_train()
+        if not self.config.data_loader.validation:
+            self.populate_train()
+        else:
+            self.populate_train_valid()
         if self.config.data_loader.mode == "anomaly":
             self.populate_test()
 
@@ -76,6 +81,45 @@ class DataLoader:
                 os.mkdir(self.train_dataset)
             with working_directory(self.train_dataset):
                 for idx, img in enumerate(imgs):
+                    im = Image.fromarray(img)
+                    im.save("img_{}.jpg".format(str(idx)))
+
+    def populate_train_valid(self):
+        if "train" in self.dir_names and "valid" not in self.dir_names:
+            self.logger.info("Train and Validation datasets are already populated")
+        else:
+            # Remove train dataset from the previous run
+            os.rmdir(self.train_dataset)
+            self.logger.info("Train and Validations Datasets will be populated")
+            size = self.config.data_loader.image_size
+            num_images = 10240
+            imgs = []
+            for ind, img in enumerate(self.norm_img_array):
+                h, w = img.shape[:2]
+                new_h, new_w = size, size
+                for idx in range(num_images):
+                    top = np.random.randint(0, h - new_h)
+                    left = np.random.randint(0, w - new_w)
+                    image = img[top : top + new_h, left : left + new_w]
+                    imgs.append(image)
+                self.logger.debug("{} images generated".format(num_images * (ind + 1)))
+            # Creation of validation dataset
+            np.random.seed(self.config.data_loader.random_seed)
+            validation_list = np.random.choice(51200, 5120)  # 10% of the training set
+            imgs_train = [x for ind, x in enumerate(imgs) if ind not in validation_list]
+            imgs_valid = [x for ind, x in enumerate(imgs) if ind in validation_list]
+            # Check if the folder is there
+            if not os.path.exists(self.train_dataset):
+                os.mkdir(self.train_dataset)
+            # Check if the folder is there
+            if not os.path.exists(self.valid_dataset):
+                os.mkdir(self.valid_dataset)
+            with working_directory(self.train_dataset):
+                for idx, img in enumerate(imgs_train):
+                    im = Image.fromarray(img)
+                    im.save("img_{}.jpg".format(str(idx)))
+            with working_directory(self.valid_dataset):
+                for idx, img in enumerate(imgs_valid):
                     im = Image.fromarray(img)
                     im.save("img_{}.jpg".format(str(idx)))
 
@@ -150,6 +194,16 @@ class DataLoader:
         img_list = listdir_nohidden(self.train_dataset)
         img_names = tf.constant([os.path.join(self.train_dataset, x) for x in img_list])
         self.logger.info("Train Dataset is Loaded")
+        return img_names
+
+    def get_valid_dataset(self):
+        """
+        :param size: size of the image
+        :return: numpy array of images and corresponding labels
+        """
+        img_list = listdir_nohidden(self.valid_dataset)
+        img_names = tf.constant([os.path.join(self.train_dataset, x) for x in img_list])
+        self.logger.info("Validation Dataset is Loaded")
         return img_names
 
     def get_test_dataset(self):

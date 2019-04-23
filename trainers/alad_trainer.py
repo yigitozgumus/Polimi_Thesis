@@ -17,6 +17,10 @@ class ALAD_Trainer(BaseTrain):
         self.sess.run(self.data.iterator.initializer)
         # Initialize the test Dataset Iterator
         self.sess.run(self.data.test_iterator.initializer)
+        if self.config.data_loader.validation:
+            self.sess.run(self.data.valid_iterator.initializer)
+            self.best_valid_loss = 0
+            self.nb_without_improvements = 0
 
     def train_epoch(self):
         """
@@ -44,7 +48,6 @@ class ALAD_Trainer(BaseTrain):
             loop.refresh()  # to show immediately the update
             sleep(0.01)
             # Compute the main losses
-            # TODO summary object
             lg, le, ld, ldxz, ldxx, ldzz, summary = self.train_step(image, cur_epoch)
             gen_losses.append(lg)
             enc_losses.append(le)
@@ -91,9 +94,50 @@ class ALAD_Trainer(BaseTrain):
                 )
             )
 
-        # Save the model state
-        self.model.save(self.sess)
-        # TODO EARLY STOPPING
+        # Early Stopping
+        if (
+            cur_epoch + 1
+        ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:
+            valid_loss = 0
+            image_valid = self.sess(self.data.valid_image)
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[image_valid.shape[0], self.noise_dim]
+            )
+            feed_dict = {
+                self.model.image_tensor: image_valid,
+                self.model_noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            vl, lat = self.sess.run(
+                [self.model.rec_error_valid, self.model.rec_z], feed_dict=feed_dict
+            )
+            valid_loss += vl
+            if self.config.log.enable_summary:
+                sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
+                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], scope="valid")
+
+            self.logger.info("Validation: valid loss {:.4f}".format(valid_loss))
+            if (
+                valid_loss < self.best_valid_loss
+                or cur_epoch == self.config.trainer.frequency_eval - 1
+            ):
+                self.best_valid_loss = valid_loss
+                self.logger.info(
+                    "Best model - valid loss = {:.4f} - saving...".format(self.best_valid_loss)
+                )
+                # Save the model state
+                self.model.save(self.sess)
+                self.nb_without_improvements = 0
+            else:
+                self.nb_without_improvements += self.config.trainer.frequency_eval
+            if self.nb_without_improvements > self.config.trainer.patience:
+                self.patience_lost = True
+                self.logger.warning(
+                    "Early stopping at epoch {} with weights from epoch {}".format(
+                        cur_epoch, cur_epoch - self.nb_without_improvements
+                    )
+                )
+
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
         scores_ch = []
