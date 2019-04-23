@@ -471,7 +471,7 @@ class SkipGANomaly(BaseModel):
                     name="d_dense",
                 )(x_d)
                 x_d = tf.nn.leaky_relu(
-                    features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
+                    features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_4"
                 )
                 x_d = tf.layers.dropout(
                     x_d,
@@ -479,7 +479,9 @@ class SkipGANomaly(BaseModel):
                     training=self.is_training,
                     name="d_dropout",
                 )
-                intermediate_layer = x_d
+            intermediate_layer = x_d
+            net_name = "Layer_6"
+            with tf.variable_scope(net_name):
                 x_d = tf.layers.Dense(units=1, name="d_dense")(x_d)
         return x_d, intermediate_layer
 
