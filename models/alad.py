@@ -198,22 +198,22 @@ class ALAD(BaseModel):
                 )
             with tf.control_dependencies(self.update_ops_enc):
                 self.enc_op = self.enc_optimizer.minimize(
-                    self.loss_encoder, global_step=self.global_step_tensor, var_list=self.evars
+                    self.loss_encoder, var_list=self.evars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xz):
                 self.dis_op_xz = self.disc_optimizer.minimize(
-                    self.dis_loss_xz, global_step=self.global_step_tensor, var_list=self.dxzvars
+                    self.dis_loss_xz, var_list=self.dxzvars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xx):
                 self.dis_op_xx = self.disc_optimizer.minimize(
-                    self.dis_loss_xx, global_step=self.global_step_tensor, var_list=self.dxxvars
+                    self.dis_loss_xx, var_list=self.dxxvars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_zz):
                 self.dis_op_zz = self.disc_optimizer.minimize(
-                    self.dis_loss_zz, global_step=self.global_step_tensor, var_list=self.dzzvars
+                    self.dis_loss_zz, var_list=self.dzzvars
                 )
 
             # Exponential Moving Average for inference
@@ -416,27 +416,6 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
-                    filters=512,
-                    kernel_size=4,
-                    strides=2,
-                    padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="conv",
-                )
-                net = tf.layers.batch_normalization(
-                    inputs=net,
-                    momentum=self.config.trainer.batch_momentum,
-                    training=self.is_training,
-                    name="bn",
-                )
-                net = tf.nn.leaky_relu(
-                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
-                )
-
-            net_name = "layer_5"
-            with tf.variable_scope(net_name):
-                net = layers.conv2d(
-                    net,
                     filters=self.config.trainer.noise_dim,
                     kernel_size=4,
                     strides=1,
@@ -511,35 +490,18 @@ class ALAD(BaseModel):
                     name="tconv3/bn",
                 )
                 net = tf.nn.relu(features=net, name="tconv3/relu")
+
             net_name = "layer_4"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
-                    filters=64,
+                    filters=1,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv4",
                 )(net)
-                net = tf.layers.batch_normalization(
-                    inputs=net,
-                    momentum=self.config.trainer.batch_momentum,
-                    training=self.is_training,
-                    name="tconv4/bn",
-                )
-                net = tf.nn.relu(features=net, name="tconv4/relu")
-
-            net_name = "layer_5"
-            with tf.variable_scope(net_name):
-                net = tf.layers.Conv2DTranspose(
-                    filters=1,
-                    kernel_size=4,
-                    strides=(1, 1),
-                    padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="tconv5",
-                )(net)
-                net = tf.nn.tanh(net, name="tconv5/tanh")
+                net = tf.nn.tanh(net, name="tconv4/tanh")
 
         return net
 

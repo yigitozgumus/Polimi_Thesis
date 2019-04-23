@@ -66,6 +66,8 @@ def do_roc(scores, true_labels, file_name="", directory="", plot=True):
             roc_auc (float): area under the under the ROC curve
             thresholds (list): list of thresholds for the ROC
     """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     fpr, tpr, _ = roc_curve(true_labels, scores)
     roc_auc = auc(fpr, tpr)  # compute area under the curve
     if plot:

@@ -91,20 +91,23 @@ class BIGANTrainer(BaseTrain):
         # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
         # normal images are 0 meaning that contains no anomaly and anomalous images are 1 meaning that it contains
         # an anomalous region, we first scale the scores and then invert them to match the scores
+        scores = np.asarray(scores)
         scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
+        step = self.sess.run(self.model.global_step_tensor)
         prc_auc = do_roc(
             scores_scaled,
             true_labels,
-            file_name=r"bigan_material_{}_{}_{}".format(
+            file_name=r"bigan_material_{}_{}_{}_{}".format(
                 self.config.trainer.loss_method,
                 self.config.trainer.weight,
                 self.config.trainer.label,
+                step,
             ),
             directory=self.config.log.result_dir
-            + "/bigan/material/{}/{}/".format(
+            + "bigan/material/{}/{}/".format(
                 self.config.trainer.loss_method, self.config.trainer.weight
             ),
         )
