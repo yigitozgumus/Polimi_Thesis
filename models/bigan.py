@@ -48,11 +48,11 @@ class BIGAN(BaseModel):
             # Discriminator
             # Discriminator sees the encoder result as true because it discriminates E(x), x as the real pair
             self.loss_dis_enc = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.generated_labels, logits=l_encoder)
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=l_encoder)
             )
             self.loss_dis_gen = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=self.true_labels, logits=l_generator
+                    labels=self.generated_labels, logits=l_generator
                 )
             )
             self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
@@ -61,8 +61,8 @@ class BIGAN(BaseModel):
                 labels_gen = tf.zeros_like(l_generator)
                 labels_enc = tf.ones_like(l_encoder)
             else:
-                labels_gen = tf.zeros_like(l_generator)
-                labels_enc = tf.ones_like(l_encoder)
+                labels_gen = tf.ones_like(l_generator)
+                labels_enc = tf.zeros_like(l_encoder)
             # Generator
             # Generator is considered as the true ones here because it tries to fool discriminator
             self.loss_generator = tf.reduce_mean(
@@ -125,11 +125,11 @@ class BIGAN(BaseModel):
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.disc_op = self.discriminator_optimizer.minimize(
-                    self.loss_discriminator, var_list=self.discriminator_vars, global_step=self.global_step_tensor
+                    self.loss_discriminator, var_list=self.discriminator_vars,
                 )
             with tf.control_dependencies(self.enc_update_ops):
                 self.enc_op = self.encoder_optimizer.minimize(
-                    self.loss_encoder, var_list=self.encoder_vars, global_step=self.global_step_tensor
+                    self.loss_encoder, var_list=self.encoder_vars,
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)

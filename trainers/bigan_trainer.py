@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 from time import sleep
 from time import time
-from utils.evaluations import do_prc
+from utils.evaluations import do_roc
 
 
 class BIGANTrainer(BaseTrain):
@@ -88,11 +88,15 @@ class BIGANTrainer(BaseTrain):
             scores += self.sess.run(self.model.list_scores, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
+        # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
+        # normal images are 0 meaning that contains no anomaly and anomalous images are 1 meaning that it contains
+        # an anomalous region, we first scale the scores and then invert them to match the scores
+        scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
-        prc_auc = do_prc(
-            scores,
+        prc_auc = do_roc(
+            scores_scaled,
             true_labels,
             file_name=r"bigan_material_{}_{}_{}".format(
                 self.config.trainer.loss_method,
@@ -104,7 +108,7 @@ class BIGANTrainer(BaseTrain):
                 self.config.trainer.loss_method, self.config.trainer.weight
             ),
         )
-        self.logger.info("Testing | PRC AUC = {:.4f}".format(prc_auc))
+        self.logger.info("Testing | ROC AUC = {:.4f}".format(prc_auc))
 
     def train_step(self, image, cur_epoch):
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
