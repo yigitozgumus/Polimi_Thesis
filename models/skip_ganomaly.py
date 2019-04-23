@@ -465,7 +465,14 @@ class SkipGANomaly(BaseModel):
                 )
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Flatten(name="d_flatten")(x_d)
+                x_d = tf.layers.Dense(
+                    units=self.config.trainer.noise_dim,
+                    kernel_initializer=self.init_kernel,
+                    name="d_dense",
+                )(x_d)
+                x_d = tf.nn.leaky_relu(
+                    features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
+                )
                 x_d = tf.layers.dropout(
                     x_d,
                     rate=self.config.trainer.dropout_rate,
