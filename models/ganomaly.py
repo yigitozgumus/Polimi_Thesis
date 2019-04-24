@@ -52,6 +52,7 @@ class GANomaly(BaseModel):
                 else self.loss_dis_fake + self.loss_dis_real
             )
             # Generator
+            # Adversarial Loss
             if self.config.trainer.flip_labels:
                 labels = tf.zeros_like(l_fake)
             else:
@@ -59,13 +60,14 @@ class GANomaly(BaseModel):
             self.gen_loss_ce = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=l_fake)
             )
-
+            # Contextual Loss
             l1_norm = self.image_input - self.img_rec
             l1_norm = tf.layers.Flatten()(l1_norm)
-            self.gen_loss_con = tf.reduce_mean(tf.norm(l1_norm, ord=1, keepdims=False))
+            self.gen_loss_con = tf.norm(l1_norm, ord=1, axis=1, keepdims=False)
+            # Encoder Loss
             l2_norm = self.noise_gen - self.noise_rec
             l2_norm = tf.layers.Flatten()(l2_norm)
-            self.gen_loss_enc = tf.reduce_mean(tf.norm(l2_norm, ord=2, keepdims=False))
+            self.gen_loss_enc = tf.norm(l2_norm, ord=2, axis=1, keepdims=False)
 
             self.gen_loss_total = (
                 self.config.trainer.weight_adv * self.gen_loss_ce
@@ -107,7 +109,9 @@ class GANomaly(BaseModel):
             # Initialization of Optimizers
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
-                    self.gen_loss_total, var_list=self.generator_vars
+                    self.gen_loss_total,
+                    global_step=self.global_step_tensor,
+                    var_list=self.generator_vars,
                 )
             with tf.control_dependencies(self.disc_update_ops):
                 self.disc_op = self.discriminator_optimizer.minimize(
@@ -126,26 +130,6 @@ class GANomaly(BaseModel):
 
             with tf.control_dependencies([self.gen_op]):
                 self.train_gen_op = tf.group(maintain_averages_op_gen)
-
-        with tf.name_scope("Summary"):
-            with tf.name_scope("Disc_Summary"):
-                tf.summary.scalar("loss_discriminator_total", self.loss_discriminator, ["dis"])
-                tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
-                tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
-                if self.config.trainer.loss_method:
-                    tf.summary.scalar("loss_dis_fm", self.feature_match, ["dis"])
-            with tf.name_scope("Gen_Summary"):
-                tf.summary.scalar("loss_generator_total", self.gen_loss_total, ["gen"])
-                tf.summary.scalar("loss_gen_adv", self.gen_loss_ce, ["gen"])
-                tf.summary.scalar("loss_gen_con", self.gen_loss_con, ["gen"])
-                tf.summary.scalar("loss_gen_enc", self.gen_loss_enc, ["gen"])
-            with tf.name_scope("Image_Summary"):
-                tf.summary.image("reconstruct", self.img_rec, 3, ["image"])
-                tf.summary.image("input_images", self.image_input, 3, ["image"])
-
-        self.sum_op_dis = tf.summary.merge_all("dis")
-        self.sum_op_gen = tf.summary.merge_all("gen")
-        self.sum_op_im = tf.summary.merge_all("image")
 
         self.logger.info("Building Testing Graph...")
         with tf.variable_scope("GANomaly"):
@@ -168,6 +152,34 @@ class GANomaly(BaseModel):
                 delta = self.noise_gen_ema - self.noise_rec_ema
                 delta = tf.layers.Flatten()(delta)
                 self.score = tf.norm(delta, ord=1, axis=1, keepdims=False)
+
+        if self.config.trainer.enable_early_stop:
+            self.rec_error_valid = tf.reduce_mean(self.score)
+
+        if self.config.log.enable_summary:
+            with tf.name_scope("summary"):
+                with tf.name_scope("disc_summary"):
+                    tf.summary.scalar("loss_discriminator_total", self.loss_discriminator, ["dis"])
+                    tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
+                    tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
+                    if self.config.trainer.loss_method:
+                        tf.summary.scalar("loss_dis_fm", self.feature_match, ["dis"])
+                with tf.name_scope("gen_summary"):
+                    tf.summary.scalar("loss_generator_total", self.gen_loss_total, ["gen"])
+                    tf.summary.scalar("loss_gen_adv", self.gen_loss_ce, ["gen"])
+                    tf.summary.scalar("loss_gen_con", self.gen_loss_con, ["gen"])
+                    tf.summary.scalar("loss_gen_enc", self.gen_loss_enc, ["gen"])
+                with tf.name_scope("image_summary"):
+                    tf.summary.image("reconstruct", self.img_rec, 3, ["image"])
+                    tf.summary.image("input_images", self.image_input, 3, ["image"])
+        if self.config.trainer.enable_early_stop:
+            with tf.name_scope("validation_summary"):
+                tf.summary.scalar("valid", self.rec_error_valid, ["v"])
+
+        self.sum_op_dis = tf.summary.merge_all("dis")
+        self.sum_op_gen = tf.summary.merge_all("gen")
+        self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_valid = tf.summary.merge_all("v")
 
     def generator(self, image_input, getter=None):
         # This generator will take the image from the input dataset, and first it will

@@ -44,7 +44,7 @@
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.1,
     "dis_inter_layer_dim": 1024,
-    "dropout_rate": 0.5,
+    "dropout_rate": 0.3,
     "ema_decay": 0.999,
     "spectral_norm": true,
     "allow_zz": true,

@@ -68,7 +68,7 @@ class SkipGANomalyTrainer(BaseTrain):
 
             feed_dict = {self.model.image_input: image_valid, self.model.is_training: False}
             vl = self.sess.run([self.model.rec_error_valid], feed_dict=feed_dict)
-            valid_loss += vl
+            valid_loss += vl[0]
             if self.config.log.enable_summary:
                 sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
                 self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], summarizer="valid")
