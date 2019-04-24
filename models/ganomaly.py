@@ -456,11 +456,15 @@ class GANomaly(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Flatten(name="d_flatten")(x_d)
-                x_d = tf.layers.dropout(
-                    x_d,
-                    rate=self.config.trainer.dropout_rate,
+                x_d = tf.layers.batch_normalization(
+                    inputs=x_d,
+                    momentum=self.config.trainer.batch_momentum,
+                    epsilon=self.config.trainer.batch_epsilon,
                     training=self.is_training,
-                    name="d_dropout",
+                    name="d_bn_4",
+                )
+                x_d = tf.nn.leaky_relu(
+                    features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_4"
                 )
             intermediate_layer = x_d
             net_name = "Layer_5"
