@@ -169,7 +169,7 @@ class SkipGANomaly(BaseModel):
                 layer_diff = self.inter_layer_real_ema - self.inter_layer_fake_ema
                 layer_diff = tf.layers.Flatten()(layer_diff)
                 latent_loss_ema = tf.norm(
-                    layer_diff, ord=2, axis=1, keepdims=False, name="Latent_Loss"
+                    layer_diff, ord=2, axis=None, keepdims=False, name="Latent_Loss"
                 )
                 self.latent_loss_ema = tf.squeeze(latent_loss_ema)
 
@@ -315,11 +315,12 @@ class SkipGANomaly(BaseModel):
                         kernel_initializer=self.init_kernel,
                         name="dec_convt1",
                     )(gen_noise_entry)
+                    dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
                     dec_layer_1 = tf.layers.batch_normalization(
                         dec_layer_1, momentum=self.config.trainer.batch_momentum, name="dec_bn1"
                     )
                     dec_layer_1 = tf.nn.relu(dec_layer_1, name="dec_relu1")
-                    dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
+
                     # Current layer is Batch_size x 2 x 2 x 1024
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
@@ -331,11 +332,12 @@ class SkipGANomaly(BaseModel):
                         kernel_initializer=self.init_kernel,
                         name="dec_convt2",
                     )(dec_layer_1)
+                    dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
                     dec_layer_2 = tf.layers.batch_normalization(
                         dec_layer_2, momentum=self.config.trainer.batch_momentum, name="dec_bn2"
                     )
                     dec_layer_2 = tf.nn.relu(dec_layer_2, name="dec_relu1")
-                    dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
+
                     # Current layer is Batch_size x 4 x 4 x 512
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
@@ -347,11 +349,12 @@ class SkipGANomaly(BaseModel):
                         kernel_initializer=self.init_kernel,
                         name="dec_convt3",
                     )(dec_layer_2)
+                    dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
                     dec_layer_3 = tf.layers.batch_normalization(
                         dec_layer_3, momentum=self.config.trainer.batch_momentum, name="dec_bn3"
                     )
                     dec_layer_3 = tf.nn.relu(dec_layer_3, name="dec_relu3")
-                    dec_layer_3 = tf.concat([enc_layer_2, dec_layer_3], axis=-1)
+
                     # Current layer is Batch_size x 8 x 8 x 256
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
@@ -363,11 +366,12 @@ class SkipGANomaly(BaseModel):
                         kernel_initializer=self.init_kernel,
                         name="dec_convt4",
                     )(dec_layer_3)
+                    dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
                     dec_layer_4 = tf.layers.batch_normalization(
                         dec_layer_4, momentum=self.config.trainer.batch_momentum, name="dec_bn4"
                     )
                     dec_layer_4 = tf.nn.relu(dec_layer_4, name="dec_relu4")
-                    dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
+
                     # Current layer is Batch_size x 16 x 16 x 128
                 net_name = "Layer_5"
                 with tf.variable_scope(net_name):
