@@ -107,13 +107,25 @@ class DataGenerator:
         image_normalized = tf.image.per_image_standardization(image_resized)
         # Random image flip left-right
         image_random_flip_lr = tf.image.random_flip_left_right(
-            image_normalized, seed=tf.random.set_random_seed(1234)
+            image_normalized, seed=tf.random.set_random_seed(self.config.data_loader.random_seed)
         )
         # Random image flip up-down
         image_random_flip_ud = tf.image.random_flip_up_down(
-            image_random_flip_lr, seed=tf.random.set_random_seed(1234)
+            image_random_flip_lr,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
         )
-        return image_random_flip_ud
+        image_brightness = tf.image.random_brightness(
+            image_random_flip_ud,
+            max_delta=0.5,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+        )
+        image_contrast = tf.image.random_contrast(
+            image_brightness,
+            lower=0.1,
+            upper=0.5,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+        )
+        return image_contrast
 
     def _parse_function_test(self, img_file, tag):
         # Read the image
@@ -124,5 +136,24 @@ class DataGenerator:
             img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         image_normalized = tf.image.per_image_standardization(image_resized)
+        image_random_flip_lr = tf.image.random_flip_left_right(
+            image_normalized, seed=tf.random.set_random_seed(self.config.data_loader.random_seed)
+        )
+        # Random image flip up-down
+        image_random_flip_ud = tf.image.random_flip_up_down(
+            image_random_flip_lr,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+        )
+        image_brightness = tf.image.random_brightness(
+            image_random_flip_ud,
+            max_delta=0.5,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+        )
+        image_contrast = tf.image.random_contrast(
+            image_brightness,
+            lower=0.3,
+            upper=0.6,
+            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+        )
 
-        return image_normalized, tag
+        return image_contrast, tag

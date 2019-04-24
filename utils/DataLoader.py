@@ -10,6 +10,7 @@ from utils.utils import working_directory
 from utils.download_data import download_data
 from utils.dirs import listdir_nohidden
 from utils.logger import Logger
+from shutil import rmtree
 
 
 class DataLoader:
@@ -89,7 +90,7 @@ class DataLoader:
             self.logger.info("Train and Validation datasets are already populated")
         else:
             # Remove train dataset from the previous run
-            os.rmdir(self.train_dataset)
+            rmtree(self.train_dataset)
             self.logger.info("Train and Validations Datasets will be populated")
             size = self.config.data_loader.image_size
             num_images = 10240
