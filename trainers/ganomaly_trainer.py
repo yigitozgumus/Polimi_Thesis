@@ -127,6 +127,7 @@ class GANomalyTrainer(BaseTrain):
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
+            self.logger,
             step,
         )
 
