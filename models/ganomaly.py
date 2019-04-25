@@ -263,9 +263,9 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=512,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
-                        padding="valid",
+                        padding="same",
                         kernel_initializer=self.init_kernel,
                         name="tconv1",
                     )(net)
@@ -282,7 +282,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=256,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="valid",
                         kernel_initializer=self.init_kernel,
@@ -301,7 +301,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=128,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -319,7 +319,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=64,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -338,7 +338,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=1,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(1, 1),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -438,7 +438,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_1"
-                )
+                )  # 28 x 28 x 64
             # Second Convolutional Layer
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
@@ -459,7 +459,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_2"
-                )
+                )  # 14 x 14 x 128
             # Third Convolutional Layer
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
@@ -480,7 +480,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
-                )
+                )  # 7 x 7 x 256
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Flatten(name="d_flatten")(x_d)
