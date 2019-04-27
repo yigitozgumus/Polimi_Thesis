@@ -90,7 +90,8 @@ class DataLoader:
             self.logger.info("Train and Validation datasets are already populated")
         else:
             # Remove train dataset from the previous run
-            rmtree(self.train_dataset)
+            if os.path.exists(self.train_dataset):
+                rmtree(self.train_dataset)
             self.logger.info("Train and Validations Datasets will be populated")
             size = self.config.data_loader.image_size
             num_images = 10240
