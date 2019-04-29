@@ -26,12 +26,13 @@ class ANOGAN_Trainer(BaseTrain):
         gen_losses = []
         disc_losses = []
         summaries = []
+        image = self.data.image
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            ld, lg, sm = self.train_step(self.data.image, cur_epoch)
+            ld, lg, sm = self.train_step(image, cur_epoch)
             gen_losses.append(lg)
             disc_losses.append(ld)
             summaries.append(sm)
@@ -39,15 +40,21 @@ class ANOGAN_Trainer(BaseTrain):
         gl_m = np.mean(gen_losses)
         dl_m = np.mean(disc_losses)
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries)
+        # Check for reconstruction
+        if cur_epoch % self.config.log.frequency_test == 0:
+            image_eval = self.sess.run(image)
+            feed_dict = {self.model.image_input: image_eval, self.model.is_training: False}
+            reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
+            self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
         self.logger.info("Epoch terminated")
         self.logger.info(
             "Epoch %d | time = %ds | loss gen = %.4f | loss dis = %.4f "
             % (cur_epoch, time() - begin, gl_m, dl_m)
         )
-
-        # TODO add early stopping
         # Save the model state
         self.model.save(self.sess)
+
+    def test_epoch(self):
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
         rect_x, rec_error, latent, scores = [], [], [], []
@@ -57,15 +64,11 @@ class ANOGAN_Trainer(BaseTrain):
         test_loop = tqdm(range(self.config.data_loader.num_iter_pre_test))
         for _ in test_loop:
             begin_val_batch = time()
-            test_batch, test_labels = self.sess.run(
-                [self.data.test_image, self.data.test_label]
-            )
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
             test_loop.refresh()  # to show immediately the update
             sleep(0.01)
             noise = np.random.normal(
-                loc=0.0,
-                scale=1.0,
-                size=[self.config.data_loader.test_batch, self.noise_dim],
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             feed_dict = {
                 self.model.image_tensor: test_batch,
@@ -101,7 +104,6 @@ class ANOGAN_Trainer(BaseTrain):
         scores = np.concatenate(scores, axis=0)
         latent = np.concatenate(latent, axis=0)
         random_seed = 42
-        label = 1
         save_results(
             self.config.log.result_dir,
             scores,
@@ -110,17 +112,13 @@ class ANOGAN_Trainer(BaseTrain):
             self.config.data_loader.dataset_name,
             "cross_e",
             self.config.trainer.weight,
-            label,
-            random_seed,
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
         )
 
     def train_step(self, image, cur_epoch):
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
-        )
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels
-        )
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
@@ -134,12 +132,8 @@ class ANOGAN_Trainer(BaseTrain):
             [self.model.train_dis_op, self.model.total_disc_loss], feed_dict=feed_dict
         )
 
-        noise = np.random.normal(
-            loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim]
-        )
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels
-        )
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
         feed_dict = {
             self.model.image_tensor: image_eval,
             self.model.noise_tensor: noise,
@@ -148,9 +142,7 @@ class ANOGAN_Trainer(BaseTrain):
             self.model.is_training: True,
         }
         # Train the generator
-        _, lg = self.sess.run(
-            [self.model.train_gen_op, self.model.gen_loss], feed_dict=feed_dict
-        )
+        _, lg = self.sess.run([self.model.train_gen_op, self.model.gen_loss], feed_dict=feed_dict)
 
         if self.config.log.enable_summary:
             sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)
@@ -163,9 +155,7 @@ class ANOGAN_Trainer(BaseTrain):
             true_labels = np.ones((self.config.data_loader.batch_size, 1))
             generated_labels = np.zeros((self.config.data_loader.batch_size, 1))
         else:
-            true_labels = np.zeros(
-                (self.config.data_loader.batch_size, 1)
-            ) + np.random.uniform(
+            true_labels = np.zeros((self.config.data_loader.batch_size, 1)) + np.random.uniform(
                 low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
             )
             flipped_idx = np.random.choice(
@@ -173,9 +163,7 @@ class ANOGAN_Trainer(BaseTrain):
                 size=int(self.config.trainer.noise_probability * len(true_labels)),
             )
             true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-            generated_labels = np.ones(
-                (self.config.data_loader.batch_size, 1)
-            ) - np.random.uniform(
+            generated_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
                 low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
             )
             flipped_idx = np.random.choice(

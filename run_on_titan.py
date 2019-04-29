@@ -45,6 +45,9 @@ def run():
     model.load(sess)
     # Train the model
     trainer.train()
+    # Test the model
+    if config.trainer.test_at_end:
+        trainer.test()
     logger.info("Experiment has ended.")
 
 
