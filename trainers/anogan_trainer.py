@@ -43,7 +43,12 @@ class ANOGAN_Trainer(BaseTrain):
         # Check for reconstruction
         if cur_epoch % self.config.log.frequency_test == 0:
             image_eval = self.sess.run(image)
-            feed_dict = {self.model.image_input: image_eval, self.model.is_training: False}
+            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            feed_dict = {
+                self.model.image_input: image_eval,
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
             self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
         self.logger.info("Epoch terminated")
@@ -71,7 +76,7 @@ class ANOGAN_Trainer(BaseTrain):
                 loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
             feed_dict = {
-                self.model.image_tensor: test_batch,
+                self.model.image_input: test_batch,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
@@ -122,7 +127,7 @@ class ANOGAN_Trainer(BaseTrain):
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             self.model.true_labels: true_labels,
             self.model.generated_labels: generated_labels,
@@ -135,7 +140,7 @@ class ANOGAN_Trainer(BaseTrain):
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
         feed_dict = {
-            self.model.image_tensor: image_eval,
+            self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             self.model.true_labels: true_labels,
             self.model.generated_labels: generated_labels,
