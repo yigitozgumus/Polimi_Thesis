@@ -21,7 +21,9 @@
     "mode":"anomaly",
     "dataset_name" : "material",
     "binary_location":"offload",
-    "test_batch":36
+    "test_batch":36,
+        "validation": true,
+    "validation_percent": 10
   },
   "trainer": {
     "name": "anogan_trainer.ANOGAN_Trainer",
@@ -36,6 +38,7 @@
     "flip_labels": true,
     "discriminator_l_rate": 2e-5,
     "generator_l_rate": 2e-4,
+    "noise_probability": 0.05,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
@@ -48,6 +51,9 @@
     "degree": 1,
     "weight": 0.1,
     "label": 0,
+    "frequency_eval": 1,
+    "patience": 15,
+    "difference": 0.02,
     "steps_number": 500,
     "loss_method": "fm",
     "test_at_end": true

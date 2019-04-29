@@ -16,6 +16,10 @@ class ANOGAN_Trainer(BaseTrain):
         self.sess.run(self.data.iterator.initializer)
         # Initialize the test Dataset Iterator
         self.sess.run(self.data.test_iterator.initializer)
+        if self.config.data_loader.validation:
+            self.sess.run(self.data.valid_iterator.initializer)
+            self.best_valid_loss = 0
+            self.nb_without_improvements = 0
 
     def train_epoch(self):
         # Attach the epoch loop to a variable
@@ -57,7 +61,47 @@ class ANOGAN_Trainer(BaseTrain):
             % (cur_epoch, time() - begin, gl_m, dl_m)
         )
         # Save the model state
-        self.model.save(self.sess)
+        # self.model.save(self.sess)
+        if (
+            cur_epoch + 1
+        ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:
+            valid_loss = 0
+            image_valid = self.sess.run(self.data.valid_image)
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[image_valid.shape[0], self.noise_dim]
+            )
+            feed_dict = {
+                self.model.image_tensor: image_valid,
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            vl = self.sess.run([self.model.gen_loss], feed_dict=feed_dict)
+            valid_loss += vl
+            if self.config.log.enable_summary:
+                sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
+                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], summarizer="valid")
+
+            self.logger.info("Validation: valid loss {:.4f}".format(valid_loss))
+            if (
+                self.config.trainer.difference <= self.best_valid_loss - valid_loss
+                or cur_epoch == self.config.trainer.frequency_eval - 1
+            ):
+                self.best_valid_loss = valid_loss
+                self.logger.info(
+                    "Best model - valid loss = {:.4f} - saving...".format(self.best_valid_loss)
+                )
+                # Save the model state
+                self.model.save(self.sess)
+                self.nb_without_improvements = 0
+            else:
+                self.nb_without_improvements += self.config.trainer.frequency_eval
+            if self.nb_without_improvements > self.config.trainer.patience:
+                self.patience_lost = True
+                self.logger.warning(
+                    "Early stopping at epoch {} with weights from epoch {}".format(
+                        cur_epoch, cur_epoch - self.nb_without_improvements
+                    )
+                )
 
     def test_epoch(self):
         # Evaluation for the testing
@@ -103,7 +147,6 @@ class ANOGAN_Trainer(BaseTrain):
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
-        # TODO Batchfill ?
         rect_x = np.concatenate(rect_x, axis=0)
         rec_error = np.concatenate(rec_error, axis=0)
         scores = np.concatenate(scores, axis=0)
