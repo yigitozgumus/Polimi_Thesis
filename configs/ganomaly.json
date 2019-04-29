@@ -14,7 +14,7 @@
     "buffer_size": 51200,
     "image_size": 28,
     "batch_size": 64,
-    "num_epochs": 25,
+    "num_epochs": 50,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 960,
@@ -52,7 +52,7 @@
     "degree": 1,
     "label": 0,
     "frequency_eval": 1,
-    "patience": 10
+    "patience": 15
   },
   "log": {
     "name": "summarizer.Summarizer",
