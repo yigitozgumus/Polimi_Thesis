@@ -117,7 +117,9 @@ class ANOGAN(BaseModel):
 
         with tf.variable_scope("ANOGAN"):
             with tf.variable_scope("Generator_Model"):
-                x_gen_ema = self.generator(self.noise_tensor, getter=sn.get_getter(self.gen_ema))
+                self.x_gen_ema = self.generator(
+                    self.noise_tensor, getter=sn.get_getter(self.gen_ema)
+                )
                 self.rec_gen_ema = self.generator(self.z_optim, getter=sn.get_getter(self.gen_ema))
             # Pass real and fake images into discriminator separately
             with tf.variable_scope("Discriminator_Model"):
@@ -160,7 +162,7 @@ class ANOGAN(BaseModel):
                     + (1 - self.config.trainer.weight) * self.dis_score
                 )
 
-        self.rec_error_valid = tf.reduce_mean(self.loss_invert)
+        self.rec_error_valid = tf.reduce_mean(self.gen_loss)
 
         with tf.variable_scope("Test_Learning_Rate"):
             step_lr = tf.Variable(0, trainable=False)

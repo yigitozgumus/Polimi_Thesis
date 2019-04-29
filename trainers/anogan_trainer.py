@@ -71,15 +71,18 @@ class ANOGAN_Trainer(BaseTrain):
                 loc=0.0, scale=1.0, size=[image_valid.shape[0], self.noise_dim]
             )
             feed_dict = {
-                self.model.image_tensor: image_valid,
+                self.model.image_input: image_valid,
                 self.model.noise_tensor: noise,
                 self.model.is_training: False,
             }
-            vl = self.sess.run([self.model.gen_loss], feed_dict=feed_dict)
+            vl = self.sess.run([self.model.rec_error_valid], feed_dict=feed_dict)
             valid_loss += vl
             if self.config.log.enable_summary:
-                sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
-                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], summarizer="valid")
+                sm_im = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
+                sm_vl = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
+                self.summarizer.add_tensorboard(
+                    step=cur_epoch, summaries=[sm_im, sm_vl], summarizer="valid"
+                )
 
             self.logger.info("Validation: valid loss {:.4f}".format(valid_loss))
             if (
