@@ -123,7 +123,9 @@ class ANOGAN_Trainer(BaseTrain):
 
     def train_step(self, image, cur_epoch):
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
@@ -138,7 +140,9 @@ class ANOGAN_Trainer(BaseTrain):
         )
 
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(self.config.trainer.soft_labels)
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
@@ -151,16 +155,26 @@ class ANOGAN_Trainer(BaseTrain):
 
         if self.config.log.enable_summary:
             sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)
+        else:
+            sm = None
 
         return ld, lg, sm
 
-    def generate_labels(self, soft_labels):
+    def generate_labels(self, soft_labels, flip_labels):
 
         if not soft_labels:
             true_labels = np.ones((self.config.data_loader.batch_size, 1))
             generated_labels = np.zeros((self.config.data_loader.batch_size, 1))
         else:
-            true_labels = np.zeros((self.config.data_loader.batch_size, 1)) + np.random.uniform(
+            generated_labels = np.zeros(
+                (self.config.data_loader.batch_size, 1)
+            ) + np.random.uniform(low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1])
+            flipped_idx = np.random.choice(
+                np.arange(len(generated_labels)),
+                size=int(self.config.trainer.noise_probability * len(generated_labels)),
+            )
+            generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
+            true_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
                 low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
             )
             flipped_idx = np.random.choice(
@@ -168,13 +182,8 @@ class ANOGAN_Trainer(BaseTrain):
                 size=int(self.config.trainer.noise_probability * len(true_labels)),
             )
             true_labels[flipped_idx] = 1 - true_labels[flipped_idx]
-            generated_labels = np.ones((self.config.data_loader.batch_size, 1)) - np.random.uniform(
-                low=0.0, high=0.1, size=[self.config.data_loader.batch_size, 1]
-            )
-            flipped_idx = np.random.choice(
-                np.arange(len(generated_labels)),
-                size=int(self.config.trainer.noise_probability * len(generated_labels)),
-            )
-            generated_labels[flipped_idx] = 1 - generated_labels[flipped_idx]
 
-        return true_labels, generated_labels
+        if flip_labels:
+            return generated_labels, true_labels
+        else:
+            return true_labels, generated_labels
