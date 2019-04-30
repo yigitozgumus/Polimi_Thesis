@@ -154,7 +154,7 @@ class ANOGAN_Trainer(BaseTrain):
         rec_error = np.concatenate(rec_error, axis=0)
         scores = np.concatenate(scores, axis=0)
         latent = np.concatenate(latent, axis=0)
-        random_seed = 42
+        step = self.sess.run(self.model.global_step_tensor)
         save_results(
             self.config.log.result_dir,
             scores,
@@ -165,6 +165,8 @@ class ANOGAN_Trainer(BaseTrain):
             self.config.trainer.weight,
             self.config.trainer.label,
             self.config.data_loader.random_seed,
+            self.logger,
+            step,
         )
 
     def train_step(self, image, cur_epoch):

@@ -51,7 +51,7 @@
     "degree": 1,
     "weight": 0.1,
     "label": 0,
-    "frequency_eval": 1,
+    "frequency_eval": 2,
     "patience": 15,
     "difference": 0.02,
     "steps_number": 500,
