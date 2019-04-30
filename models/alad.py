@@ -346,7 +346,10 @@ class ALAD(BaseModel):
         # Change the layer type if do_spectral_norm is true
         layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Encoder", reuse=tf.AUTO_REUSE, custom_getter=getter):
-            img_tensor = tf.reshape(img_tensor, [-1, 32, 32, 1])
+            img_tensor = tf.reshape(
+                img_tensor,
+                [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+            )
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
@@ -396,7 +399,7 @@ class ALAD(BaseModel):
                     filters=256,
                     kernel_size=4,
                     strides=2,
-                    padding="same",
+                    padding="valid",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
@@ -417,7 +420,7 @@ class ALAD(BaseModel):
                     filters=self.config.trainer.noise_dim,
                     kernel_size=4,
                     strides=1,
-                    padding="valid",
+                    padding="same",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="conv",
                 )
@@ -441,7 +444,7 @@ class ALAD(BaseModel):
                     filters=512,
                     kernel_size=4,
                     strides=(2, 2),
-                    padding="valid",
+                    padding="same",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv1",
                 )(net)
@@ -459,7 +462,7 @@ class ALAD(BaseModel):
                     filters=256,
                     kernel_size=4,
                     strides=(2, 2),
-                    padding="same",
+                    padding="valid",
                     kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
                     name="tconv2",
                 )(net)

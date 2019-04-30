@@ -138,6 +138,68 @@ class ALAD_Trainer(BaseTrain):
                     )
                 )
 
+    def train_step(self, image, cur_epoch):
+        """
+       implement the logic of the train step
+       - run the tensorflow session
+       - return any metrics you need to summarize
+       """
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
+        # Train the discriminator
+        image_eval = self.sess.run(image)
+        feed_dict = {
+            self.model.image_tensor: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
+            self.model.is_training: True,
+        }
+        _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
+            [
+                self.model.train_dis_op_xz,
+                self.model.train_dis_op_xx,
+                self.model.train_dis_op_zz,
+                self.model.loss_discriminator,
+                self.model.dis_loss_xz,
+                self.model.dis_loss_xx,
+                self.model.dis_loss_zz,
+            ],
+            feed_dict=feed_dict,
+        )
+        # Train the Generator and Encoder
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
+        feed_dict = {
+            self.model.image_tensor: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
+            self.model.is_training: True,
+        }
+        _, _, le, lg = self.sess.run(
+            [
+                self.model.train_gen_op,
+                self.model.train_enc_op,
+                self.model.loss_encoder,
+                self.model.loss_generator,
+            ],
+            feed_dict=feed_dict,
+        )
+
+        if self.config.log.enable_summary:
+            sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)
+        else:
+            sm = None
+            # TODO add reconstruction code
+
+        return lg, le, ld, ldxz, ldxx, ldzz, sm
+
+    def test_epoch(self):
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
         scores_ch = []
@@ -234,67 +296,6 @@ class ALAD_Trainer(BaseTrain):
             random_seed,
             step,
         )
-
-    def train_step(self, image, cur_epoch):
-        """
-       implement the logic of the train step
-       - run the tensorflow session
-       - return any metrics you need to summarize
-       """
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels, self.config.trainer.flip_labels
-        )
-        # Train the discriminator
-        image_eval = self.sess.run(image)
-        feed_dict = {
-            self.model.image_tensor: image_eval,
-            self.model.noise_tensor: noise,
-            self.model.generated_labels: generated_labels,
-            self.model.true_labels: true_labels,
-            self.model.is_training: True,
-        }
-        _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
-            [
-                self.model.train_dis_op_xz,
-                self.model.train_dis_op_xx,
-                self.model.train_dis_op_zz,
-                self.model.loss_discriminator,
-                self.model.dis_loss_xz,
-                self.model.dis_loss_xx,
-                self.model.dis_loss_zz,
-            ],
-            feed_dict=feed_dict,
-        )
-        # Train the Generator and Encoder
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels, self.config.trainer.flip_labels
-        )
-        feed_dict = {
-            self.model.image_tensor: image_eval,
-            self.model.noise_tensor: noise,
-            self.model.generated_labels: generated_labels,
-            self.model.true_labels: true_labels,
-            self.model.is_training: True,
-        }
-        _, _, le, lg = self.sess.run(
-            [
-                self.model.train_gen_op,
-                self.model.train_enc_op,
-                self.model.loss_encoder,
-                self.model.loss_generator,
-            ],
-            feed_dict=feed_dict,
-        )
-
-        if self.config.log.enable_summary:
-            sm = self.sess.run(self.model.sum_op, feed_dict=feed_dict)
-        else:
-            sm = None
-            # TODO add reconstruction code
-
-        return lg, le, ld, ldxz, ldxx, ldzz, sm
 
     def generate_labels(self, soft_labels, flip_labels):
 
