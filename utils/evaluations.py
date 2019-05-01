@@ -109,7 +109,7 @@ def get_percentile(scores, dataset):
     return per
 
 
-def do_hist(scores, true_labels, directory, dataset, random_seed, display=False):
+def do_hist(scores, true_labels, directory, dataset, random_seed, step=None, display=False):
     plt.figure()
     idx_inliers = true_labels == 0
     idx_outliers = true_labels == 1
@@ -135,11 +135,18 @@ def do_hist(scores, true_labels, directory, dataset, random_seed, display=False)
     if display:
         plt.show()
     else:
-        plt.savefig(
-            directory + "histogram_{}_{}.png".format(random_seed, dataset),
-            transparent=True,
-            bbox_inches="tight",
-        )
+        if step == None:
+            plt.savefig(
+                directory + "histogram_{}_{}.png".format(random_seed, dataset),
+                transparent=True,
+                bbox_inches="tight",
+            )
+        else:
+            plt.savefig(
+                directory + "histogram_{}_{}_{}.png".format(random_seed, dataset, step),
+                transparent=True,
+                bbox_inches="tight",
+            )
         plt.close()
 
 
@@ -237,6 +244,7 @@ def save_results(
     random_seed,
     logger,
     step=-1,
+    percentile=None,
 ):
     directory = location + "{}/{}/{}/w{}/".format(model, dataset, method, weight)
     if not os.path.exists(directory):
@@ -251,37 +259,75 @@ def save_results(
 
     do_cumdist(scores, file_name=file_name, directory=directory)
 
-    do_hist(scores, true_labels, directory, dataset, random_seed)
+    do_hist(scores, true_labels, directory, dataset, random_seed, None)
     if np.max(true_labels) > 1:
         do_hists(scores, true_labels, directory, dataset, random_seed)
 
-    per = get_percentile(scores, dataset)
-    y_pred = scores >= per
+    if percentile == None:
+        per = get_percentile(scores, dataset)
+    else:
+        per = np.percentile(scores, percentile)
 
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        true_labels.astype(int), y_pred.astype(int), average="binary"
-    )
+    if type(per) == np.float64:
+        y_pred = scores >= per
 
-    logger.info("Testing at step %i, method %s: AUROC = %.4f" % (step, method, roc_auc))
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            true_labels.astype(int), y_pred.astype(int), average="binary"
+        )
 
-    results = [
-        model,
-        dataset,
-        method,
-        weight,
-        label,
-        step,
-        roc_auc,
-        precision,
-        recall,
-        f1,
-        random_seed,
-        time.ctime(),
-    ]
-    save_results_csv(location + "results.csv", results, header=0)
+        logger.info("Testing at step %i, method %s: AUROC = %.4f" % (step, method, roc_auc))
 
-    results = [step, roc_auc, precision, recall, f1, random_seed]
-    save_results_csv(fname, results, header=2)
+        results = [
+            model,
+            dataset,
+            method,
+            weight,
+            label,
+            step,
+            roc_auc,
+            precision,
+            recall,
+            f1,
+            random_seed,
+            time.ctime(),
+        ]
+        save_results_csv(location + "results.csv", results, header=0)
+
+        results = [step, roc_auc, precision, recall, f1, random_seed]
+        save_results_csv(fname, results, header=2)
+
+    elif type(per) == np.ndarray:
+        for i in per:
+            y_pred = scores >= i
+
+            precision, recall, f1, _ = precision_recall_fscore_support(
+                true_labels.astype(int), y_pred.astype(int), average="binary"
+            )
+
+            logger.info(
+                "Testing at step %i, with percentile %f, method %s: AUROC = %.4f"
+                % (step, i, method, roc_auc)
+            )
+
+            results = [
+                model,
+                dataset,
+                method,
+                weight,
+                label,
+                step,
+                roc_auc,
+                precision,
+                recall,
+                f1,
+                random_seed,
+                time.ctime(),
+            ]
+            save_results_csv(location + "results_{}.csv".format(i), results, header=0)
+
+            results = [step, roc_auc, precision, recall, f1, random_seed]
+            fname = directory + "{}_{}.csv".format(label, i)
+            save_results_csv(fname, results, header=2)
 
 
 def heatmap(data, name=None, save=False):
