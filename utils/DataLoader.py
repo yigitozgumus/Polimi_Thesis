@@ -141,7 +141,7 @@ class DataLoader:
                 h, w = img_.shape[:2]
                 self.w_turns = (w // size) * 2 - 1
                 self.h_turns = (h // size) * 2 - 1
-                slide = size / 2
+                slide = int(size / 2)
                 for adv_h in range(self.h_turns):
                     for adv_w in range(self.w_turns):
                         image = img_[

@@ -265,7 +265,7 @@ def save_results(
 
     if percentile == None:
         per = get_percentile(scores, dataset)
-    else:
+    elif type(percentile) == np.float64 or type(percentile) == np.ndarray:
         per = np.percentile(scores, percentile)
 
     if type(per) == np.float64:
