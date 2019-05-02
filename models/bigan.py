@@ -322,7 +322,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=2 * 2 * 1024, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 512, kernel_initializer=self.init_kernel, name="fc"
                 )(x_g)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -331,7 +331,7 @@ class BIGAN(BaseModel):
                     name="batch_normalization",
                 )
                 x_g = tf.nn.relu(x_g, name="relu")
-            x_g = tf.reshape(x_g, [-1, 2, 2, 1024])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 512])
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
