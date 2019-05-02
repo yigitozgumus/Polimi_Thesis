@@ -263,10 +263,10 @@ def save_results(
     if np.max(true_labels) > 1:
         do_hists(scores, true_labels, directory, dataset, random_seed)
 
-    if percentile == None:
-        per = get_percentile(scores, dataset)
-    elif type(percentile) == np.float64 or type(percentile) == np.ndarray:
+    if percentile != None:
         per = np.percentile(scores, percentile)
+    else:
+        per = get_percentile(scores, dataset)
 
     if type(per) == np.float64:
         y_pred = scores >= per
