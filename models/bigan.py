@@ -244,7 +244,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=128,
+                    filters=64,
                     kernel_size=5,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -256,7 +256,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=256,
+                    filters=128,
                     kernel_size=5,
                     padding="same",
                     strides=(2, 2),
@@ -272,7 +272,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=512,
+                    filters=256,
                     kernel_size=5,
                     padding="same",
                     strides=(2, 2),
@@ -322,7 +322,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=2 * 2 * 512, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 256, kernel_initializer=self.init_kernel, name="fc"
                 )(x_g)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -331,11 +331,11 @@ class BIGAN(BaseModel):
                     name="batch_normalization",
                 )
                 x_g = tf.nn.relu(x_g, name="relu")
-            x_g = tf.reshape(x_g, [-1, 2, 2, 512])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 256])
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=256,
+                    filters=128,
                     kernel_size=5,
                     strides=2,
                     padding="valid",
@@ -352,7 +352,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
+                    filters=64,
                     kernel_size=5,
                     strides=2,
                     padding="same",
@@ -369,7 +369,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=64,
+                    filters=32,
                     kernel_size=5,
                     strides=2,
                     padding="same",
