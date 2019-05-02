@@ -264,9 +264,9 @@ def save_results(
         do_hists(scores, true_labels, directory, dataset, random_seed)
 
     if type(percentile) == int:
-        per = np.percentile(scores, percentile)
-    else:
         per = get_percentile(scores, dataset)
+    else:
+        per = np.percentile(scores, percentile)
 
     if type(per) == np.float64:
         y_pred = scores >= per
