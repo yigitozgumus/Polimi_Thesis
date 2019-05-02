@@ -152,22 +152,6 @@ class BIGAN(BaseModel):
             with tf.control_dependencies([self.enc_op]):
                 self.train_enc_op = tf.group(maintain_averages_op_enc)
 
-        with tf.name_scope("Summary"):
-            with tf.name_scope("Disc_Summary"):
-                tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
-                tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
-                tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
-            with tf.name_scope("Gen_Summary"):
-                tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
-                tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
-            with tf.name_scope("Image_Summary"):
-                tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
-                tf.summary.image("input_images", self.image_input, 3, ["image"])
-
-        self.sum_op_dis = tf.summary.merge_all("dis")
-        self.sum_op_gen = tf.summary.merge_all("gen")
-        self.sum_op_im = tf.summary.merge_all("image")
-
         self.logger.info("Building Testing Graph...")
 
         with tf.variable_scope("BIGAN"):
@@ -218,6 +202,30 @@ class BIGAN(BaseModel):
                     1 - self.config.trainer.weight
                 ) * self.dis_score + self.config.trainer.weight * self.gen_score
 
+        if self.config.trainer.enable_early_stop:
+            self.rec_error_valid = tf.reduce_mean(self.list_scores)
+
+        if self.config.log.enable_summary:
+            with tf.name_scope("Summary"):
+                with tf.name_scope("Disc_Summary"):
+                    tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
+                    tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
+                    tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
+                with tf.name_scope("Gen_Summary"):
+                    tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
+                    tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
+                with tf.name_scope("Image_Summary"):
+                    tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
+                    tf.summary.image("input_images", self.image_input, 3, ["image"])
+        if self.config.trainer.enable_early_stop:
+            with tf.name_scope("validation_summary"):
+                tf.summary.scalar("valid", self.rec_error_valid, ["v"])
+
+        self.sum_op_dis = tf.summary.merge_all("dis")
+        self.sum_op_gen = tf.summary.merge_all("gen")
+        self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_valid = tf.summary.merge_all("v")
+
     def encoder(self, image_input, getter=None):
         """Encoder architecture in tensorflow Maps the data into the latent
 
@@ -229,11 +237,14 @@ class BIGAN(BaseModel):
             (tensor): last activation layer of the encoder
         """
         with tf.variable_scope("Encoder", custom_getter=getter, reuse=tf.AUTO_REUSE):
-            x_e = tf.reshape(image_input, [-1, 32, 32, 1])
+            x_e = tf.reshape(
+                image_input,
+                [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+            )
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=64,
+                    filters=128,
                     kernel_size=5,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -245,7 +256,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=128,
+                    filters=256,
                     kernel_size=5,
                     padding="same",
                     strides=(2, 2),
@@ -261,7 +272,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
-                    filters=256,
+                    filters=512,
                     kernel_size=5,
                     padding="same",
                     strides=(2, 2),
@@ -311,7 +322,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=4 * 4 * 128, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 1024, kernel_initializer=self.init_kernel, name="fc"
                 )(x_g)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -320,14 +331,14 @@ class BIGAN(BaseModel):
                     name="batch_normalization",
                 )
                 x_g = tf.nn.relu(x_g, name="relu")
-            x_g = tf.reshape(x_g, [-1, 4, 4, 128])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 1024])
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=256,
                     kernel_size=5,
                     strides=2,
-                    padding="same",
+                    padding="valid",
                     kernel_initializer=self.init_kernel,
                     name="conv2t",
                 )(x_g)
@@ -395,12 +406,15 @@ class BIGAN(BaseModel):
         """
         with tf.variable_scope("Discriminator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             # D(x)
-            image = tf.reshape(image_input, [-1, 32, 32, 1])
+            image = tf.reshape(
+                image_input,
+                [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+            )
             net_name = "X_Layer_1"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=64,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -419,7 +433,7 @@ class BIGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=128,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -434,7 +448,7 @@ class BIGAN(BaseModel):
                     name="dropout",
                     training=self.is_training,
                 )
-            x_d = tf.reshape(x_d, [-1, 8 * 8 * 128])
+            x_d = tf.reshape(x_d, [-1, 7 * 7 * 128])
 
             # D(z)
             net_name = "Z_Layer_1"

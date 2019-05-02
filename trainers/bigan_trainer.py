@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 from time import sleep
 from time import time
-from utils.evaluations import do_roc
+from utils.evaluations import do_roc, save_results
 
 
 class BIGANTrainer(BaseTrain):
@@ -16,6 +16,10 @@ class BIGANTrainer(BaseTrain):
         self.sess.run(self.data.iterator.initializer)
         # Initialize the test Dataset Iterator
         self.sess.run(self.data.test_iterator.initializer)
+        if self.config.data_loader.validation:
+            self.sess.run(self.data.valid_iterator.initializer)
+            self.best_valid_loss = 0
+            self.nb_without_improvements = 0
 
     def train_epoch(self):
         begin = time()
@@ -65,7 +69,49 @@ class BIGANTrainer(BaseTrain):
             )
         )
         # Save the model state
-        self.model.save(self.sess)
+        # self.model.save(self.sess)
+        if (
+            cur_epoch + 1
+        ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:
+            valid_loss = 0
+            image_valid = self.sess.run(self.data.valid_image)
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
+            )
+            feed_dict = {
+                self.model.noise_tensor: noise,
+                self.model.image_input: image_valid,
+                self.model.is_training: False,
+            }
+            vl = self.sess.run([self.model.rec_error_valid], feed_dict=feed_dict)
+            valid_loss += vl[0]
+            if self.config.log.enable_summary:
+                sm = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
+                self.summarizer.add_tensorboard(step=cur_epoch, summaries=[sm], summarizer="valid")
+
+            self.logger.info("Validation: valid loss {:.4f}".format(valid_loss))
+            if (
+                valid_loss < self.best_valid_loss
+                or cur_epoch == self.config.trainer.frequency_eval - 1
+            ):
+                self.best_valid_loss = valid_loss
+                self.logger.info(
+                    "Best model - valid loss = {:.4f} - saving...".format(self.best_valid_loss)
+                )
+                # Save the model state
+                self.model.save(self.sess)
+                self.nb_without_improvements = 0
+            else:
+                self.nb_without_improvements += self.config.trainer.frequency_eval
+            if self.nb_without_improvements > self.config.trainer.patience:
+                self.patience_lost = True
+                self.logger.warning(
+                    "Early stopping at epoch {} with weights from epoch {}".format(
+                        cur_epoch, cur_epoch - self.nb_without_improvements
+                    )
+                )
+
+    def test_epoch(self):
         self.logger.warn("Testing evaluation...")
         scores = []
         inference_time = []
@@ -92,26 +138,25 @@ class BIGANTrainer(BaseTrain):
         # normal images are 0 meaning that contains no anomaly and anomalous images are 1 meaning that it contains
         # an anomalous region, we first scale the scores and then invert them to match the scores
         scores = np.asarray(scores)
-        scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         step = self.sess.run(self.model.global_step_tensor)
-        prc_auc = do_roc(
-            scores_scaled,
+        percentiles = np.asarray(self.config.trainer.percentiles)
+        save_results(
+            self.config.log.result_dir,
+            scores,
             true_labels,
-            file_name=r"bigan_material_{}_{}_{}_{}".format(
-                self.config.trainer.loss_method,
-                self.config.trainer.weight,
-                self.config.trainer.label,
-                step,
-            ),
-            directory=self.config.log.result_dir
-            + "bigan/material/{}/{}/".format(
-                self.config.trainer.loss_method, self.config.trainer.weight
-            ),
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "fm",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
         )
-        self.logger.info("Testing | ROC AUC = {:.4f}".format(prc_auc))
 
     def train_step(self, image, cur_epoch):
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
