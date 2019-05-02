@@ -145,12 +145,12 @@ class DataLoader:
                 for adv_h in range(self.h_turns):
                     for adv_w in range(self.w_turns):
                         image = img_[
-                            adv_h * slide : size + ((adv_h + 1) * slide),
-                            adv_w * slide : ((adv_w + 1) * slide) + size,
+                            adv_h * slide : size + ((adv_h) * slide),
+                            adv_w * slide : ((adv_w) * slide) + size,
                         ]
                         tag = tag_[
-                            adv_h * slide : size + ((adv_h + 1) * slide),
-                            adv_w * slide : ((adv_w + 1) * slide) + size,
+                            adv_h * slide : size + ((adv_h) * slide),
+                            adv_w * slide : ((adv_w) * slide) + size,
                         ]
                         img_files.append(image)
                         tag_files.append(tag)

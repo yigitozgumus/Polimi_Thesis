@@ -17,11 +17,11 @@
     "num_epochs": 100,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
-    "num_iter_per_test": 960,
+    "num_iter_per_test": 3337,
     "mode": "anomaly",
     "dataset_name": "material",
     "binary_location": "offload",
-    "test_batch": 36,
+    "test_batch": 40,
     "validation": true,
     "validation_percent": 20
   },

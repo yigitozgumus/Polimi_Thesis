@@ -244,7 +244,7 @@ def save_results(
     random_seed,
     logger,
     step=-1,
-    percentile=None,
+    percentile=90,
 ):
     directory = location + "{}/{}/{}/w{}/".format(model, dataset, method, weight)
     if not os.path.exists(directory):
@@ -263,7 +263,7 @@ def save_results(
     if np.max(true_labels) > 1:
         do_hists(scores, true_labels, directory, dataset, random_seed)
 
-    if percentile != None:
+    if type(percentile) == int:
         per = np.percentile(scores, percentile)
     else:
         per = get_percentile(scores, dataset)
