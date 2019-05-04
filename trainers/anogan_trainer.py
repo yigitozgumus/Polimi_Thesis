@@ -76,7 +76,7 @@ class ANOGAN_Trainer(BaseTrain):
                 self.model.is_training: False,
             }
             vl = self.sess.run([self.model.rec_error_valid], feed_dict=feed_dict)
-            valid_loss += vl
+            valid_loss += vl[0]
             if self.config.log.enable_summary:
                 sm_im = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
                 sm_vl = self.sess.run(self.model.sum_op_valid, feed_dict=feed_dict)
@@ -113,7 +113,7 @@ class ANOGAN_Trainer(BaseTrain):
         inference_time = []
         true_labels = []
         # Create the scores
-        test_loop = tqdm(range(self.config.data_loader.num_iter_pre_test))
+        test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         for _ in test_loop:
             begin_val_batch = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -155,18 +155,20 @@ class ANOGAN_Trainer(BaseTrain):
         scores = np.concatenate(scores, axis=0)
         latent = np.concatenate(latent, axis=0)
         step = self.sess.run(self.model.global_step_tensor)
+        percentiles = np.asarray(self.config.trainer.percentiles)
         save_results(
             self.config.log.result_dir,
             scores,
             true_labels,
-            "anogan",
+            self.config.model.name,
             self.config.data_loader.dataset_name,
-            "cross_e",
-            self.config.trainer.weight,
+            "fm",
+            "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
             self.logger,
             step,
+            percentile=percentiles,
         )
 
     def train_step(self, image, cur_epoch):
