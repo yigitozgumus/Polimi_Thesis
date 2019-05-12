@@ -187,7 +187,7 @@ class GAN(BaseModel):
             # First Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=512,
-                kernel_size=4,
+                kernel_size=5,
                 strides=(2, 2),
                 use_bias=False,
                 padding="same",
@@ -208,7 +208,7 @@ class GAN(BaseModel):
             # Second Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=256,
-                kernel_size=4,
+                kernel_size=5,
                 strides=(2, 2),
                 use_bias=False,
                 padding="same",
@@ -229,7 +229,7 @@ class GAN(BaseModel):
             # Third Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=128,
-                kernel_size=4,
+                kernel_size=5,
                 strides=(2, 2),
                 use_bias=False,
                 padding="same",
@@ -249,7 +249,7 @@ class GAN(BaseModel):
             # Final Conv2DTranspose Layer
             x_g = tf.layers.Conv2DTranspose(
                 filters=1,
-                kernel_size=4,
+                kernel_size=5,
                 strides=(1, 1),
                 use_bias=False,
                 padding="same",
