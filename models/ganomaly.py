@@ -27,6 +27,7 @@ class GANomaly(BaseModel):
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
 
         self.logger.info("Building training graph...")
+
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
                 self.noise_gen, self.img_rec, self.noise_rec = self.generator(self.image_input)
@@ -187,40 +188,25 @@ class GANomaly(BaseModel):
         # it will reconstruct the image.
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             with tf.variable_scope("Encoder_1"):
-                x_e = tf.reshape(image_input, [-1, 32, 32, 1])
+                x_e = tf.reshape(
+                    image_input,
+                    [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+                )
                 net_name = "Layer_1"
-                with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
-                        filters=64,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="conv",
-                    )(x_e)
-                    x_e = tf.nn.leaky_relu(
-                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
-                    )
-                net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
                         filters=128,
                         kernel_size=5,
-                        padding="same",
                         strides=(2, 2),
+                        padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
                     )(x_e)
-                    x_e = tf.layers.batch_normalization(
-                        x_e,
-                        momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
-                        training=self.is_training,
-                    )
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
-                net_name = "Layer_3"
+                    # 14 x 14 x 64
+                net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
                         filters=256,
@@ -239,6 +225,27 @@ class GANomaly(BaseModel):
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
+                    # 7 x 7 x 128
+                net_name = "Layer_3"
+                with tf.variable_scope(net_name):
+                    x_e = tf.layers.Conv2D(
+                        filters=512,
+                        kernel_size=5,
+                        padding="same",
+                        strides=(2, 2),
+                        kernel_initializer=self.init_kernel,
+                        name="conv",
+                    )(x_e)
+                    x_e = tf.layers.batch_normalization(
+                        x_e,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                    )
+                    x_e = tf.nn.leaky_relu(
+                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )
+                    # 4 x 4 x 256
                 x_e = tf.layers.Flatten()(x_e)
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
@@ -256,9 +263,9 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=512,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
-                        padding="valid",
+                        padding="same",
                         kernel_initializer=self.init_kernel,
                         name="tconv1",
                     )(net)
@@ -275,9 +282,9 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=256,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
-                        padding="same",
+                        padding="valid",
                         kernel_initializer=self.init_kernel,
                         name="tconv2",
                     )(net)
@@ -294,7 +301,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=128,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -308,28 +315,49 @@ class GANomaly(BaseModel):
                         name="tconv3/bn",
                     )
                     net = tf.nn.relu(features=net, name="tconv3/relu")
-
                 net_name = "layer_4"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=1,
-                        kernel_size=4,
+                        filters=64,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="tconv4",
                     )(net)
-                    net = tf.nn.tanh(net, name="tconv4/tanh")
+                    net = tf.layers.batch_normalization(
+                        inputs=net,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                        name="tconv4/bn",
+                    )
+                    net = tf.nn.relu(features=net, name="tconv3/relu")
+
+                net_name = "layer_5"
+                with tf.variable_scope(net_name):
+                    net = tf.layers.Conv2DTranspose(
+                        filters=1,
+                        kernel_size=5,
+                        strides=(1, 1),
+                        padding="same",
+                        kernel_initializer=self.init_kernel,
+                        name="tconv5",
+                    )(net)
+                    net = tf.nn.tanh(net, name="tconv5/tanh")
 
             image_rec = net
 
             # Second Encoder
             with tf.variable_scope("Encoder_2"):
-                x_e_2 = tf.reshape(image_rec, [-1, 32, 32, 1])
+                x_e_2 = tf.reshape(
+                    image_rec,
+                    [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+                )
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=64,
+                        filters=128,
                         kernel_size=5,
                         strides=(2, 2),
                         padding="same",
@@ -342,7 +370,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=128,
+                        filters=256,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
@@ -361,7 +389,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=256,
+                        filters=512,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
@@ -410,7 +438,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_1"
-                )
+                )  # 28 x 28 x 64
             # Second Convolutional Layer
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
@@ -431,7 +459,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_2"
-                )
+                )  # 14 x 14 x 128
             # Third Convolutional Layer
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
@@ -452,7 +480,7 @@ class GANomaly(BaseModel):
                 )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
-                )
+                )  # 7 x 7 x 256
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Flatten(name="d_flatten")(x_d)

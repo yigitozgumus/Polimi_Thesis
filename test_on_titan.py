@@ -44,7 +44,7 @@ def run():
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
+    # trainer.train()
     # Test the model
     if config.trainer.test_at_end:
         trainer.test()

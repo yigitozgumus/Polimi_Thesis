@@ -9,6 +9,8 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def run():
@@ -25,10 +27,8 @@ def run():
             config.log.codebase_dir,
         ]
     )
-
     # Copy the model code and the trainer code to the experiment folder
     copy_codebase(config)
-
     l = Logger(config)
     logger = l.get_logger(__name__)
     # Create the tensorflow session
@@ -44,8 +44,7 @@ def run():
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
-    # Test the model
+    # trainer.train()
     if config.trainer.test_at_end:
         trainer.test()
     logger.info("Experiment has ended.")

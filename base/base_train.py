@@ -33,6 +33,13 @@ class BaseTrain:
             if self.patience_lost:
                 break
 
+    def test(self):
+        self.logger.info("Testing is started")
+        self.test_epoch()
+
+    def test_epoch(self):
+        raise NotImplementedError
+
     def train_epoch(self):
         """
         implement the logic of epoch:

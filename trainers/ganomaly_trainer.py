@@ -96,41 +96,6 @@ class GANomalyTrainer(BaseTrain):
                     )
                 )
 
-        self.logger.warn("Testing evaluation...")
-        scores = []
-        inference_time = []
-        true_labels = []
-        # Create the scores
-        test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
-        for _ in test_loop:
-            test_batch_begin = time()
-            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
-            test_loop.refresh()  # to show immediately the update
-            sleep(0.01)
-            feed_dict = {self.model.image_input: test_batch, self.model.is_training: False}
-            scores += self.sess.run(self.model.score, feed_dict=feed_dict).tolist()
-            inference_time.append(time() - test_batch_begin)
-            true_labels += test_labels.tolist()
-        true_labels = np.asarray(true_labels)
-        inference_time = np.mean(inference_time)
-        self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
-        scores = np.asarray(scores)
-        scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
-        step = self.sess.run(self.model.global_step_tensor)
-        save_results(
-            self.config.log.result_dir,
-            scores_scaled,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "fm",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-        )
-
     def train_step(self, image, cur_epoch):
         """
           implement the logic of the train step
@@ -169,6 +134,44 @@ class GANomalyTrainer(BaseTrain):
         )
 
         return lg, ld, sm_g, sm_d
+
+    def test_epoch(self):
+        self.logger.warn("Testing evaluation...")
+        scores = []
+        inference_time = []
+        true_labels = []
+        # Create the scores
+        test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        for _ in test_loop:
+            test_batch_begin = time()
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
+            test_loop.refresh()  # to show immediately the update
+            sleep(0.01)
+            feed_dict = {self.model.image_input: test_batch, self.model.is_training: False}
+            scores += self.sess.run(self.model.score, feed_dict=feed_dict).tolist()
+            inference_time.append(time() - test_batch_begin)
+            true_labels += test_labels.tolist()
+        true_labels = np.asarray(true_labels)
+        inference_time = np.mean(inference_time)
+        self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
+        scores = np.asarray(scores)
+        scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
+        step = self.sess.run(self.model.global_step_tensor)
+        percentiles = np.asarray(self.config.trainer.percentiles)
+        save_results(
+            self.config.log.result_dir,
+            scores_scaled,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "fm",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
 
     def generate_labels(self, soft_labels, flip_labels):
 
