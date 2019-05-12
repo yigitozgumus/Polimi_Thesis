@@ -37,9 +37,7 @@ class GAN_eager(BaseModelEager):
             use_bias=False,
             kernel_initializer=self.kernel_initializer,
         )(input_g)
-        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(
-            layer_g
-        )
+        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_g)
         layer_g = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_g)
         layer_g = Reshape((7, 7, 512))(layer_g)
 
@@ -51,9 +49,7 @@ class GAN_eager(BaseModelEager):
             use_bias=False,
             kernel_initializer=self.kernel_initializer,
         )(layer_g)
-        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(
-            layer_g
-        )
+        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_g)
         layer_g = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_g)
 
         layer_g = Conv2DTranspose(
@@ -64,9 +60,7 @@ class GAN_eager(BaseModelEager):
             use_bias=False,
             kernel_initializer=self.kernel_initializer,
         )(layer_g)
-        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(
-            layer_g
-        )
+        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_g)
         layer_g = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_g)
 
         layer_g = Conv2DTranspose(
@@ -77,9 +71,7 @@ class GAN_eager(BaseModelEager):
             use_bias=False,
             kernel_initializer=self.kernel_initializer,
         )(layer_g)
-        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(
-            layer_g
-        )
+        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_g)
         layer_g = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_g)
 
         layer_g = Conv2DTranspose(
@@ -90,9 +82,7 @@ class GAN_eager(BaseModelEager):
             use_bias=False,
             kernel_initializer=self.kernel_initializer,
         )(layer_g)
-        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(
-            layer_g
-        )
+        layer_g = BatchNormalization(momentum=self.config.trainer.batch_momentum)(layer_g)
         layer_g = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(layer_g)
         layer_g = Activation("tanh")(layer_g)
 
@@ -106,33 +96,21 @@ class GAN_eager(BaseModelEager):
         inputs_d = Input(shape=self.config.trainer.image_dims)
         # First Convolutional Layer
         x_d = Conv2D(
-            256,
-            (5, 5),
-            strides=(1, 1),
-            padding="same",
-            kernel_initializer=self.kernel_initializer,
+            256, (5, 5), strides=(1, 1), padding="same", kernel_initializer=self.kernel_initializer
         )(inputs_d)
         # x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
         x_d = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(x_d)
         x_d = Dropout(rate=self.config.trainer.dropout_rate)(x_d)
         # Second Convolutional Layer
         x_d = Conv2D(
-            128,
-            (5, 5),
-            strides=(2, 2),
-            padding="same",
-            kernel_initializer=self.kernel_initializer,
+            128, (5, 5), strides=(2, 2), padding="same", kernel_initializer=self.kernel_initializer
         )(x_d)
         # x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
         x_d = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(x_d)
         x_d = Dropout(rate=self.config.trainer.dropout_rate)(x_d)
         # Third Convolutional Layer
         x_d = Conv2D(
-            64,
-            (5, 5),
-            strides=(2, 2),
-            padding="same",
-            kernel_initializer=self.kernel_initializer,
+            64, (5, 5), strides=(2, 2), padding="same", kernel_initializer=self.kernel_initializer
         )(x_d)
         # x_d = tf.keras.layers.BatchNormalization(momentum=self.config.batch_momentum)(x_d)
         x_d = LeakyReLU(alpha=self.config.trainer.leakyReLU_alpha)(x_d)
