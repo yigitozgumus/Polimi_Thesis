@@ -12,6 +12,7 @@ __pycache__/
 Logs/
 Experiments/
 .DS_Store
+Results/
 # Distribution / packaging
 .Python
 build/
