@@ -20,14 +20,17 @@ class DataLoader:
             data_dir: this folder path should contain both Anomalous and Normal images
         """
         self.config = config
-
+        self.image_size = self.config.data_loader.image_size
         log_object = Logger(self.config)
         self.logger = log_object.get_logger(__name__)
         self.data_dir = self.config.dirs.data
-        self.train_dataset = os.path.join(self.data_dir, "train")
-        self.valid_dataset = os.path.join(self.data_dir, "valid")
-        self.img_location = os.path.join(self.data_dir, "test", "imgs/")
-        self.tag_location = os.path.join(self.data_dir, "test", "labels/")
+        self.train = "train_{}".format(self.image_size)
+        self.test = "test_{}".format(self.image_size)
+        self.valid = "valid_{}".format(self.image_size)
+        self.train_dataset = os.path.join(self.data_dir, self.train)
+        self.valid_dataset = os.path.join(self.data_dir, self.valid)
+        self.img_location = os.path.join(self.data_dir, self.test, "imgs/")
+        self.tag_location = os.path.join(self.data_dir, self.test, "labels/")
         if not os.path.exists(self.data_dir):
             self.logger.info("Dataset is not present. Download is started.")
             download_data(self.data_dir)
@@ -61,7 +64,7 @@ class DataLoader:
 
     def populate_train(self):
         # Check if we have the data already
-        if "train" in self.dir_names:
+        if self.train in self.dir_names:
             self.logger.info("Train Dataset is already populated.")
         else:
             self.logger.info("Train Dataset will be populated")
@@ -86,7 +89,7 @@ class DataLoader:
                     im.save("img_{}.jpg".format(str(idx)))
 
     def populate_train_valid(self):
-        if "train" in self.dir_names and "valid" in self.dir_names:
+        if self.train in self.dir_names and self.valid in self.dir_names:
             self.logger.info("Train and Validation datasets are already populated")
         else:
             # Remove train dataset from the previous run
@@ -126,12 +129,12 @@ class DataLoader:
                     im.save("img_{}.jpg".format(str(idx)))
 
     def populate_test(self):
-        if "test" in self.dir_names:
+        if self.test in self.dir_names:
             self.logger.info("Test Dataset is already populated")
         else:
             self.logger.info("Test Dataset will be populated")
             size = self.config.data_loader.image_size
-            folder_name = "test"
+            folder_name = self.test
             first_level = os.path.join(self.data_dir, folder_name)
             if not os.path.exists(first_level):
                 os.mkdir(first_level)
