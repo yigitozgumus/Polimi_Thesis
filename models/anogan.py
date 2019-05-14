@@ -260,7 +260,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -278,7 +278,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -296,7 +296,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=1,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(1, 1),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -323,7 +323,7 @@ class ANOGAN(BaseModel):
                 x = tf.layers.conv2d(
                     img_tensor,
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -338,7 +338,7 @@ class ANOGAN(BaseModel):
                 x = tf.layers.conv2d(
                     x,
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -358,7 +358,7 @@ class ANOGAN(BaseModel):
                 x = tf.layers.conv2d(
                     x,
                     filters=512,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,

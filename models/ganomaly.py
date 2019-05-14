@@ -196,7 +196,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
                         filters=128,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -210,7 +210,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
                         filters=256,
-                        kernel_size=5,
+                        kernel_size=4,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
@@ -230,7 +230,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
@@ -263,7 +263,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -301,7 +301,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=128,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -319,7 +319,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=64,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -358,7 +358,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
                         filters=128,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -371,7 +371,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
                         filters=256,
-                        kernel_size=5,
+                        kernel_size=4,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
@@ -390,7 +390,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
@@ -444,7 +444,7 @@ class GANomaly(BaseModel):
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -465,7 +465,7 @@ class GANomaly(BaseModel):
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,

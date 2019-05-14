@@ -216,7 +216,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_1 = tf.layers.Conv2D(
                         filters=64,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -236,7 +236,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_2 = tf.layers.Conv2D(
                         filters=128,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -256,7 +256,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_3 = tf.layers.Conv2D(
                         filters=256,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -276,7 +276,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_4 = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -296,7 +296,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_5 = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -309,7 +309,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_1 = tf.layers.Conv2DTranspose(
                         filters=512,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -326,7 +326,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_2 = tf.layers.Conv2DTranspose(
                         filters=256,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -343,7 +343,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_3 = tf.layers.Conv2DTranspose(
                         filters=128,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -360,7 +360,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_4 = tf.layers.Conv2DTranspose(
                         filters=64,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -377,7 +377,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_5 = tf.layers.Conv2DTranspose(
                         filters=1,
-                        kernel_size=5,
+                        kernel_size=4,
                         strides=(2, 2),
                         padding="same",
                         activation=tf.nn.tanh,
@@ -413,7 +413,7 @@ class SkipGANomaly(BaseModel):
                 # Second Convolutional Layer
                 x_d = tf.layers.Conv2D(
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -433,7 +433,7 @@ class SkipGANomaly(BaseModel):
                 # Third Convolutional Layer
                 x_d = tf.layers.Conv2D(
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -452,7 +452,7 @@ class SkipGANomaly(BaseModel):
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=512,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,

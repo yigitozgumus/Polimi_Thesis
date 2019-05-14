@@ -233,10 +233,10 @@ class ALAD_Trainer(BaseTrain):
         scores_l1 = np.asarray(scores_l1)
         scores_l2 = np.asarray(scores_l2)
         scores_fm = np.asarray(scores_fm)
-#         scores_ch = (scores_ch - min(scores_ch)) / (max(scores_ch) - min(scores_ch))
-#         scores_l1 = (scores_l1 - min(scores_l1)) / (max(scores_l1) - min(scores_l1))
-#         scores_l2 = (scores_l2 - min(scores_l2)) / (max(scores_l2) - min(scores_l2))
-#         scores_fm = (scores_fm - min(scores_fm)) / (max(scores_fm) - min(scores_fm))
+        #         scores_ch = (scores_ch - min(scores_ch)) / (max(scores_ch) - min(scores_ch))
+        #         scores_l1 = (scores_l1 - min(scores_l1)) / (max(scores_l1) - min(scores_l1))
+        #         scores_l2 = (scores_l2 - min(scores_l2)) / (max(scores_l2) - min(scores_l2))
+        #         scores_fm = (scores_fm - min(scores_fm)) / (max(scores_fm) - min(scores_fm))
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
@@ -260,7 +260,7 @@ class ALAD_Trainer(BaseTrain):
             random_seed,
             self.logger,
             step,
-            percentile=percentiles
+            percentile=percentiles,
         )
         save_results(
             self.config.log.result_dir,
@@ -274,8 +274,7 @@ class ALAD_Trainer(BaseTrain):
             random_seed,
             self.logger,
             step,
-            percentile=percentiles
-
+            percentile=percentiles,
         )
         save_results(
             self.config.log.result_dir,
@@ -289,7 +288,7 @@ class ALAD_Trainer(BaseTrain):
             random_seed,
             self.logger,
             step,
-            percentile=percentiles
+            percentile=percentiles,
         )
         save_results(
             self.config.log.result_dir,
@@ -303,7 +302,7 @@ class ALAD_Trainer(BaseTrain):
             random_seed,
             self.logger,
             step,
-            percentile=percentiles
+            percentile=percentiles,
         )
 
     def generate_labels(self, soft_labels, flip_labels):
