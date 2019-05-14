@@ -22,7 +22,7 @@
     "dataset_name": "material",
     "binary_location": "offload",
     "test_batch": 40,
-     "validation": true,
+     "validation": false,
     "validation_percent": 20
   },
   "trainer": {
@@ -45,7 +45,7 @@
     "ema_decay": 0.999,
     "spectral_norm": true,
     "allow_zz": true,
-    "enable_early_stop": true,
+    "enable_early_stop": false,
     "degree": 1,
     "weight": 0.1,
     "label": 0,

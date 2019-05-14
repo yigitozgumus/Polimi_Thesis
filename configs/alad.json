@@ -17,12 +17,12 @@
     "num_epochs": 100,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
-    "num_iter_per_test": 960,
+    "num_iter_per_test": 3337,
     "mode": "anomaly",
     "dataset_name": "material",
     "binary_location": "offload",
     "test_batch": 36,
-    "validation": true,
+    "validation": false,
     "validation_percent": 10
   },
   "trainer": {
@@ -33,8 +33,8 @@
     "soft_labels": true,
     "flip_labels": true,
     "noise_probability": 0.05,
-    "discriminator_l_rate": 5e-5,
-    "generator_l_rate": 2e-4,
+    "discriminator_l_rate": 1e-5,
+    "generator_l_rate": 1e-4,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
@@ -43,11 +43,13 @@
     "ema_decay": 0.999,
     "spectral_norm": true,
     "allow_zz": true,
-    "enable_early_stop": true,
+    "enable_early_stop": false,
     "degree": 1,
     "frequency_eval": 2,
     "patience": 20,
-    "test_at_end": true
+    "test_at_end": true,
+  "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
+
   },
   "log": {
     "name": "summarizer.Summarizer",
