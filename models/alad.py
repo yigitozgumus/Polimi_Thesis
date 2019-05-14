@@ -327,11 +327,11 @@ class ALAD(BaseModel):
             with tf.name_scope("validation_summary"):
                 tf.summary.scalar("valid", self.rec_error_valid, ["v"])
 
-                self.sum_op_dis = tf.summary.merge_all("dis")
-                self.sum_op_gen = tf.summary.merge_all("gen")
-                self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
-                self.sum_op_im = tf.summary.merge_all("image")
-                self.sum_op_valid = tf.summary.merge_all("v")
+        self.sum_op_dis = tf.summary.merge_all("dis")
+        self.sum_op_gen = tf.summary.merge_all("gen")
+        self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
+        self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_valid = tf.summary.merge_all("v")
 
     def encoder(self, img_tensor, getter=None, do_spectral_norm=True):
 

@@ -69,7 +69,7 @@ class BIGANTrainer(BaseTrain):
             )
         )
         # Save the model state
-        # self.model.save(self.sess)
+        self.model.save(self.sess)
         if (
             cur_epoch + 1
         ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:

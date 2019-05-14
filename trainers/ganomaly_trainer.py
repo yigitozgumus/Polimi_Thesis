@@ -59,7 +59,7 @@ class GANomalyTrainer(BaseTrain):
             )
         )
         # Save the model state
-        # self.model.save(self.sess)
+        self.model.save(self.sess)
 
         if (
             cur_epoch + 1
@@ -155,7 +155,6 @@ class GANomalyTrainer(BaseTrain):
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         scores = np.asarray(scores)
-        # scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
         step = self.sess.run(self.model.global_step_tensor)
         percentiles = np.asarray(self.config.trainer.percentiles)
         save_results(
