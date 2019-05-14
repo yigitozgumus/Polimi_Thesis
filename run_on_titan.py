@@ -36,7 +36,7 @@ def run():
     # Create the dataloader
     data = create("data_loader." + config.data_loader.name)(config)
     # Create the model instance
-    model = create("models." + config.model.name)(config)
+    model = create("models.{}.".format(config.data_loader.image_size) + config.model.name)(config)
     # Create the summarizer Object
     summarizer = create("utils." + config.log.name)(sess, config)
     # Create the trainer
