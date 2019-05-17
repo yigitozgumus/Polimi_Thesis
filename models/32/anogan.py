@@ -23,6 +23,12 @@ class ANOGAN(BaseModel):
         # Placeholders for the true and fake labels
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
         # Building the Graph
         self.logger.info("Building Graph")
         with tf.variable_scope("ANOGAN"):
@@ -36,23 +42,27 @@ class ANOGAN(BaseModel):
         # Losses of the training of Generator and Discriminator
 
         with tf.variable_scope("Loss_Functions"):
-            self.disc_loss_real = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=disc_real)
-            )
-            self.disc_loss_fake = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=self.generated_labels, logits=disc_fake
+            with tf.name_scope("Discriminator_Loss"):
+                self.disc_loss_real = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.true_labels, logits=disc_real
+                    )
                 )
-            )
-            self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
-            if self.config.trainer.flip_labels:
-                labels = tf.zeros_like(disc_fake)
-            else:
-                labels = tf.ones_like(disc_fake)
+                self.disc_loss_fake = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.generated_labels, logits=disc_fake
+                    )
+                )
+                self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
+            with tf.name_scope("Generator_Loss"):
+                if self.config.trainer.flip_labels:
+                    labels = tf.zeros_like(disc_fake)
+                else:
+                    labels = tf.ones_like(disc_fake)
 
-            self.gen_loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=disc_fake)
-            )
+                self.gen_loss = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=disc_fake)
+                )
         # Build the Optimizers
         with tf.variable_scope("Optimizers"):
             # Collect all the variables
@@ -227,7 +237,7 @@ class ANOGAN(BaseModel):
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = tf.layers.dense(
-                    net, units=7 * 7 * 512, kernel_initializer=self.init_kernel, name="fc"
+                    net, units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="fc"
                 )
                 net = tf.layers.batch_normalization(
                     inputs=net,
@@ -236,14 +246,14 @@ class ANOGAN(BaseModel):
                     name="dense/bn",
                 )
                 net = tf.nn.relu(features=net, name="dense/relu")
-                net = tf.reshape(net, shape=[-1, 7, 7, 512])
+                net = tf.reshape(net, shape=[-1, 4, 4, 512])
 
             net_name = "layer_2"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=512,
-                    kernel_size=5,
-                    strides=(1, 1),
+                    kernel_size=4,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="tconv1",
