@@ -418,7 +418,7 @@ class BIGAN(BaseModel):
             net_name = "X_Layer_1"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
-                    filters=128,
+                    filters=64,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -437,7 +437,7 @@ class BIGAN(BaseModel):
             net_name = "X_Layer_2"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
-                    filters=256,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -453,12 +453,12 @@ class BIGAN(BaseModel):
                     name="dropout",
                     training=self.is_training,
                 )
-            x_d = tf.reshape(x_d, [-1, 8 * 8 * 256])
+            x_d = tf.reshape(x_d, [-1, 8 * 8 * 128])
 
             # D(z)
             net_name = "Z_Layer_1"
             with tf.variable_scope(net_name):
-                z = tf.layers.Dense(units=1024, kernel_initializer=self.init_kernel, name="fc")(
+                z = tf.layers.Dense(units=512, kernel_initializer=self.init_kernel, name="fc")(
                     noise_input
                 )
                 z = tf.nn.leaky_relu(
