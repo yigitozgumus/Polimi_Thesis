@@ -233,7 +233,7 @@ class ANOGAN(BaseModel):
             reuse: sharing variables or not
         """
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE, custom_getter=getter):
-            net = tf.reshape(noise_tensor, [-1, self.config.trainer.noise_dim])
+            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = tf.layers.dense(
