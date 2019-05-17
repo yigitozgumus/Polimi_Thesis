@@ -27,6 +27,12 @@ class BIGAN(BaseModel):
         )
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
 
         self.logger.info("Building training graph...")
         with tf.variable_scope("BIGAN"):
@@ -34,12 +40,14 @@ class BIGAN(BaseModel):
                 self.noise_gen = self.encoder(self.image_input)
 
             with tf.variable_scope("Generator_Model"):
-                self.image_gen = self.generator(self.noise_tensor)
+                self.image_gen = self.generator(self.noise_tensor) + self.fake_noise
                 self.reconstructed = self.generator(self.noise_gen)
 
             with tf.variable_scope("Discriminator_Model"):
                 # E(x) and x --> This being real is the output of discriminator
-                l_encoder, inter_layer_inp = self.discriminator(self.noise_gen, self.image_input)
+                l_encoder, inter_layer_inp = self.discriminator(
+                    self.noise_gen, self.image_input + self.real_noise
+                )
                 # z and G(z)
                 l_generator, inter_layer_rct = self.discriminator(self.noise_tensor, self.image_gen)
 
@@ -323,7 +331,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=2 * 2 * 256, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 512, kernel_initializer=self.init_kernel, name="fc"
                 )(x_g)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -332,11 +340,11 @@ class BIGAN(BaseModel):
                     name="batch_normalization",
                 )
                 x_g = tf.nn.relu(x_g, name="relu")
-            x_g = tf.reshape(x_g, [-1, 2, 2, 256])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 512])
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
+                    filters=512,
                     kernel_size=5,
                     strides=2,
                     padding="valid",
@@ -353,7 +361,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=64,
+                    filters=256,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -370,7 +378,7 @@ class BIGAN(BaseModel):
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=32,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -414,7 +422,7 @@ class BIGAN(BaseModel):
             net_name = "X_Layer_1"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
-                    filters=64,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -433,7 +441,7 @@ class BIGAN(BaseModel):
             net_name = "X_Layer_2"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
-                    filters=128,
+                    filters=256,
                     kernel_size=4,
                     strides=2,
                     padding="same",

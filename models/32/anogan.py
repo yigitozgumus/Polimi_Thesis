@@ -33,10 +33,10 @@ class ANOGAN(BaseModel):
         self.logger.info("Building Graph")
         with tf.variable_scope("ANOGAN"):
             with tf.variable_scope("Generator_Model"):
-                self.img_gen = self.generator(self.noise_tensor)
+                self.img_gen = self.generator(self.noise_tensor) + self.fake_noise
             # Discriminator
             with tf.variable_scope("Discriminator_Model"):
-                disc_real, inter_layer_real = self.discriminator(self.image_input)
+                disc_real, inter_layer_real = self.discriminator(self.image_input + self.real_noise)
                 disc_fake, inter_layer_fake = self.discriminator(self.img_gen)
 
         # Losses of the training of Generator and Discriminator
@@ -245,7 +245,9 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="dense/bn",
                 )
-                net = tf.nn.relu(features=net, name="dense/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="dense/relu"
+                )
                 net = tf.reshape(net, shape=[-1, 4, 4, 512])
 
             net_name = "layer_2"
@@ -264,7 +266,9 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv1/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv1/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv1/relu"
+                )
 
             net_name = "layer_3"
             with tf.variable_scope(net_name):
@@ -282,7 +286,9 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv2/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv2/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv2/relu"
+                )
 
             net_name = "layer_4"
             with tf.variable_scope(net_name):
@@ -300,7 +306,9 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv3/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv3/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv3/relu"
+                )
 
             net_name = "layer_5"
             with tf.variable_scope(net_name):
