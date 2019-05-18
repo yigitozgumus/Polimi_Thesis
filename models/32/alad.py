@@ -367,7 +367,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     img_tensor,
-                    filters=64,
+                    filters=32,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
@@ -388,7 +388,7 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
-                    filters=128,
+                    filters=64,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
@@ -409,6 +409,26 @@ class ALAD(BaseModel):
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
+                    filters=128,
+                    kernel_size=4,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="conv",
+                )
+                net = tf.layers.batch_normalization(
+                    inputs=net,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="bn",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                )
+            net_name = "layer_4"
+            with tf.variable_scope(net_name):
+                net = layers.conv2d(
+                    net,
                     filters=256,
                     kernel_size=4,
                     strides=(2, 2),
@@ -426,7 +446,7 @@ class ALAD(BaseModel):
                     features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
 
-            net_name = "layer_4"
+            net_name = "layer_5"
             with tf.variable_scope(net_name):
                 net = layers.conv2d(
                     net,
