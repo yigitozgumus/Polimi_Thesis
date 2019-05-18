@@ -61,12 +61,17 @@ class ALAD_Trainer(BaseTrain):
         # Check for reconstruction
         if cur_epoch % self.config.log.frequency_test == 0:
             noise = np.random.normal(
-                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
+                loc=0.0, scale=1.0, size=[self.config.data_loader.batch_size, self.noise_dim]
+            )
+            real_noise, fake_noise = self.generate_noise(
+                self.config.trainer.include_noise, cur_epoch
             )
             image_eval = self.sess.run(image)
             feed_dict = {
                 self.model.image_tensor: image_eval,
                 self.model.noise_tensor: noise,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
                 self.model.is_training: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
@@ -149,12 +154,15 @@ class ALAD_Trainer(BaseTrain):
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
         # Train the discriminator
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
         image_eval = self.sess.run(image)
         feed_dict = {
             self.model.image_tensor: image_eval,
             self.model.noise_tensor: noise,
             self.model.generated_labels: generated_labels,
             self.model.true_labels: true_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
             self.model.is_training: True,
         }
         _, _, _, ld, ldxz, ldxx, ldzz = self.sess.run(
@@ -174,11 +182,14 @@ class ALAD_Trainer(BaseTrain):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
         feed_dict = {
             self.model.image_tensor: image_eval,
             self.model.noise_tensor: noise,
             self.model.generated_labels: generated_labels,
             self.model.true_labels: true_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
             self.model.is_training: True,
         }
         _, _, le, lg = self.sess.run(

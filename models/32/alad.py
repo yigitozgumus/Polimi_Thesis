@@ -17,6 +17,7 @@ class ALAD(BaseModel):
     def build_model(self):
 
         # Placeholdersn
+        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
         self.is_training = tf.placeholder(tf.bool)
         self.image_tensor = tf.placeholder(
             tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"
@@ -26,6 +27,12 @@ class ALAD(BaseModel):
         )
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
         # Building the Graph
         with tf.variable_scope("ALAD"):
             # Generated noise from the encoder
@@ -35,7 +42,7 @@ class ALAD(BaseModel):
                 )
             # Generated image and reconstructed image from the Generator
             with tf.variable_scope("Generator_Model"):
-                self.img_gen = self.generator(self.noise_tensor)
+                self.img_gen = self.generator(self.noise_tensor) + self.fake_noise
                 self.rec_img = self.generator(self.z_gen)
 
             # Reconstructed image of generated image from the encoder
@@ -48,16 +55,22 @@ class ALAD(BaseModel):
                     self.img_gen, self.noise_tensor, do_spectral_norm=self.config.spectral_norm
                 )
                 l_encoder, inter_layer_inp_xz = self.discriminator_xz(
-                    self.image_tensor, self.z_gen, do_spectral_norm=self.config.do_spectral_norm
+                    self.image_tensor + self.real_noise,
+                    self.z_gen,
+                    do_spectral_norm=self.config.do_spectral_norm,
                 )
 
             # Discrimeinator results of (x, x) and (x, G(E(x))
             with tf.variable_scope("Discriminator_Model_XX"):
                 x_logit_real, inter_layer_inp_xx = self.discriminator_xx(
-                    self.image_tensor, self.image_tensor, do_spectral_norm=self.config.spectral_norm
+                    self.image_tensor + self.real_noise,
+                    self.image_tensor + self.real_noise,
+                    do_spectral_norm=self.config.spectral_norm,
                 )
                 x_logit_fake, inter_layer_rct_xx = self.discriminator_xx(
-                    self.image_tensor, self.rec_img, do_spectral_norm=self.config.spectral_norm
+                    self.image_tensor + self.real_noise,
+                    self.rec_img,
+                    do_spectral_norm=self.config.spectral_norm,
                 )
             # Discriminator results of (z, z) and (z, E(G(z))
             with tf.variable_scope("Discriminator_Model_ZZ"):
@@ -320,8 +333,8 @@ class ALAD(BaseModel):
                     self.sum_op_latent = tf.summary.image("heatmap_latent", heatmap_pl_latent)
 
                 with tf.name_scope("image_summary"):
-                    tf.summary.image("reconstruct", self.rec_img, 8, ["image"])
-                    tf.summary.image("input_images", self.image_tensor, 8, ["image"])
+                    tf.summary.image("reconstruct", self.rec_img, 3, ["image"])
+                    tf.summary.image("input_images", self.image_tensor, 3, ["image"])
 
         if self.config.trainer.enable_early_stop:
             with tf.name_scope("validation_summary"):
@@ -358,7 +371,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -379,7 +392,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -399,8 +412,8 @@ class ALAD(BaseModel):
                     filters=256,
                     kernel_size=4,
                     strides=(2, 2),
-                    padding="valid",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 net = tf.layers.batch_normalization(
@@ -421,7 +434,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 net = tf.squeeze(net, [1, 2])
@@ -440,13 +453,8 @@ class ALAD(BaseModel):
             net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
-                net = tf.layers.Conv2DTranspose(
-                    filters=512,
-                    kernel_size=4,
-                    strides=(2, 2),
-                    padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="tconv1",
+                net = tf.layers.Dense(
+                    units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="fc"
                 )(net)
                 net = tf.layers.batch_normalization(
                     inputs=net,
@@ -454,16 +462,18 @@ class ALAD(BaseModel):
                     training=self.is_training,
                     name="tconv1/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv1/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv1/relu"
+                )
 
             net_name = "layer_2"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
-                    filters=256,
-                    kernel_size=5,
+                    filters=512,
+                    kernel_size=4,
                     strides=(2, 2),
-                    padding="valid",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
                     name="tconv2",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -472,16 +482,18 @@ class ALAD(BaseModel):
                     training=self.is_training,
                     name="tconv2/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv2/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv2/relu"
+                )
 
             net_name = "layer_3"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
-                    filters=128,
+                    filters=256,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="tconv3",
                 )(net)
                 net = tf.layers.batch_normalization(
@@ -490,19 +502,40 @@ class ALAD(BaseModel):
                     training=self.is_training,
                     name="tconv3/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv3/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv3/relu"
+                )
 
             net_name = "layer_4"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
-                    filters=1,
+                    filters=128,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="tconv4",
                 )(net)
-                net = tf.nn.tanh(net, name="tconv4/tanh")
+                net = tf.layers.batch_normalization(
+                    inputs=net,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="tconv4/bn",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv4/relu"
+                )
+            net_name = "layer_5"
+            with tf.variable_scope(net_name):
+                net = tf.layers.Conv2DTranspose(
+                    filters=1,
+                    kernel_size=5,
+                    strides=(1, 1),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="tconv5",
+                )(net)
+                net = tf.nn.tanh(net, name="tconv5/tanh")
 
         return net
 
@@ -527,7 +560,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv1",
                 )
                 x = tf.nn.leaky_relu(
@@ -542,7 +575,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -562,7 +595,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv2",
                 )
                 x = tf.layers.batch_normalization(
@@ -587,7 +620,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 z = tf.nn.leaky_relu(
@@ -608,8 +641,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="conv",
+                    kernel_initializer=self.init_kernel,
                 )
                 z = tf.nn.leaky_relu(
                     features=z, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -629,8 +661,7 @@ class ALAD(BaseModel):
                     kernel_size=1,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="conv",
+                    kernel_initializer=self.init_kernel,
                 )
                 y = tf.nn.leaky_relu(
                     features=y, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -652,7 +683,7 @@ class ALAD(BaseModel):
                     kernel_size=1,
                     strides=(1, 1),
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv",
                 )
                 y = tf.nn.leaky_relu(
@@ -691,7 +722,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv1",
                 )
                 net = tf.nn.leaky_relu(
@@ -714,7 +745,7 @@ class ALAD(BaseModel):
                     kernel_size=4,
                     strides=2,
                     padding="same",
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
+                    kernel_initializer=self.init_kernel,
                     name="conv2",
                 )
                 net = tf.nn.leaky_relu(
@@ -732,12 +763,7 @@ class ALAD(BaseModel):
 
             net_name = "layer_3"
             with tf.variable_scope(net_name):
-                net = tf.layers.dense(
-                    net,
-                    units=1,
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="fc",
-                )
+                net = tf.layers.dense(net, units=1, kernel_initializer=self.init_kernel, name="fc")
                 logits = tf.squeeze(net)
 
         return logits, intermediate_layer
@@ -760,12 +786,7 @@ class ALAD(BaseModel):
 
             net_name = "y_layer_1"
             with tf.variable_scope(net_name):
-                y = layers.dense(
-                    y,
-                    units=64,
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="fc",
-                )
+                y = layers.dense(y, units=64, kernel_initializer=self.init_kernel, name="fc")
                 y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
                 y = tf.layers.dropout(
                     y,
@@ -776,12 +797,7 @@ class ALAD(BaseModel):
 
             net_name = "y_layer_2"
             with tf.variable_scope(net_name):
-                y = layers.dense(
-                    y,
-                    units=32,
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="fc",
-                )
+                y = layers.dense(y, units=32, kernel_initializer=self.init_kernel, name="fc")
                 y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
                 y = tf.layers.dropout(
                     y,
@@ -794,12 +810,7 @@ class ALAD(BaseModel):
 
             net_name = "y_layer_3"
             with tf.variable_scope(net_name):
-                y = layers.dense(
-                    y,
-                    units=1,
-                    kernel_initializer=tf.random_normal_initializer(mean=0.0, stddev=0.01),
-                    name="fc",
-                )
+                y = layers.dense(y, units=1, kernel_initializer=self.init_kernel, name="fc")
                 logits = tf.squeeze(y)
 
         return logits, intermediate_layer
