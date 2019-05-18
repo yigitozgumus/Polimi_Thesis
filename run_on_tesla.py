@@ -1,6 +1,6 @@
 import tensorflow as tf
 from utils.utils import get_args
-from utils.config import process_config
+from utils.config import process_config, get_config_from_json
 from utils.factory import create
 from utils.dirs import create_dirs
 from utils.logger import Logger
@@ -16,7 +16,9 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 def run():
     # Get the arguments
     args = get_args()
-    config = process_config(args.config, args.experiment)
+    config, _ = get_config_from_json(args.config)
+    config.exp.name = args.experiment
+    config = process_config(config)
     # create the experiments dirs
     create_dirs(
         [

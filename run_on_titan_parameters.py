@@ -1,6 +1,7 @@
 import tensorflow as tf
 from utils.utils import get_args
 from utils.config import process_config
+from utils.config import get_config_from_json
 from utils.factory import create
 from utils.dirs import create_dirs
 from utils.logger import Logger
@@ -14,7 +15,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 def run_multi():
     # Get the arguments
     args = get_args()
-    config = process_config(args.config, args.experiment)
+    config, _ = get_config_from_json(args.config)
     values = config.exp.values
     params = config.exp.params
     section = config.exp.section
@@ -27,7 +28,8 @@ def run_multi():
                 config[section][params[0]] = i
                 config[section][params[1]] = j
                 config[section][params[2]] = k
-                config.exp.name += "_{}{}{}".format(int(i), int(j), int(k))
+                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
+                process_config(config)
                 create_dirs(
                     [
                         config.log.summary_dir,
