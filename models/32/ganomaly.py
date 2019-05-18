@@ -38,6 +38,7 @@ class GANomaly(BaseModel):
                 self.noise_gen, self.img_rec, self.noise_rec = self.generator(
                     self.image_input, self.fake_noise
                 )
+                self.img_rec += self.fake_noise
             with tf.variable_scope("Discriminator_Model"):
                 l_real, inter_layer_inp = self.discriminator(self.image_input + self.real_noise)
                 l_fake, inter_layer_rct = self.discriminator(self.img_rec)
@@ -142,11 +143,8 @@ class GANomaly(BaseModel):
         self.logger.info("Building Testing Graph...")
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                temp_fake_noise = tf.zeros(
-                    shape=[self.config.data_loader.batch_size] + self.config.trainer.image_dims
-                )
                 self.noise_gen_ema, self.img_rec_ema, self.noise_rec_ema = self.generator(
-                    self.image_input, temp_fake_noise, getter=get_getter(self.gen_ema)
+                    self.image_input, getter=get_getter(self.gen_ema)
                 )
             with tf.variable_scope("Discriminator_model"):
                 self.l_real_ema, self.inter_layer_inp_ema = self.discriminator(
@@ -192,7 +190,7 @@ class GANomaly(BaseModel):
         self.sum_op_im = tf.summary.merge_all("image")
         self.sum_op_valid = tf.summary.merge_all("v")
 
-    def generator(self, image_input, fake_noise, getter=None):
+    def generator(self, image_input, getter=None):
         # This generator will take the image from the input dataset, and first it will
         # it will create a latent representation of that image then with the decoder part,
         # it will reconstruct the image.
@@ -265,7 +263,7 @@ class GANomaly(BaseModel):
                         name="fc",
                     )(x_e)
 
-            noise_gen = x_e + fake_noise
+            noise_gen = x_e
 
             with tf.variable_scope("Decoder"):
                 net = tf.reshape(noise_gen, [-1, 1, 1, self.config.trainer.noise_dim])
