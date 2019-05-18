@@ -40,38 +40,33 @@ def run_multi():
                     ]
                 )
                 # Copy the model code and the trainer code to the experiment folder
-                copy_codebase(config)
-
-                l = Logger(config)
-                logger = l.get_logger(__name__)
-                # Create the tensorflow session
-                sess = tf.Session()
-                # Create the dataloader
-                data = create("data_loader." + config.data_loader.name)(config)
-                # Create the model instance
-                model = create(
-                    "models.{}.".format(config.data_loader.image_size) + config.model.name
-                )(config)
-                # Create the summarizer Object
-                summarizer = create("utils." + config.log.name)(sess, config)
-                # Create the trainer
-                trainer = create("trainers." + config.trainer.name)(
-                    sess, model, data, config, summarizer
-                )
-                # Load model if exists
-                model.load(sess)
-                # Train the model
-                trainer.train()
-                # Test the model
-                if config.trainer.test_at_end:
-                    trainer.test()
-                logger.info("Experiment has ended.")
+                run(config)
                 # Delete the session and the model
-                del sess
-                del model
-                del summarizer
-                del trainer
-                del logger
+
+
+def run(config):
+    copy_codebase(config)
+
+    l = Logger(config)
+    logger = l.get_logger(__name__)
+    # Create the tensorflow session
+    sess = tf.Session()
+    # Create the dataloader
+    data = create("data_loader." + config.data_loader.name)(config)
+    # Create the model instance
+    model = create("models.{}.".format(config.data_loader.image_size) + config.model.name)(config)
+    # Create the summarizer Object
+    summarizer = create("utils." + config.log.name)(sess, config)
+    # Create the trainer
+    trainer = create("trainers." + config.trainer.name)(sess, model, data, config, summarizer)
+    # Load model if exists
+    model.load(sess)
+    # Train the model
+    trainer.train()
+    # Test the model
+    if config.trainer.test_at_end:
+        trainer.test()
+    logger.info("Experiment has ended.")
 
 
 if __name__ == "__main__":
