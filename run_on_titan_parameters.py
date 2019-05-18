@@ -16,7 +16,7 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values = config.exp.values
+    values = config.exp.vals
     params = config.exp.params
     section = config.exp.section
     # flip labels

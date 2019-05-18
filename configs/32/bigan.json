@@ -2,7 +2,7 @@
   "exp": {
     "section": "trainer",
     "params": ["flip_labels", "soft_labels", "include_noise"],
-    "values": [false, true]
+    "vals": [false, true]
   },
   "model": {
     "name": "bigan.BIGAN"
