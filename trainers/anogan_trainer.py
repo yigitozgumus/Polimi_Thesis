@@ -48,9 +48,12 @@ class ANOGAN_Trainer(BaseTrain):
         if cur_epoch % self.config.log.frequency_test == 0:
             image_eval = self.sess.run(image)
             noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            real_noise, fake_noise = self.generate_noise(False, cur_epoch)
             feed_dict = {
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
                 self.model.is_training: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
