@@ -485,7 +485,7 @@ class ALAD(BaseModel):
                 net = tf.nn.leaky_relu(
                     features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv1/relu"
                 )
-
+                net =  tf.reshape(net, shape=[-1, 4, 4, 512])
             net_name = "layer_2"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
