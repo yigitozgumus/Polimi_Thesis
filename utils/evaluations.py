@@ -327,7 +327,7 @@ def save_results(
             ]
             save_results_csv(location + "results.csv", results, header=0)
 
-            results = [step, roc_auc, precision, recall, f1, random_seed]
+            results = [step, i, roc_auc, precision, recall, f1, random_seed]
             fname = directory + "{}.csv".format(label)
             save_results_csv(fname, results, header=2)
 
