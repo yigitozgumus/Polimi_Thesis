@@ -1,5 +1,9 @@
 {
-  "exp": {},
+  "exp": {
+    "section": "trainer",
+    "params": ["flip_labels", "soft_labels", "include_noise"],
+    "vals": [false, true]
+  },
   "model": {
     "name": "ganomaly.GANomaly"
   },

@@ -25,14 +25,21 @@ class GANomaly(BaseModel):
 
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
-
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
         self.logger.info("Building training graph...")
 
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                self.noise_gen, self.img_rec, self.noise_rec = self.generator(self.image_input)
+                self.noise_gen, self.img_rec, self.noise_rec = self.generator(
+                    self.image_input, self.fake_noise
+                )
             with tf.variable_scope("Discriminator_Model"):
-                l_real, inter_layer_inp = self.discriminator(self.image_input)
+                l_real, inter_layer_inp = self.discriminator(self.image_input + self.real_noise)
                 l_fake, inter_layer_rct = self.discriminator(self.img_rec)
 
         with tf.name_scope("Loss_Functions"):
@@ -135,8 +142,11 @@ class GANomaly(BaseModel):
         self.logger.info("Building Testing Graph...")
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
+                temp_fake_noise = tf.zeros(
+                    shape=[self.config.data_loader.batch_size] + self.config.trainer.image_dims
+                )
                 self.noise_gen_ema, self.img_rec_ema, self.noise_rec_ema = self.generator(
-                    self.image_input, getter=get_getter(self.gen_ema)
+                    self.image_input, temp_fake_noise, getter=get_getter(self.gen_ema)
                 )
             with tf.variable_scope("Discriminator_model"):
                 self.l_real_ema, self.inter_layer_inp_ema = self.discriminator(
@@ -182,7 +192,7 @@ class GANomaly(BaseModel):
         self.sum_op_im = tf.summary.merge_all("image")
         self.sum_op_valid = tf.summary.merge_all("v")
 
-    def generator(self, image_input, getter=None):
+    def generator(self, image_input, fake_noise, getter=None):
         # This generator will take the image from the input dataset, and first it will
         # it will create a latent representation of that image then with the decoder part,
         # it will reconstruct the image.
@@ -195,7 +205,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
-                        filters=128,
+                        filters=64,
                         kernel_size=4,
                         strides=(2, 2),
                         padding="same",
@@ -209,7 +219,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
-                        filters=256,
+                        filters=128,
                         kernel_size=4,
                         padding="same",
                         strides=(2, 2),
@@ -229,7 +239,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
                     x_e = tf.layers.Conv2D(
-                        filters=512,
+                        filters=256,
                         kernel_size=4,
                         padding="same",
                         strides=(2, 2),
@@ -255,14 +265,14 @@ class GANomaly(BaseModel):
                         name="fc",
                     )(x_e)
 
-            noise_gen = x_e
+            noise_gen = x_e + fake_noise
 
             with tf.variable_scope("Decoder"):
                 net = tf.reshape(noise_gen, [-1, 1, 1, self.config.trainer.noise_dim])
                 net_name = "layer_1"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=512,
+                        filters=256,
                         kernel_size=4,
                         strides=(2, 2),
                         padding="same",
@@ -281,10 +291,10 @@ class GANomaly(BaseModel):
                 net_name = "layer_2"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=256,
-                        kernel_size=5,
+                        filters=128,
+                        kernel_size=4,
                         strides=(2, 2),
-                        padding="valid",
+                        padding="same",
                         kernel_initializer=self.init_kernel,
                         name="tconv2",
                     )(net)
@@ -300,7 +310,7 @@ class GANomaly(BaseModel):
                 net_name = "layer_3"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=128,
+                        filters=64,
                         kernel_size=4,
                         strides=(2, 2),
                         padding="same",
@@ -318,7 +328,7 @@ class GANomaly(BaseModel):
                 net_name = "layer_4"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=64,
+                        filters=32,
                         kernel_size=4,
                         strides=(2, 2),
                         padding="same",
@@ -332,9 +342,27 @@ class GANomaly(BaseModel):
                         training=self.is_training,
                         name="tconv4/bn",
                     )
-                    net = tf.nn.relu(features=net, name="tconv3/relu")
-
+                    net = tf.nn.relu(features=net, name="tconv4/relu")
                 net_name = "layer_5"
+                with tf.variable_scope(net_name):
+                    net = tf.layers.Conv2DTranspose(
+                        filters=16,
+                        kernel_size=4,
+                        strides=(2, 2),
+                        padding="same",
+                        kernel_initializer=self.init_kernel,
+                        name="tconv5",
+                    )(net)
+                    net = tf.layers.batch_normalization(
+                        inputs=net,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                        name="tconv4/bn",
+                    )
+                    net = tf.nn.relu(features=net, name="tconv5/relu")
+
+                net_name = "layer_6"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
                         filters=1,
@@ -342,9 +370,9 @@ class GANomaly(BaseModel):
                         strides=(1, 1),
                         padding="same",
                         kernel_initializer=self.init_kernel,
-                        name="tconv5",
+                        name="tconv6",
                     )(net)
-                    net = tf.nn.tanh(net, name="tconv5/tanh")
+                    net = tf.nn.tanh(net, name="tconv6/tanh")
 
             image_rec = net
 
@@ -357,7 +385,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=128,
+                        filters=64,
                         kernel_size=4,
                         strides=(2, 2),
                         padding="same",
@@ -370,7 +398,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=256,
+                        filters=128,
                         kernel_size=4,
                         padding="same",
                         strides=(2, 2),
@@ -389,7 +417,7 @@ class GANomaly(BaseModel):
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
                     x_e_2 = tf.layers.Conv2D(
-                        filters=512,
+                        filters=256,
                         kernel_size=4,
                         padding="same",
                         strides=(2, 2),
@@ -423,8 +451,8 @@ class GANomaly(BaseModel):
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Conv2D(
                     filters=64,
-                    kernel_size=5,
-                    strides=(1, 1),
+                    kernel_size=4,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="d_conv1",

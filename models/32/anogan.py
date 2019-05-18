@@ -340,7 +340,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     img_tensor,
-                    filters=128,
+                    filters=64,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -355,7 +355,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     x,
-                    filters=256,
+                    filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
@@ -375,7 +375,7 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     x,
-                    filters=512,
+                    filters=256,
                     kernel_size=4,
                     strides=2,
                     padding="same",
