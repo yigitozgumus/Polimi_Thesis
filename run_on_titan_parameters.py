@@ -41,6 +41,7 @@ def run_multi():
                 )
                 # Copy the model code and the trainer code to the experiment folder
                 run(config)
+                tf.reset_default_graph()
                 # Delete the session and the model
 
 
