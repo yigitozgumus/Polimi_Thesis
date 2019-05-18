@@ -66,6 +66,12 @@ def run_multi():
                 if config.trainer.test_at_end:
                     trainer.test()
                 logger.info("Experiment has ended.")
+                # Delete the session and the model
+                del sess
+                del model
+                del summarizer
+                del trainer
+                del logger
 
 
 if __name__ == "__main__":
