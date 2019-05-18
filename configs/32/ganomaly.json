@@ -46,7 +46,7 @@
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
-    "batch_epsilon": 1e-5,
+    "batch_epsilon": 1e-6,
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.25,
     "ema_decay": 0.999,
