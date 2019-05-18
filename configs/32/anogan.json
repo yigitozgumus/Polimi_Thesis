@@ -1,0 +1,74 @@
+{
+  "exp": {
+    "section": "trainer",
+    "params": ["flip_labels", "soft_labels", "include_noise"],
+    "vals": [false, true]
+  },
+  "model": {
+    "name": "anogan.ANOGAN"
+  },
+  "dirs": {
+    "data": "data",
+    "data_normal": "data/Normal/",
+    "data_anomalous": "data/Anomalous/"
+  },
+  "data_loader": {
+    "name": "data_generator.DataGenerator",
+    "random_seed": 42,
+    "buffer_size": 51200,
+    "image_size": 32,
+    "batch_size": 64,
+    "num_epochs": 50,
+    "num_iter_per_epoch": 800,
+    "num_parallel_calls": 8,
+    "num_iter_per_test": 2583,
+    "mode":"anomaly",
+    "dataset_name" : "material",
+    "binary_location":"offload",
+    "test_batch":40,
+    "validation": false,
+    "validation_percent": 10
+  },
+  "trainer": {
+    "name": "anogan_trainer.ANOGAN_Trainer",
+    "noise_dim": 100,
+    "image_dims": [
+      32,
+      32,
+      1
+    ],
+    "include_noise": false,
+    "soft_labels": false,
+    "flip_labels": false,
+    "discriminator_l_rate": 2e-5,
+    "generator_l_rate": 2e-4,
+    "noise_probability": 0.05,
+    "optimizer_adam_beta1": 0.5,
+    "optimizer_adam_beta2": 0.999,
+    "batch_momentum": 0.8,
+    "leakyReLU_alpha": 0.2,
+    "dropout_rate": 0.25,
+    "ema_decay": 0.999,
+    "spectral_norm": true,
+    "allow_zz": true,
+    "enable_early_stop": false,
+    "degree": 1,
+    "weight": 0.1,
+    "label": 0,
+    "frequency_eval": 2,
+    "patience": 15,
+    "difference": 0.02,
+    "steps_number": 500,
+    "loss_method": "fm",
+    "test_at_end": true
+  },
+  "log": {
+    "name": "summarizer.Summarizer",
+    "enable_summary": true,
+    "show_steps": 10,
+    "max_to_keep": 2,
+    "num_example_imgs_to_generate": 25,
+    "frequency_test": 2,
+    "output_folder": "Results"
+  }
+}

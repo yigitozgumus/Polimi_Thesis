@@ -284,6 +284,7 @@ def save_results(
             weight,
             label,
             step,
+            per,
             roc_auc,
             precision,
             recall,
@@ -316,6 +317,7 @@ def save_results(
                 weight,
                 label,
                 step,
+                i,
                 roc_auc,
                 precision,
                 recall,
@@ -323,10 +325,10 @@ def save_results(
                 random_seed,
                 time.ctime(),
             ]
-            save_results_csv(location + "results_{}.csv".format(i), results, header=0)
+            save_results_csv(location + "results.csv", results, header=0)
 
-            results = [step, roc_auc, precision, recall, f1, random_seed]
-            fname = directory + "{}_{}.csv".format(label, i)
+            results = [step, i, roc_auc, precision, recall, f1, random_seed]
+            fname = directory + "{}.csv".format(label)
             save_results_csv(fname, results, header=2)
 
 
@@ -372,6 +374,7 @@ def save_results_csv(fname, results, header=0):
                             "Weight",
                             "Label",
                             "Step",
+                            "Percentile",
                             "AUROC",
                             "Precision",
                             "Recall",
@@ -385,7 +388,17 @@ def save_results_csv(fname, results, header=0):
                 writer.writerows([["Precision", "Recall", "F1 score", "Random Seed"]])
             elif header == 2:
                 writer.writerows(
-                    [["Step", "AUROC", "Precision", "Recall", "F1 score", "Random Seed"]]
+                    [
+                        [
+                            "Step",
+                            "Percentile",
+                            "AUROC",
+                            "Precision",
+                            "Recall",
+                            "F1 score",
+                            "Random Seed",
+                        ]
+                    ]
                 )
 
             elif header == 5:

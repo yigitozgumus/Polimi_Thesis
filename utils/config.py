@@ -35,9 +35,8 @@ def create_parameter_file(config: object) -> None:
         f.close()
 
 
-def process_config(json_file: str, exp_name: str) -> object:
-    config, _ = get_config_from_json(json_file)
-    config.exp.name = exp_name
+def process_config(config) -> object:
+
     config.log.summary_dir = os.path.join(config.log.output_folder, config.exp.name, "summary/")
     config.log.checkpoint_dir = os.path.join(
         config.log.output_folder, config.exp.name, "checkpoint/"

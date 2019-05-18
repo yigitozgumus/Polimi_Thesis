@@ -23,36 +23,46 @@ class ANOGAN(BaseModel):
         # Placeholders for the true and fake labels
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
         # Building the Graph
         self.logger.info("Building Graph")
         with tf.variable_scope("ANOGAN"):
             with tf.variable_scope("Generator_Model"):
-                self.img_gen = self.generator(self.noise_tensor)
+                self.img_gen = self.generator(self.noise_tensor) + self.fake_noise
             # Discriminator
             with tf.variable_scope("Discriminator_Model"):
-                disc_real, inter_layer_real = self.discriminator(self.image_input)
+                disc_real, inter_layer_real = self.discriminator(self.image_input + self.real_noise)
                 disc_fake, inter_layer_fake = self.discriminator(self.img_gen)
 
         # Losses of the training of Generator and Discriminator
 
         with tf.variable_scope("Loss_Functions"):
-            self.disc_loss_real = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=disc_real)
-            )
-            self.disc_loss_fake = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=self.generated_labels, logits=disc_fake
+            with tf.name_scope("Discriminator_Loss"):
+                self.disc_loss_real = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.true_labels, logits=disc_real
+                    )
                 )
-            )
-            self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
-            if self.config.trainer.flip_labels:
-                labels = tf.zeros_like(disc_fake)
-            else:
-                labels = tf.ones_like(disc_fake)
+                self.disc_loss_fake = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.generated_labels, logits=disc_fake
+                    )
+                )
+                self.total_disc_loss = self.disc_loss_real + self.disc_loss_fake
+            with tf.name_scope("Generator_Loss"):
+                if self.config.trainer.flip_labels:
+                    labels = tf.zeros_like(disc_fake)
+                else:
+                    labels = tf.ones_like(disc_fake)
 
-            self.gen_loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=disc_fake)
-            )
+                self.gen_loss = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=disc_fake)
+                )
         # Build the Optimizers
         with tf.variable_scope("Optimizers"):
             # Collect all the variables
@@ -223,11 +233,11 @@ class ANOGAN(BaseModel):
             reuse: sharing variables or not
         """
         with tf.variable_scope("Generator", reuse=tf.AUTO_REUSE, custom_getter=getter):
-            net = tf.reshape(noise_tensor, [-1, self.config.trainer.noise_dim])
+            net = tf.reshape(noise_tensor, [-1, 1, 1, self.config.trainer.noise_dim])
             net_name = "layer_1"
             with tf.variable_scope(net_name):
                 net = tf.layers.dense(
-                    net, units=7 * 7 * 512, kernel_initializer=self.init_kernel, name="fc"
+                    net, units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="fc"
                 )
                 net = tf.layers.batch_normalization(
                     inputs=net,
@@ -235,15 +245,17 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="dense/bn",
                 )
-                net = tf.nn.relu(features=net, name="dense/relu")
-                net = tf.reshape(net, shape=[-1, 7, 7, 512])
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="dense/relu"
+                )
+                net = tf.reshape(net, shape=[-1, 4, 4, 512])
 
             net_name = "layer_2"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=512,
-                    kernel_size=5,
-                    strides=(1, 1),
+                    kernel_size=4,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="tconv1",
@@ -254,13 +266,15 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv1/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv1/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv1/relu"
+                )
 
             net_name = "layer_3"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=256,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -272,13 +286,15 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv2/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv2/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv2/relu"
+                )
 
             net_name = "layer_4"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=128,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -290,13 +306,15 @@ class ANOGAN(BaseModel):
                     training=self.is_training,
                     name="tconv3/bn",
                 )
-                net = tf.nn.relu(features=net, name="tconv3/relu")
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="tconv3/relu"
+                )
 
             net_name = "layer_5"
             with tf.variable_scope(net_name):
                 net = tf.layers.Conv2DTranspose(
                     filters=1,
-                    kernel_size=5,
+                    kernel_size=4,
                     strides=(1, 1),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -322,8 +340,8 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     img_tensor,
-                    filters=128,
-                    kernel_size=5,
+                    filters=64,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -337,8 +355,8 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     x,
-                    filters=256,
-                    kernel_size=5,
+                    filters=128,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -357,8 +375,8 @@ class ANOGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x = tf.layers.conv2d(
                     x,
-                    filters=512,
-                    kernel_size=5,
+                    filters=256,
+                    kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,

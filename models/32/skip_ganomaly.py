@@ -24,6 +24,13 @@ class SkipGANomaly(BaseModel):
         self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
         self.true_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="true_labels")
         self.generated_labels = tf.placeholder(dtype=tf.float32, shape=[None, 1], name="gen_labels")
+        self.real_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="real_noise"
+        )
+        self.fake_noise = tf.placeholder(
+            dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
+        )
+
         #######################################################################
         # GRAPH
         ########################################################################
@@ -31,9 +38,11 @@ class SkipGANomaly(BaseModel):
 
         with tf.variable_scope("Skip_GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                self.img_rec = self.generator(self.image_input)
+                self.img_rec = self.generator(self.image_input) + self.fake_noise
             with tf.variable_scope("Discriminator_Model"):
-                self.disc_real, self.inter_layer_real = self.discriminator(self.image_input)
+                self.disc_real, self.inter_layer_real = self.discriminator(
+                    self.image_input + self.real_noise
+                )
                 self.disc_fake, self.inter_layer_fake = self.discriminator(self.img_rec)
         ########################################################################
         # METRICS
@@ -390,14 +399,16 @@ class SkipGANomaly(BaseModel):
     def discriminator(self, image_input, getter=None):
         with tf.variable_scope("Discriminator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             net_name = "Layer_1"
+
             with tf.variable_scope(net_name):
+                # Second Convolutional Layer
                 x_d = tf.layers.Conv2D(
                     filters=64,
                     kernel_size=5,
-                    strides=(1, 1),
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
-                    name="d_conv1",
+                    name="d_conv_1",
                 )(image_input)
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
@@ -410,7 +421,7 @@ class SkipGANomaly(BaseModel):
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
-                # Second Convolutional Layer
+                # Third Convolutional Layer
                 x_d = tf.layers.Conv2D(
                     filters=128,
                     kernel_size=5,
@@ -430,7 +441,6 @@ class SkipGANomaly(BaseModel):
                 )
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
-                # Third Convolutional Layer
                 x_d = tf.layers.Conv2D(
                     filters=256,
                     kernel_size=5,
@@ -449,25 +459,6 @@ class SkipGANomaly(BaseModel):
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
                 )
             net_name = "Layer_4"
-            with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
-                    filters=512,
-                    kernel_size=5,
-                    strides=(2, 2),
-                    padding="same",
-                    kernel_initializer=self.init_kernel,
-                    name="d_conv_3",
-                )(x_d)
-                x_d = tf.layers.batch_normalization(
-                    inputs=x_d,
-                    momentum=self.config.trainer.batch_momentum,
-                    training=True,
-                    name="d_bn_3",
-                )
-                x_d = tf.nn.leaky_relu(
-                    features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="d_lr_3"
-                )
-            net_name = "Layer_5"
             with tf.variable_scope(net_name):
                 x_d = tf.layers.Flatten(name="d_flatten")(x_d)
                 x_d = tf.layers.dropout(

@@ -12,25 +12,40 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 
-def run():
+def run_multi():
     # Get the arguments
     args = get_args()
-
     config, _ = get_config_from_json(args.config)
-    config.exp.name = args.experiment
-    config = process_config(config)
-    # create the experiments dirs
-    create_dirs(
-        [
-            config.log.summary_dir,
-            config.log.checkpoint_dir,
-            config.log.step_generation_dir,
-            config.log.log_file_dir,
-            config.log.codebase_dir,
-        ]
-    )
+    values = config.exp.vals
+    params = config.exp.params
+    section = config.exp.section
+    # flip labels
+    for i in values:
+        # soft labels
+        for j in values:
+            # include noise
+            for k in values:
+                config[section][params[0]] = i
+                config[section][params[1]] = j
+                config[section][params[2]] = k
+                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
+                process_config(config)
+                create_dirs(
+                    [
+                        config.log.summary_dir,
+                        config.log.checkpoint_dir,
+                        config.log.step_generation_dir,
+                        config.log.log_file_dir,
+                        config.log.codebase_dir,
+                    ]
+                )
+                # Copy the model code and the trainer code to the experiment folder
+                run(config)
+                tf.reset_default_graph()
+                # Delete the session and the model
 
-    # Copy the model code and the trainer code to the experiment folder
+
+def run(config):
     copy_codebase(config)
 
     l = Logger(config)
@@ -56,4 +71,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    run_multi()

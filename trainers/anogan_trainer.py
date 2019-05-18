@@ -48,9 +48,12 @@ class ANOGAN_Trainer(BaseTrain):
         if cur_epoch % self.config.log.frequency_test == 0:
             image_eval = self.sess.run(image)
             noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            real_noise, fake_noise = self.generate_noise(False, cur_epoch)
             feed_dict = {
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
                 self.model.is_training: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
@@ -176,6 +179,7 @@ class ANOGAN_Trainer(BaseTrain):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
         # Train the discriminator
         image_eval = self.sess.run(image)
         feed_dict = {
@@ -183,6 +187,8 @@ class ANOGAN_Trainer(BaseTrain):
             self.model.noise_tensor: noise,
             self.model.true_labels: true_labels,
             self.model.generated_labels: generated_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
             self.model.is_training: True,
         }
         _, ld = self.sess.run(
@@ -193,11 +199,14 @@ class ANOGAN_Trainer(BaseTrain):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             self.model.true_labels: true_labels,
             self.model.generated_labels: generated_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
             self.model.is_training: True,
         }
         # Train the generator
@@ -237,3 +246,25 @@ class ANOGAN_Trainer(BaseTrain):
             return generated_labels, true_labels
         else:
             return true_labels, generated_labels
+
+    def generate_noise(self, include_noise, cur_epoch):
+        sigma = max(0.75 * (10.0 - cur_epoch) / (10), 0.05)
+        if include_noise:
+            # If we want to add this is will add the noises
+            real_noise = np.random.normal(
+                scale=sigma,
+                size=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
+            )
+            fake_noise = np.random.normal(
+                scale=sigma,
+                size=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
+            )
+        else:
+            # Otherwise we are just going to add zeros which will not break anything
+            real_noise = np.zeros(
+                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
+            )
+            fake_noise = np.zeros(
+                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
+            )
+        return real_noise, fake_noise
