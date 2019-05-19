@@ -256,7 +256,7 @@ def save_results(
     scores = np.array(scores)
 
     roc_auc = do_roc(scores, true_labels, file_name=file_name, directory=directory)
-
+    prc_auc = do_prc(scores, true_labels, file_name=file_name, directory=directory)
     do_cumdist(scores, file_name=file_name, directory=directory)
 
     do_hist(scores, true_labels, directory, dataset, random_seed, None)
@@ -286,6 +286,7 @@ def save_results(
             step,
             per,
             roc_auc,
+            prc_auc,
             precision,
             recall,
             f1,
@@ -319,6 +320,7 @@ def save_results(
                 step,
                 i,
                 roc_auc,
+                prc_auc,
                 precision,
                 recall,
                 f1,
@@ -376,6 +378,7 @@ def save_results_csv(fname, results, header=0):
                             "Step",
                             "Percentile",
                             "AUROC",
+                            "PRC",
                             "Precision",
                             "Recall",
                             "F1 score",
