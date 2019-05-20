@@ -123,12 +123,11 @@ class SkipGANomalyTrainer(BaseTrain):
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         scores = np.asarray(scores)
-        scores_scaled = (scores - min(scores)) / (max(scores) - min(scores))
 
         step = self.sess.run(self.model.global_step_tensor)
         save_results(
             self.config.log.result_dir,
-            scores_scaled,
+            scores,
             true_labels,
             self.config.model.name,
             self.config.data_loader.dataset_name,
@@ -136,6 +135,7 @@ class SkipGANomalyTrainer(BaseTrain):
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
+            self.logger,
             step,
         )
 

@@ -161,7 +161,7 @@ class SkipGANomaly(BaseModel):
                     self.image_input, getter=get_getter(self.dis_ema)
                 )
                 self.disc_fake_ema, self.inter_layer_fake_ema = self.discriminator(
-                    self.img_rec, getter=get_getter(self.dis_ema)
+                    self.img_rec_ema, getter=get_getter(self.dis_ema)
                 )
 
         with tf.name_scope("Testing"):
