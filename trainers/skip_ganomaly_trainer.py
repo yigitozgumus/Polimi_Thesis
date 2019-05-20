@@ -64,7 +64,7 @@ class SkipGANomalyTrainer(BaseTrain):
             )
         )
         # Save the model state
-        # self.model.save(self.sess)
+        self.model.save(self.sess)
         # Early Stopping
         if (
             cur_epoch + 1
@@ -100,6 +100,8 @@ class SkipGANomalyTrainer(BaseTrain):
                         cur_epoch, cur_epoch - self.nb_without_improvements
                     )
                 )
+
+    def test_epoch(self):
         self.logger.warn("Testing evaluation...")
         scores = []
         inference_time = []
