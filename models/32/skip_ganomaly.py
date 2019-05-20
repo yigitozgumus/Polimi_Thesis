@@ -38,7 +38,8 @@ class SkipGANomaly(BaseModel):
 
         with tf.variable_scope("Skip_GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                self.img_rec = self.generator(self.image_input) + self.fake_noise
+                self.img_rec = self.generator(self.image_input)
+                self.img_rec += self.fake_noise
             with tf.variable_scope("Discriminator_Model"):
                 self.disc_real, self.inter_layer_real = self.discriminator(
                     self.image_input + self.real_noise

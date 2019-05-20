@@ -211,23 +211,25 @@ class GANomalyTrainer(BaseTrain):
         else:
             return true_labels, generated_labels
 
-    def generate_noise(self, include_noise, cur_epoch):
-        sigma = max(0.75 * (10.0 - cur_epoch) / (10), 0.05)
+    def generate_noise(self, include_noise, cur_epoch, mode=1):
+        sigma = max(1.25 * (10.0 - cur_epoch) / (10), 1)
+        real_noise = np.zeros(
+            ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
+        )
         if include_noise:
             # If we want to add this is will add the noises
-            real_noise = np.random.normal(
-                scale=sigma,
-                size=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
-            )
             fake_noise = np.random.normal(
                 scale=sigma,
                 size=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
             )
+            if mode == 2:
+                real_noise = np.random.normal(
+                    scale=sigma,
+                    size=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
+                )
+
         else:
             # Otherwise we are just going to add zeros which will not break anything
-            real_noise = np.zeros(
-                ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
-            )
             fake_noise = np.zeros(
                 ([self.config.data_loader.batch_size] + self.config.trainer.image_dims)
             )
