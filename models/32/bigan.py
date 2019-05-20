@@ -73,9 +73,13 @@ class BIGAN(BaseModel):
                 labels_enc = tf.zeros_like(l_encoder)
             # Generator
             # Generator is considered as the true ones here because it tries to fool discriminator
-            self.loss_generator = tf.reduce_mean(
+            self.loss_generator_ce = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
             )
+            delta = inter_layer_inp - inter_layer_rct
+            delta = tf.layers.Flatten()(delta)
+            self.loss_generator_fm = tf.reduce_mean(tf.norm(delta), ord=2, axis=1, keepdims=False)
+            self.loss_generator = self.loss_generator_ce + 0.1 * self.loss_generator_fm
             # Encoder
             # Encoder is considered as the fake one because it tries to fool the discriminator also
             self.loss_encoder = tf.reduce_mean(
@@ -221,6 +225,8 @@ class BIGAN(BaseModel):
                     tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
+                    tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
+                    tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
                 with tf.name_scope("Image_Summary"):
                     tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
