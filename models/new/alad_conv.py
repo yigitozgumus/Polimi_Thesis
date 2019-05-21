@@ -136,16 +136,16 @@ class ALAD(BaseModel):
             )
 
             x_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_real, labels=self.generated_labels
+                logits=x_logit_real, labels=tf.zeros_like(x_logit_real)
             )
             x_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=x_logit_fake, labels=self.true_labels
+                logits=x_logit_fake, labels=tf.ones_like(x_logit_fake)
             )
             z_real_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_real, labels=self.generated_labels
+                logits=z_logit_real, labels=tf.zeros_like(z_logit_real)
             )
             z_fake_gen = tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=z_logit_fake, labels=self.true_labels
+                logits=z_logit_fake, labels=tf.ones_like(z_logit_fake)
             )
 
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
