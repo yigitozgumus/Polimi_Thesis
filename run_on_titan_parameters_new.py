@@ -5,7 +5,7 @@ from utils.config import get_config_from_json
 from utils.factory import create
 from utils.dirs import create_dirs
 from utils.logger import Logger
-from utils.copy_codebase import copy_codebase
+from utils.copy_codebase import copy_codebase_new
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -46,7 +46,7 @@ def run_multi():
 
 
 def run(config):
-    copy_codebase(config)
+    copy_codebase_new(config)
 
     l = Logger(config)
     logger = l.get_logger(__name__)
