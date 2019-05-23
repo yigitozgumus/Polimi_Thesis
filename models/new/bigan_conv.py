@@ -103,13 +103,20 @@ class BIGAN(BaseModel):
                 self.loss_encoder = -tf.reduce_mean(l_encoder)
                 self.loss_discriminator = tf.reduce_mean(l_generator) - tf.reduce_mean(l_encoder)
 
-                alpha = tf.random_uniform(
-                    shape=[self.config.data_loader.batch_size, 1], minval=0.0, maxval=1.0
+                alpha_x = tf.random_uniform(
+                    shape=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
+                    minval=0.0,
+                    maxval=1.0,
+                )
+                alpha_z = tf.random_uniform(
+                    shape=[self.config.data_loader.batch_size, self.config.trainer.noise_dim],
+                    minval=0.0,
+                    maxval=1.0,
                 )
                 differences_x = self.image_gen - self.image_input
-                interpolates_x = self.image_input + (alpha * differences_x)
+                interpolates_x = self.image_input + (alpha_x * differences_x)
                 differences_z = self.noise_gen - self.noise_tensor
-                interpolates_z = self.noise_tensor + (alpha * differences_z)
+                interpolates_z = self.noise_tensor + (alpha_z * differences_z)
                 gradients = tf.gradients(
                     self.discriminator(interpolates_z, interpolates_x),
                     [interpolates_z, interpolates_x],
@@ -288,12 +295,14 @@ class BIGAN(BaseModel):
             with tf.name_scope("Summary"):
                 with tf.name_scope("Disc_Summary"):
                     tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
-                    tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
-                    tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
+                        tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
-                    tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
-                    tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
+                        tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
                 with tf.name_scope("Image_Summary"):
                     tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
