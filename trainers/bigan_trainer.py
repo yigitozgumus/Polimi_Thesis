@@ -159,28 +159,7 @@ class BIGANTrainer(BaseTrain):
         )
 
     def train_step(self, image, cur_epoch):
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels, self.config.trainer.flip_labels
-        )
-        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
-        # Train the discriminator
         image_eval = self.sess.run(image)
-        feed_dict = {
-            self.model.image_input: image_eval,
-            self.model.noise_tensor: noise,
-            self.model.generated_labels: generated_labels,
-            self.model.true_labels: true_labels,
-            self.model.real_noise: real_noise,
-            self.model.fake_noise: fake_noise,
-            self.model.is_training: True,
-        }
-        # Train Discriminator
-        _, ld, sm_d = self.sess.run(
-            [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
-            feed_dict=feed_dict,
-        )
-
         # Train Generator and Encoder
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(
@@ -206,6 +185,37 @@ class BIGANTrainer(BaseTrain):
             ],
             feed_dict=feed_dict,
         )
+
+        # Train the discriminator
+        ld, sm_d = None, None
+        if self.config.trainer.mode == "standard":
+            disc_iters = 1
+        else:
+            disc_iters = self.config.trainer.critic_iters
+        for _ in range(disc_iters):
+            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            true_labels, generated_labels = self.generate_labels(
+                self.config.trainer.soft_labels, self.config.trainer.flip_labels
+            )
+            real_noise, fake_noise = self.generate_noise(
+                self.config.trainer.include_noise, cur_epoch
+            )
+            feed_dict = {
+                self.model.image_input: image_eval,
+                self.model.noise_tensor: noise,
+                self.model.generated_labels: generated_labels,
+                self.model.true_labels: true_labels,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
+                self.model.is_training: True,
+            }
+            # Train Discriminator
+            _, ld, sm_d = self.sess.run(
+                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
+                feed_dict=feed_dict,
+            )
+            if self.config.trainer.mode == "wgan":
+                _ = self.sess.run(self.model.clip_disc_weights)
 
         return lg, ld, le, sm_g, sm_d
 
