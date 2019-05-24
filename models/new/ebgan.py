@@ -275,10 +275,7 @@ class EBGAN(BaseModel):
                         name="conv",
                     )(x_e)
                     x_e = tf.layers.batch_normalization(
-                        x_e,
-                        momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
-                        training=self.is_training,
+                        x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                     )
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -295,10 +292,7 @@ class EBGAN(BaseModel):
                         name="conv",
                     )(x_e)
                     x_e = tf.layers.batch_normalization(
-                        x_e,
-                        momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
-                        training=self.is_training,
+                        x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                     )
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -329,7 +323,6 @@ class EBGAN(BaseModel):
                     net = tf.layers.batch_normalization(
                         inputs=net,
                         momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
                         training=self.is_training,
                         name="tconv1/bn",
                     )
@@ -348,7 +341,6 @@ class EBGAN(BaseModel):
                     net = tf.layers.batch_normalization(
                         inputs=net,
                         momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
                         training=self.is_training,
                         name="tconv2/bn",
                     )
@@ -367,7 +359,6 @@ class EBGAN(BaseModel):
                     net = tf.layers.batch_normalization(
                         inputs=net,
                         momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
                         training=self.is_training,
                         name="tconv3/bn",
                     )
@@ -385,7 +376,6 @@ class EBGAN(BaseModel):
                     net = tf.layers.batch_normalization(
                         inputs=net,
                         momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
                         training=self.is_training,
                         name="tconv4/bn",
                     )
@@ -403,7 +393,6 @@ class EBGAN(BaseModel):
                     net = tf.layers.batch_normalization(
                         inputs=net,
                         momentum=self.config.trainer.batch_momentum,
-                        epsilon=self.config.trainer.batch_epsilon,
                         training=self.is_training,
                         name="tconv4/bn",
                     )
