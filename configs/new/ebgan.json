@@ -5,7 +5,7 @@
     "vals": ["standard", "wgan", "wgan-gp"]
   },
   "model": {
-    "name": "bigan_eb.EBBIGAN"
+    "name": "ebgan.EBGAN"
   },
   "dirs": {
     "data": "data",
@@ -30,7 +30,7 @@
     "validation_percent": 10
   },
   "trainer": {
-    "name": "bigan_trainer.BIGANTrainer",
+    "name": "ebgan_trainer.EBGANTrainer",
     "mode": "standard",
     "feature_match_weight": 0.4,
     "noise_dim": 100,
@@ -44,6 +44,9 @@
     "wgan_gp_lr": 1e-5,
     "wgan_gp_lambda": 10,
     "critic_iters": 5,
+    "disc_margin": 20,
+    "pt_weight": 0.1,
+    "pullaway": true,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
