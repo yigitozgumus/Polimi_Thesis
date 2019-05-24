@@ -154,7 +154,7 @@ class EBGAN(BaseModel):
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
-        self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_im = tf.summary.merge_all("img")
 
     def generator(self, noise_input, getter=None):
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
