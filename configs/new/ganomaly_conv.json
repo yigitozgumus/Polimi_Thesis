@@ -42,7 +42,7 @@
     "weight_enc": 1,
     "loss_method": "fm",
     "noise_probability": 0.05,
-    "discriminator_l_rate": 2e-5,
+    "discriminator_l_rate": 2e-4,
     "generator_l_rate": 2e-4,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
