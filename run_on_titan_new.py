@@ -5,7 +5,7 @@ from utils.config import get_config_from_json
 from utils.factory import create
 from utils.dirs import create_dirs
 from utils.logger import Logger
-from utils.copy_codebase import copy_codebase
+from utils.copy_codebase_new import copy_codebase
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
