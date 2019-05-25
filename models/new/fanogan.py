@@ -14,7 +14,7 @@ class FAnogan(BaseModel):
         # Kernel initialization for the convolutions
         self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
         # Placeholders
-        self.is_training_gan = tf.placeholder(tf.bool)
+        self.is_training_gen = tf.placeholder(tf.bool)
         self.is_training_dis = tf.placeholder(tf.bool)
         self.is_training_enc = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
@@ -62,12 +62,12 @@ class FAnogan(BaseModel):
                     )
                 elif self.config.trainer.encoder_training_mode == "izi":
                     self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
-                        1.0 / (self.config.trainer.image_size * self.config.trainer.image_size)
+                        1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.loss_encoder = self.izi_reconstruction
                 elif self.config.trainer.encoder_training_mode == "izi_f":
                     self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
-                        1.0 / (self.config.trainer.image_size * self.config.trainer.image_size)
+                        1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.izi_disc = self.mse_loss(self.disc_f_real_izi, self.disc_f_fake_izi) * (
                         1.0
@@ -280,7 +280,7 @@ class FAnogan(BaseModel):
         with tf.name_scope("Testing"):
             with tf.name_scope("izi_f_loss"):
                 self.score_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img_ema) * (
-                    1.0 / (self.config.trainer.image_size * self.config.trainer.image_size)
+                    1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                 )
                 self.score_disc = self.mse_loss(self.disc_f_real_izi_ema, self.disc_f_fake_izi_ema) * (
                     1.0
@@ -290,20 +290,20 @@ class FAnogan(BaseModel):
                 self.izi_f_score = self.score_reconstruction + self.score_disc
             with tf.name_scope("ziz_loss"):
                 self.score_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img_ema) * (
-                    1.0 / (self.config.trainer.image_size * self.config.trainer.image_size)
+                    1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                 )
                 self.ziz_score = self.score_reconstruction
 
         if self.config.trainer.enable_early_stop:
             self.rec_error_valid = tf.reduce_mean(self.izi_f_score)
-            
+
         if self.config.log.enable_summary:
             with tf.name_scope("Summary"):
                 with tf.name_scope("Disc_Summary"):
                     tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
                     if self.config.trainer.mode == "standard":
-                        tf.summary.scalar("loss_dis_real", self.loss_dis_real, ["dis"])
-                        tf.summary.scalar("loss_dis_fake", self.loss_dis_fake, ["dis"])
+                        tf.summary.scalar("loss_dis_real", self.loss_disc_real, ["dis"])
+                        tf.summary.scalar("loss_dis_fake", self.loss_disc_fake, ["dis"])
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                     if self.config.trainer.mode == "standard":
@@ -321,7 +321,7 @@ class FAnogan(BaseModel):
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
-        self.sum_op_enc = tf.sumary.merge_all("enc")
+        self.sum_op_enc = tf.summary.merge_all("enc")
         self.sum_op_im_1 = tf.summary.merge_all("image_1")
         self.sum_op_im_2 = tf.summary.merge_all("image_2")
         self.sum_op_valid = tf.summary.merge_all("v")
@@ -429,7 +429,6 @@ class FAnogan(BaseModel):
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
-                    epsilon=self.config.trainer.batch_epsilon,
                     training=self.is_training_dis,
                     name="d_bn_1",
                 )
@@ -450,7 +449,6 @@ class FAnogan(BaseModel):
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
-                    epsilon=self.config.trainer.batch_epsilon,
                     training=self.is_training_dis,
                     name="d_bn_2",
                 )
@@ -471,7 +469,6 @@ class FAnogan(BaseModel):
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
-                    epsilon=self.config.trainer.batch_epsilon,
                     training=self.is_training_dis,
                     name="d_bn_3",
                 )
@@ -484,7 +481,6 @@ class FAnogan(BaseModel):
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
-                    epsilon=self.config.trainer.batch_epsilon,
                     training=self.is_training_dis,
                     name="d_bn_4",
                 )

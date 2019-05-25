@@ -7,7 +7,7 @@ from utils.evaluations import save_results
 
 class FAnoganTrainer(BaseTrainMulti):
 
-	def __init__(self, sess, model, data, config, logger):
+    def __init__(self, sess, model, data, config, logger):
         super(FAnoganTrainer, self).__init__(sess, model, data, config, logger)
         self.batch_size = self.config.data_loader.batch_size
         self.noise_dim = self.config.trainer.noise_dim
@@ -54,7 +54,7 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.fake_noise: fake_noise,
-                self.model.is_training_gan: False,
+                self.model.is_training_gen: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im_1, feed_dict=feed_dict)
             self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
@@ -65,6 +65,7 @@ class FAnoganTrainer(BaseTrainMulti):
                 cur_epoch, time() - begin, gen_m, dis_m
             )
         )
+        self.model.save(self.sess)
 
     def train_epoch_enc(self):
         # Attach the epoch loop to a variable
@@ -95,7 +96,7 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.fake_noise: fake_noise,
-                self.model.is_training_gan: False,
+                self.model.is_training_gen: False,
                 self.model.is_training_enc: True,
                 self.model.is_training_dis: False,
             }
@@ -108,9 +109,10 @@ class FAnoganTrainer(BaseTrainMulti):
                 cur_epoch, time() - begin, gen_m, dis_m
             )
         )        
+        self.model.save(self.sess)
 
     def train_step_gan(self, image, cur_epoch):
-    	image_eval = self.sess.run(image)
+        image_eval = self.sess.run(image)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
@@ -123,8 +125,9 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.true_labels: true_labels,
             self.model.real_noise: real_noise,
             self.model.fake_noise: fake_noise,
-            self.model.is_training_gan: True,
-            self.model.is_training_disc: True
+            self.model.is_training_gen: True,
+            self.model.is_training_dis: True,
+            self.model.is_training_enc: False,
         }
         _, _, lg, ld, sm_g,sm_d = self.sess.run(
             [
@@ -153,8 +156,8 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.true_labels: true_labels,
             self.model.real_noise: real_noise,
             self.model.fake_noise: fake_noise,
-            self.model.is_training_gan: False,
-            self.model.is_training_disc: False,
+            self.model.is_training_gen: False,
+            self.model.is_training_dis: False,
             self.model.is_training_enc: True
         }
         _, _, le, sm_e = self.sess.run(
@@ -167,6 +170,72 @@ class FAnoganTrainer(BaseTrainMulti):
             feed_dict=feed_dict,
         )
         return le, sm_e
+
+    def test_epoch(self):
+        self.logger.warn("Testing evaluation...")
+        scores_izi_f = []
+        scores_ziz = []
+        inference_time = []
+        true_labels = []
+        # Create the scores
+        test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        for _ in test_loop:
+            test_batch_begin = time()
+            test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
+            test_loop.refresh()  # to show immediately the update
+            sleep(0.01)
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
+            )
+            feed_dict = {
+                self.model.image_input: test_batch,
+                self.model.noise_tensor: noise,
+                self.model.is_training_gen: False,
+                self.model.is_training_dis: False,
+                self.model.is_training_enc: False
+            }
+            scores_izi_f += self.sess.run(self.model.izi_f_score, feed_dict=feed_dict).tolist()
+            scores_ziz += self.sess.run(self.model.ziz_score, feed_dict=feed_dict).tolist()
+            inference_time.append(time() - test_batch_begin)
+            true_labels += test_labels.tolist()
+        # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
+        # normal images are 0 meaning that contains no anomaly and anomalous images are 1 meaning that it contains
+        # an anomalous region, we first scale the scores and then invert them to match the scores
+        scores_izi_f = np.asarray(scores_izi_f)
+        scores_ziz = np.asarray(scores_ziz)
+        true_labels = np.asarray(true_labels)
+        inference_time = np.mean(inference_time)
+        self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
+        step = self.sess.run(self.model.global_step_tensor)
+        percentiles = np.asarray(self.config.trainer.percentiles)
+        save_results(
+            self.config.log.result_dir,
+            scores_izi_f,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "izi_f",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_ziz,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "ziz",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
 
     def generate_labels(self, soft_labels, flip_labels):
 

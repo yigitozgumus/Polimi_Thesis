@@ -34,7 +34,7 @@
     "name": "fanogan_trainer.FAnoganTrainer",
     "mode": "standard",
     "feature_match_weight": 0.4,
-    "encoder_training_mode": "ziz_f",
+    "encoder_training_mode": "izi_f",
     "feature_layer_dim": 4096,
     "kappa_weight_factor" : 0.4,
     "noise_dim": 100,

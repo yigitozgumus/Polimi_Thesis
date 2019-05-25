@@ -31,7 +31,7 @@ class BaseTrainMulti:
             self.config.data_loader.num_epochs_gan + 1,
             1,
         ):
-            self.train_epoch_ae()
+            self.train_epoch_gan()
             self.sess.run(self.model.increment_cur_epoch_tensor)
 
         self.sess.run(self.model.reset_cur_epoch_tensor)
@@ -42,7 +42,7 @@ class BaseTrainMulti:
                 self.config.data_loader.num_epochs_enc + 1,
                 1,
         ):
-            self.train_epoch_den()
+            self.train_epoch_enc()
             self.sess.run(self.model.increment_cur_epoch_tensor)
 
 
