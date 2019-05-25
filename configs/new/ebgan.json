@@ -43,7 +43,7 @@
     "wgan_lr" : 5e-5,
     "wgan_gp_lr": 1e-5,
     "wgan_gp_lambda": 10,
-    "critic_iters": 5,
+    "critic_iters": 2,
     "disc_margin": 20,
     "pt_weight": 0.1,
     "pullaway": true,
