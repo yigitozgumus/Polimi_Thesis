@@ -114,14 +114,14 @@ class EBGAN(BaseModel):
                 )
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
-                delta = self.decoded_rec_ema - self.decoded_q_ema
+                delta = self.image_input - self.image_gen_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l1 = tf.norm(
                     delta_flat, ord=1, axis=1, keepdims=False, name="img_loss__1"
                 )
                 self.img_score_l1 = tf.squeeze(img_score_l1)
 
-                delta = self.decoded_rec_ema - self.decoded_q_ema
+                delta = self.image_input - self.image_gen_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l2 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
