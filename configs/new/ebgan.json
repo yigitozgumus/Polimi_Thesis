@@ -31,7 +31,7 @@
   },
   "trainer": {
     "name": "ebgan_trainer.EBGANTrainer",
-    "mode": "standard",
+    "mode": "non_standard",
     "feature_match_weight": 0.4,
     "noise_dim": 100,
     "image_dims": [32, 32, 1],
