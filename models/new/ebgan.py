@@ -10,6 +10,10 @@ class EBGAN(BaseModel):
         self.build_model()
         self.init_saver()
 
+    import pdb
+
+    pdb.set_trace()  # XXX BREAKPOINT
+
     def build_model(self):
         # Initializations
         # Kernel initialization for the convolutions
@@ -29,8 +33,12 @@ class EBGAN(BaseModel):
                 self.image_gen = self.generator(self.noise_tensor)
 
             with tf.variable_scope("Discriminator_Model"):
-                self.embedding_real, self.decoded_real = self.discriminator(self.image_input)
-                self.embedding_fake, self.decoded_fake = self.discriminator(self.image_gen)
+                self.embedding_real, self.decoded_real = self.discriminator(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
+                self.embedding_fake, self.decoded_fake = self.discriminator(
+                    self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
         # Loss functions
         with tf.name_scope("Loss_Functions"):
@@ -104,13 +112,17 @@ class EBGAN(BaseModel):
         with tf.variable_scope("EBGAN"):
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_q_ema, self.decoded_q_ema = self.discriminator(
-                    self.image_input, getter=get_getter(self.dis_ema)
+                    self.image_input,
+                    getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
                 self.image_gen_ema = self.generator(
                     self.embedding_q_ema, getter=get_getter(self.gen_ema)
                 )
                 self.embedding_rec_ema, self.decoded_rec_ema = self.discriminator(
-                    self.image_gen_ema, getter=get_getter(self.dis_ema)
+                    self.image_gen_ema,
+                    getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
@@ -243,7 +255,8 @@ class EBGAN(BaseModel):
                 x_g = tf.tanh(x_g, name="tanh")
         return x_g
 
-    def discriminator(self, image_input, getter=None):
+    def discriminator(self, image_input, getter=None, do_spectral_norm=False):
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Discriminator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             with tf.variable_scope("Encoder"):
                 x_e = tf.reshape(
@@ -252,28 +265,30 @@ class EBGAN(BaseModel):
                 )
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=64,
                         kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                     # 14 x 14 x 64
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=128,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.layers.batch_normalization(
                         x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                     )
@@ -283,14 +298,15 @@ class EBGAN(BaseModel):
                     # 7 x 7 x 128
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=256,
                         kernel_size=5,
                         padding="same",
                         strides=(2, 2),
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.layers.batch_normalization(
                         x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                     )
@@ -301,7 +317,7 @@ class EBGAN(BaseModel):
                 x_e = tf.layers.Flatten()(x_e)
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Dense(
+                    x_e = layers.dense(
                         units=self.config.trainer.noise_dim,
                         kernel_initializer=self.init_kernel,
                         name="fc",
@@ -410,6 +426,10 @@ class EBGAN(BaseModel):
                     )(net)
                     decoded = tf.nn.tanh(net, name="tconv6/tanh")
         return embedding, decoded
+
+    import pdb
+
+    pdb.set_trace()  # XXX BREAKPOINT
 
     def mse_loss(self, pred, data):
         loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size

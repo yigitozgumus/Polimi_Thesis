@@ -169,9 +169,10 @@ class EBGANTrainer(BaseTrain):
         if self.config.trainer.mode == "standard":
             gen_iters = 1
         else:
-            gen_iters = self.config.trainer.critic_iters
+            gen_iters = 2
         lg_t = 0
         sm_g = 0
+        ld_t = 0
         for _ in range(gen_iters):
             image_eval = self.sess.run(image)
             noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
@@ -186,15 +187,21 @@ class EBGANTrainer(BaseTrain):
             )
             lg_t += lg
         image_eval = self.sess.run(image)
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        feed_dict = {
-            self.model.image_input: image_eval,
-            self.model.noise_tensor: noise,
-            self.model.is_training: True,
-        }
-        _, ld, sm_d = self.sess.run(
-            [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
-            feed_dict=feed_dict,
-        )
+        if self.config.trainer.mode == "standard":
+            disc_iters = 1
+        else:
+            disc_iters = self.config.trainer.critic_iters
+        for _ in range(disc_iters):
+            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            feed_dict = {
+                self.model.image_input: image_eval,
+                self.model.noise_tensor: noise,
+                self.model.is_training: True,
+            }
+            _, ld, sm_d = self.sess.run(
+                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
+                feed_dict=feed_dict,
+            )
+            ld_t += ld
 
-        return np.mean(lg_t), ld, sm_g, sm_d
+        return np.mean(lg_t), np.mean(ld_t), sm_g, sm_d

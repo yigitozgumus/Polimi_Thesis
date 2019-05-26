@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from base.base_model import BaseModel
-from utils.alad_utils import get_getter
+from utils.alad_utils import get_getter, sn
 
 
 class BIGAN(BaseModel):
@@ -37,7 +37,9 @@ class BIGAN(BaseModel):
         self.logger.info("Building training graph...")
         with tf.variable_scope("BIGAN"):
             with tf.variable_scope("Encoder_Model"):
-                self.noise_gen = self.encoder(self.image_input)
+                self.noise_gen = self.encoder(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Generator_Model"):
                 self.image_gen = self.generator(self.noise_tensor) + self.fake_noise
@@ -46,10 +48,16 @@ class BIGAN(BaseModel):
             with tf.variable_scope("Discriminator_Model"):
                 # E(x) and x --> This being real is the output of discriminator
                 l_encoder, inter_layer_inp = self.discriminator(
-                    self.noise_gen, self.image_input + self.real_noise
+                    self.noise_gen,
+                    self.image_input + self.real_noise,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
                 # z and G(z)
-                l_generator, inter_layer_rct = self.discriminator(self.noise_tensor, self.image_gen)
+                l_generator, inter_layer_rct = self.discriminator(
+                    self.noise_tensor,
+                    self.image_gen,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
 
         # Loss Function Implementations
         with tf.name_scope("Loss_Functions"):
@@ -242,7 +250,11 @@ class BIGAN(BaseModel):
 
         with tf.variable_scope("BIGAN"):
             with tf.variable_scope("Encoder_Model"):
-                self.noise_gen_ema = self.encoder(self.image_input, getter=get_getter(self.enc_ema))
+                self.noise_gen_ema = self.encoder(
+                    self.image_input,
+                    getter=get_getter(self.enc_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
             with tf.variable_scope("Generator_Model"):
                 self.reconstruct_ema = self.generator(
                     self.noise_gen_ema, getter=get_getter(self.gen_ema)
@@ -252,11 +264,13 @@ class BIGAN(BaseModel):
                     self.noise_gen_ema,  # E(x)
                     self.image_input,  # x
                     getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
                 self.l_generator_ema, self.inter_layer_rct_ema = self.discriminator(
                     self.noise_gen_ema,  # E(x)
                     self.reconstruct_ema,  # G(E(x))
                     getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
 
         with tf.name_scope("Testing"):
@@ -316,7 +330,7 @@ class BIGAN(BaseModel):
         self.sum_op_im = tf.summary.merge_all("image")
         self.sum_op_valid = tf.summary.merge_all("v")
 
-    def encoder(self, image_input, getter=None):
+    def encoder(self, image_input, getter=None, do_spectral_norm=False):
         """Encoder architecture in tensorflow Maps the data into the latent
 
         Args:
@@ -326,6 +340,7 @@ class BIGAN(BaseModel):
         Returns:
             (tensor): last activation layer of the encoder
         """
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Encoder", custom_getter=getter, reuse=tf.AUTO_REUSE):
             x_e = tf.reshape(
                 image_input,
@@ -333,27 +348,29 @@ class BIGAN(BaseModel):
             )
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=64,
                     kernel_size=4,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.nn.leaky_relu(
                     features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=128,
                     kernel_size=4,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                 )
@@ -362,14 +379,15 @@ class BIGAN(BaseModel):
                 )
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=256,
                     kernel_size=4,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                 )
@@ -378,14 +396,15 @@ class BIGAN(BaseModel):
                 )
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=512,
                     kernel_size=4,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                 )
@@ -394,14 +413,15 @@ class BIGAN(BaseModel):
                 )
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=self.config.trainer.noise_dim,
                     kernel_size=4,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training
                 )
@@ -508,7 +528,7 @@ class BIGAN(BaseModel):
                 x_g = tf.tanh(x_g, name="tanh")
         return x_g
 
-    def discriminator(self, noise_input, image_input, getter=None):
+    def discriminator(self, noise_input, image_input, getter=None, do_spectral_norm=False):
         """ Discriminator architecture in tensorflow
         Discriminates between pairs (E(x), x) and (z, G(z))
         Args:
@@ -516,6 +536,7 @@ class BIGAN(BaseModel):
             image_input:
             getter:
         """
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Discriminator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             # D(x)
             image = tf.reshape(
@@ -524,14 +545,15 @@ class BIGAN(BaseModel):
             )
             net_name = "X_Layer_1"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
+                x_d = layers.conv2d(
+                    image,
                     filters=64,
                     kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(image)
+                )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
@@ -543,14 +565,15 @@ class BIGAN(BaseModel):
                 )
             net_name = "X_Layer_2"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
+                x_d = layers.conv2d(
+                    x_d,
                     filters=128,
                     kernel_size=4,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_d)
+                )
                 x_d = tf.nn.leaky_relu(
                     features=x_d, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )

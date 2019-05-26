@@ -160,32 +160,6 @@ class BIGANTrainer(BaseTrain):
 
     def train_step(self, image, cur_epoch):
         image_eval = self.sess.run(image)
-        # Train Generator and Encoder
-        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels, self.config.trainer.flip_labels
-        )
-        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
-        feed_dict = {
-            self.model.image_input: image_eval,
-            self.model.noise_tensor: noise,
-            self.model.generated_labels: generated_labels,
-            self.model.true_labels: true_labels,
-            self.model.real_noise: real_noise,
-            self.model.fake_noise: fake_noise,
-            self.model.is_training: True,
-        }
-        _, _, le, lg, sm_g = self.sess.run(
-            [
-                self.model.train_gen_op,
-                self.model.train_enc_op,
-                self.model.loss_encoder,
-                self.model.loss_generator,
-                self.model.sum_op_gen,
-            ],
-            feed_dict=feed_dict,
-        )
-
         # Train the discriminator
         ld, sm_d = None, None
         if self.config.trainer.mode == "standard":
@@ -216,6 +190,32 @@ class BIGANTrainer(BaseTrain):
             )
             if self.config.trainer.mode == "wgan":
                 _ = self.sess.run(self.model.clip_disc_weights)
+        # Train Generator and Encoder
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+        true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+        )
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
+        feed_dict = {
+            self.model.image_input: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.generated_labels: generated_labels,
+            self.model.true_labels: true_labels,
+            self.model.real_noise: real_noise,
+            self.model.fake_noise: fake_noise,
+            self.model.is_training: True,
+        }
+        _, _, le, lg, sm_g = self.sess.run(
+            [
+                self.model.train_gen_op,
+                self.model.train_enc_op,
+                self.model.loss_encoder,
+                self.model.loss_generator,
+                self.model.sum_op_gen,
+            ],
+            feed_dict=feed_dict,
+        )
+
 
         return lg, ld, le, sm_g, sm_d
 

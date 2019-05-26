@@ -5,8 +5,8 @@ from time import sleep
 from time import time
 from utils.evaluations import save_results
 
-class FAnoganTrainer(BaseTrainMulti):
 
+class FAnoganTrainer(BaseTrainMulti):
     def __init__(self, sess, model, data, config, logger):
         super(FAnoganTrainer, self).__init__(sess, model, data, config, logger)
         self.batch_size = self.config.data_loader.batch_size
@@ -80,7 +80,7 @@ class FAnoganTrainer(BaseTrainMulti):
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            le,  sum_e = self.train_step_enc(image, cur_epoch)
+            le, sum_e = self.train_step_enc(image, cur_epoch)
             enc_losses.append(le)
             summaries.append(sum_e)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
@@ -101,14 +101,13 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.is_training_dis: False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im_2, feed_dict=feed_dict)
-            self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
-        gen_m = np.mean(gen_losses)
-        dis_m = np.mean(disc_losses)
-        self.logger.info(
-            "Epoch: {} | time = {} s | loss gen= {:4f} | loss dis = {:4f} ".format(
-                cur_epoch, time() - begin, gen_m, dis_m
+            self.summarizer.add_tensorboard(
+                step=cur_epoch, summaries=[reconstruction], summarizer="valid"
             )
-        )        
+        enc_m = np.mean(enc_losses)
+        self.logger.info(
+            "Epoch: {} | time = {} s | loss enc= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+        )
         self.model.save(self.sess)
 
     def train_step_gan(self, image, cur_epoch):
@@ -129,23 +128,23 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.is_training_dis: True,
             self.model.is_training_enc: False,
         }
-        _, _, lg, ld, sm_g,sm_d = self.sess.run(
+        _, _, lg, ld, sm_g, sm_d = self.sess.run(
             [
                 self.model.train_gen_op,
                 self.model.train_dis_op,
                 self.model.loss_generator,
                 self.model.loss_discriminator,
                 self.model.sum_op_gen,
-                self.model.sum_op_dis
+                self.model.sum_op_dis,
             ],
             feed_dict=feed_dict,
         )
         return lg, ld, sm_g, sm_d
 
-
     def train_step_enc(self, image, cur_epoch):
         image_eval = self.sess.run(image)
         real_noise, fake_noise = self.generate_noise(False, cur_epoch)
+        noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
@@ -158,15 +157,10 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.fake_noise: fake_noise,
             self.model.is_training_gen: False,
             self.model.is_training_dis: False,
-            self.model.is_training_enc: True
+            self.model.is_training_enc: True,
         }
         _, _, le, sm_e = self.sess.run(
-            [
-                self.model.train_enc_op,
-                self.model.loss_encoder,
-                self.model.sum_op_enc,
-
-            ],
+            [self.model.train_enc_op, self.model.loss_encoder, self.model.sum_op_enc],
             feed_dict=feed_dict,
         )
         return le, sm_e
@@ -192,7 +186,7 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.noise_tensor: noise,
                 self.model.is_training_gen: False,
                 self.model.is_training_dis: False,
-                self.model.is_training_enc: False
+                self.model.is_training_enc: False,
             }
             scores_izi_f += self.sess.run(self.model.izi_f_score, feed_dict=feed_dict).tolist()
             scores_ziz += self.sess.run(self.model.ziz_score, feed_dict=feed_dict).tolist()
