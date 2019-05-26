@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from base.base_model import BaseModel
-from utils.alad_utils import get_getter
+from utils.alad_utils import get_getter, sn
 
 
 class GANomaly(BaseModel):
@@ -36,12 +36,18 @@ class GANomaly(BaseModel):
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
                 self.noise_gen, self.img_rec, self.noise_rec = self.generator(
-                    self.image_input + self.fake_noise
+                    self.image_input + self.fake_noise,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
 
             with tf.variable_scope("Discriminator_Model"):
-                l_real, inter_layer_inp = self.discriminator(self.image_input + self.real_noise)
-                l_fake, inter_layer_rct = self.discriminator(self.img_rec)
+                l_real, inter_layer_inp = self.discriminator(
+                    self.image_input + self.real_noise,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
+                l_fake, inter_layer_rct = self.discriminator(
+                    self.img_rec, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
         with tf.name_scope("Loss_Functions"):
             # Discriminator
@@ -144,14 +150,20 @@ class GANomaly(BaseModel):
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
                 self.noise_gen_ema, self.img_rec_ema, self.noise_rec_ema = self.generator(
-                    self.image_input, getter=get_getter(self.gen_ema)
+                    self.image_input,
+                    getter=get_getter(self.gen_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
             with tf.variable_scope("Discriminator_model"):
                 self.l_real_ema, self.inter_layer_inp_ema = self.discriminator(
-                    self.image_input, getter=get_getter(self.dis_ema)
+                    self.image_input,
+                    getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
                 self.l_fake_ema, self.inter_layer_rct_ema = self.discriminator(
-                    self.img_rec_ema, getter=get_getter(self.dis_ema)
+                    self.img_rec_ema,
+                    getter=get_getter(self.dis_ema),
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
 
         with tf.name_scope("Testing"):
@@ -190,10 +202,11 @@ class GANomaly(BaseModel):
         self.sum_op_im = tf.summary.merge_all("image")
         self.sum_op_valid = tf.summary.merge_all("v")
 
-    def generator(self, image_input, getter=None):
+    def generator(self, image_input, getter=None, do_spectral_norm=False):
         # This generator will take the image from the input dataset, and first it will
         # it will create a latent representation of that image then with the decoder part,
         # it will reconstruct the image.
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             with tf.variable_scope("Encoder_1"):
                 x_e = tf.reshape(
@@ -202,28 +215,30 @@ class GANomaly(BaseModel):
                 )
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=64,
                         kernel_size=5,
-                        strides=(2, 2),
+                        strides=2,
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                     # 14 x 14 x 64
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=128,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.layers.batch_normalization(
                         x_e,
                         momentum=self.config.trainer.batch_momentum,
@@ -236,14 +251,15 @@ class GANomaly(BaseModel):
                     # 7 x 7 x 128
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Conv2D(
+                    x_e = layers.conv2d(
+                        x_e,
                         filters=256,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e)
+                    )
                     x_e = tf.layers.batch_normalization(
                         x_e,
                         momentum=self.config.trainer.batch_momentum,
@@ -382,27 +398,29 @@ class GANomaly(BaseModel):
                 )
                 net_name = "Layer_1"
                 with tf.variable_scope(net_name):
-                    x_e_2 = tf.layers.Conv2D(
+                    x_e_2 = layers.conv2d(
+                        x_e_2,
                         filters=64,
                         kernel_size=5,
-                        strides=(2, 2),
+                        strides=2,
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e_2)
+                    )
                     x_e_2 = tf.nn.leaky_relu(
                         features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
-                    x_e_2 = tf.layers.Conv2D(
+                    x_e_2 = layers.conv2d(
+                        x_e_2,
                         filters=128,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e_2)
+                    )
                     x_e_2 = tf.layers.batch_normalization(
                         x_e_2,
                         momentum=self.config.trainer.batch_momentum,
@@ -414,14 +432,15 @@ class GANomaly(BaseModel):
                     )
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
-                    x_e_2 = tf.layers.Conv2D(
+                    x_e_2 = layers.conv2d(
+                        x_e_2,
                         filters=256,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
-                    )(x_e_2)
+                    )
                     x_e_2 = tf.layers.batch_normalization(
                         x_e_2,
                         momentum=self.config.trainer.batch_momentum,
@@ -442,19 +461,21 @@ class GANomaly(BaseModel):
             noise_rec = x_e_2
             return noise_gen, image_rec, noise_rec
 
-    def discriminator(self, image, getter=None):
+    def discriminator(self, image, getter=None, do_spectral_norm=False):
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Discriminator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             # First Convolutional Layer
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
+                x_d = layers.conv2d(
+                    image,
                     filters=64,
                     kernel_size=5,
-                    strides=(2, 2),
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="d_conv1",
-                )(image)
+                )
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
@@ -468,14 +489,15 @@ class GANomaly(BaseModel):
             # Second Convolutional Layer
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
+                x_d = layers.conv2d(
+                    x_d,
                     filters=128,
                     kernel_size=5,
-                    strides=(2, 2),
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="d_conv_2",
-                )(x_d)
+                )
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
@@ -489,14 +511,15 @@ class GANomaly(BaseModel):
             # Third Convolutional Layer
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
-                x_d = tf.layers.Conv2D(
+                x_d = layers.conv2d(
+                    x_d,
                     filters=256,
                     kernel_size=5,
-                    strides=(2, 2),
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="d_conv_3",
-                )(x_d)
+                )
                 x_d = tf.layers.batch_normalization(
                     inputs=x_d,
                     momentum=self.config.trainer.batch_momentum,
