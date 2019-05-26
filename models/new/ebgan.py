@@ -10,9 +10,6 @@ class EBGAN(BaseModel):
         self.build_model()
         self.init_saver()
 
-    import pdb
-
-    pdb.set_trace()  # XXX BREAKPOINT
 
     def build_model(self):
         # Initializations
@@ -39,7 +36,6 @@ class EBGAN(BaseModel):
                 self.embedding_fake, self.decoded_fake = self.discriminator(
                     self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
-
         # Loss functions
         with tf.name_scope("Loss_Functions"):
             # Discriminator Loss
@@ -116,9 +112,11 @@ class EBGAN(BaseModel):
                     getter=get_getter(self.dis_ema),
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
+            with tf.variable_scope("Generator_Model"):
                 self.image_gen_ema = self.generator(
                     self.embedding_q_ema, getter=get_getter(self.gen_ema)
                 )
+            with tf.variable_scope("Discriminator_Model"):
                 self.embedding_rec_ema, self.decoded_rec_ema = self.discriminator(
                     self.image_gen_ema,
                     getter=get_getter(self.dis_ema),
@@ -427,9 +425,6 @@ class EBGAN(BaseModel):
                     decoded = tf.nn.tanh(net, name="tconv6/tanh")
         return embedding, decoded
 
-    import pdb
-
-    pdb.set_trace()  # XXX BREAKPOINT
 
     def mse_loss(self, pred, data):
         loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
