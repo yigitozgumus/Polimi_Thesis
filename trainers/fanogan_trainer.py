@@ -112,6 +112,38 @@ class FAnoganTrainer(BaseTrainMulti):
 
     def train_step_gan(self, image, cur_epoch):
         image_eval = self.sess.run(image)
+        ld_t, sm_d = 0, None
+        if self.config.trainer.mode == "standard":
+            disc_iters = 1
+        else:
+            disc_iters = self.config.trainer.critic_iters
+        for _ in range(disc_iters):
+            noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
+            true_labels, generated_labels = self.generate_labels(
+            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+            )
+            real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
+            feed_dict = {
+                self.model.image_input: image_eval,
+                self.model.noise_tensor: noise,
+                self.model.generated_labels: generated_labels,
+                self.model.true_labels: true_labels,
+                self.model.real_noise: real_noise,
+                self.model.fake_noise: fake_noise,
+                self.model.is_training_gen: True,
+                self.model.is_training_dis: True,
+                self.model.is_training_enc: False,
+            }
+            _, ld, sm_d = self.sess.run(
+                [
+                    self.model.train_dis_op,
+                    self.model.loss_discriminator,
+                    self.model.sum_op_dis,
+                ],
+                feed_dict=feed_dict,
+            )
+            ld_t += ld
+        # Train Generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
@@ -128,18 +160,15 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.is_training_dis: True,
             self.model.is_training_enc: False,
         }
-        _, _, lg, ld, sm_g, sm_d = self.sess.run(
+        _, lg, sm_g = self.sess.run(
             [
                 self.model.train_gen_op,
-                self.model.train_dis_op,
                 self.model.loss_generator,
-                self.model.loss_discriminator,
                 self.model.sum_op_gen,
-                self.model.sum_op_dis,
             ],
             feed_dict=feed_dict,
         )
-        return lg, ld, sm_g, sm_d
+        return lg, np.mean(ld_t), sm_g, sm_d
 
     def train_step_enc(self, image, cur_epoch):
         image_eval = self.sess.run(image)

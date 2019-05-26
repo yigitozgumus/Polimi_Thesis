@@ -161,7 +161,7 @@ class BIGANTrainer(BaseTrain):
     def train_step(self, image, cur_epoch):
         image_eval = self.sess.run(image)
         # Train the discriminator
-        ld, sm_d = None, None
+        ld, sm_d = 0, None
         if self.config.trainer.mode == "standard":
             disc_iters = 1
         else:
@@ -217,7 +217,7 @@ class BIGANTrainer(BaseTrain):
         )
 
 
-        return lg, ld, le, sm_g, sm_d
+        return lg, np.mean(ld), le, sm_g, sm_d
 
     def generate_labels(self, soft_labels, flip_labels):
 
