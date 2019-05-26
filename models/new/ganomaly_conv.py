@@ -1,7 +1,9 @@
 import tensorflow as tf
 
 from base.base_model import BaseModel
-from utils.alad_utils import get_getter, sn
+from utils.alad_utils import get_getter
+import utils.alad_utils as sn
+
 
 class GANomaly(BaseModel):
     def __init__(self, config):

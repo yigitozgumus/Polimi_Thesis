@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from base.base_model import BaseModel
 from utils.alad_utils import get_getter
-
+import utils.alad_utils as sn
 
 class EBGAN(BaseModel):
     def __init__(self, config):
@@ -267,7 +267,7 @@ class EBGAN(BaseModel):
                         x_e,
                         filters=64,
                         kernel_size=5,
-                        strides=(2, 2),
+                        strides=2,
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="conv",
@@ -283,7 +283,7 @@ class EBGAN(BaseModel):
                         filters=128,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
                     )
@@ -301,7 +301,7 @@ class EBGAN(BaseModel):
                         filters=256,
                         kernel_size=5,
                         padding="same",
-                        strides=(2, 2),
+                        strides=2,
                         kernel_initializer=self.init_kernel,
                         name="conv",
                     )
@@ -316,10 +316,11 @@ class EBGAN(BaseModel):
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
                     x_e = layers.dense(
+                        x_e,
                         units=self.config.trainer.noise_dim,
                         kernel_initializer=self.init_kernel,
                         name="fc",
-                    )(x_e)
+                    )
 
             embedding = x_e
             with tf.variable_scope("Decoder"):
@@ -431,7 +432,7 @@ class EBGAN(BaseModel):
         return loss_val
 
     def pullaway_loss(self, embeddings):
-        norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
+        norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keepdims=True))
         normalized_embeddings = embeddings / norm
         similarity = tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
         batch_size = tf.cast(tf.shape(embeddings)[0], tf.float32)
