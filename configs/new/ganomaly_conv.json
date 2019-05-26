@@ -51,7 +51,7 @@
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.25,
     "ema_decay": 0.999,
-    "spectral_norm": true,
+    "do_spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": false,
     "degree": 1,
