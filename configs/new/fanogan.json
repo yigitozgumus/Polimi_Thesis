@@ -33,8 +33,9 @@
   "trainer": {
     "name": "fanogan_trainer.FAnoganTrainer",
     "mode": "wgan",
-    "feature_match_weight": 0.4,
+    "feature_match_weight": 0.1,
     "encoder_training_mode": "izi_f",
+    "encoder_loss_mode" :"norm",
     "feature_layer_dim": 4096,
     "kappa_weight_factor" : 0.4,
     "noise_dim": 100,

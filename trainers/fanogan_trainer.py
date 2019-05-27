@@ -48,7 +48,9 @@ class FAnoganTrainer(BaseTrainMulti):
             noise = np.random.normal(
                 loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
-            real_noise, fake_noise = self.generate_noise(False, cur_epoch, self.config.data_loader.test_batch)
+            real_noise, fake_noise = self.generate_noise(
+                False, cur_epoch, self.config.data_loader.test_batch
+            )
             image_eval = self.sess.run(image)
             feed_dict = {
                 self.model.image_input: image_eval,
@@ -90,7 +92,9 @@ class FAnoganTrainer(BaseTrainMulti):
             noise = np.random.normal(
                 loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
-            real_noise, fake_noise = self.generate_noise(False, cur_epoch, self.config.data_loader.test_batch)
+            real_noise, fake_noise = self.generate_noise(
+                False, cur_epoch, self.config.data_loader.test_batch
+            )
             image_eval = self.sess.run(image)
             feed_dict = {
                 self.model.image_input: image_eval,
@@ -120,9 +124,11 @@ class FAnoganTrainer(BaseTrainMulti):
         for _ in range(disc_iters):
             noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
             true_labels, generated_labels = self.generate_labels(
-            self.config.trainer.soft_labels, self.config.trainer.flip_labels
+                self.config.trainer.soft_labels, self.config.trainer.flip_labels
             )
-            real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch, self.batch_size)
+            real_noise, fake_noise = self.generate_noise(
+                self.config.trainer.include_noise, cur_epoch, self.batch_size
+            )
             feed_dict = {
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
@@ -135,11 +141,7 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.is_training_enc: False,
             }
             _, ld, sm_d = self.sess.run(
-                [
-                    self.model.train_dis_op,
-                    self.model.loss_discriminator,
-                    self.model.sum_op_dis,
-                ],
+                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
                 feed_dict=feed_dict,
             )
             ld_t += ld
@@ -148,7 +150,9 @@ class FAnoganTrainer(BaseTrainMulti):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
-        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch, self.batch_size)
+        real_noise, fake_noise = self.generate_noise(
+            self.config.trainer.include_noise, cur_epoch, self.batch_size
+        )
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
@@ -161,11 +165,7 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.is_training_enc: False,
         }
         _, lg, sm_g = self.sess.run(
-            [
-                self.model.train_gen_op,
-                self.model.loss_generator,
-                self.model.sum_op_gen,
-            ],
+            [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
             feed_dict=feed_dict,
         )
         return lg, np.mean(ld_t), sm_g, sm_d
@@ -188,7 +188,7 @@ class FAnoganTrainer(BaseTrainMulti):
             self.model.is_training_dis: False,
             self.model.is_training_enc: True,
         }
-        _, _, le, sm_e = self.sess.run(
+        _, le, sm_e = self.sess.run(
             [self.model.train_enc_op, self.model.loss_encoder, self.model.sum_op_enc],
             feed_dict=feed_dict,
         )
@@ -292,19 +292,13 @@ class FAnoganTrainer(BaseTrainMulti):
         if include_noise:
             # If we want to add this is will add the noises
             real_noise = np.random.normal(
-                scale=sigma,
-                size=[batch_size] + self.config.trainer.image_dims,
+                scale=sigma, size=[batch_size] + self.config.trainer.image_dims
             )
             fake_noise = np.random.normal(
-                scale=sigma,
-                size=[batch_size] + self.config.trainer.image_dims,
+                scale=sigma, size=[batch_size] + self.config.trainer.image_dims
             )
         else:
             # Otherwise we are just going to add zeros which will not break anything
-            real_noise = np.zeros(
-                ([batch_size] + self.config.trainer.image_dims)
-            )
-            fake_noise = np.zeros(
-                ([batch_size] + self.config.trainer.image_dims)
-            )
+            real_noise = np.zeros(([batch_size] + self.config.trainer.image_dims))
+            fake_noise = np.zeros(([batch_size] + self.config.trainer.image_dims))
         return real_noise, fake_noise

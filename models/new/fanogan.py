@@ -57,21 +57,21 @@ class FAnogan(BaseModel):
         with tf.name_scope("Loss_Funcions"):
             with tf.name_scope("Encoder"):
                 if self.config.trainer.encoder_training_mode == "ziz":
-                    self.loss_encoder = self.mse_loss(self.encoded_gen_noise, self.noise_tensor) * (
+                    self.loss_encoder = self.mse_loss(self.encoded_gen_noise, self.noise_tensor, mode=self.config.trainer.encoder_loss_mode) * (
                         1.0 / self.config.trainer.noise_dim
                     )
                 elif self.config.trainer.encoder_training_mode == "izi":
-                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
+                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img, mode=self.config.trainer.encoder_loss_mode) * (
                         1.0
                         / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.loss_encoder = self.izi_reconstruction
                 elif self.config.trainer.encoder_training_mode == "izi_f":
-                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
+                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img, mode=self.config.trainer.encoder_loss_mode) * (
                         1.0
                         / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
-                    self.izi_disc = self.mse_loss(self.disc_f_real_izi, self.disc_f_fake_izi) * (
+                    self.izi_disc = self.mse_loss(self.disc_f_real_izi, self.disc_f_fake_izi, mode=self.config.trainer.encoder_loss_mode) * (
                         1.0
                         * self.config.trainer.kappa_weight_factor
                         / self.config.trainer.feature_layer_dim
@@ -515,7 +515,7 @@ class FAnogan(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=64,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -532,7 +532,7 @@ class FAnogan(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=128,
-                    kernel_size=4,
+                    kernel_size=5,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
@@ -548,7 +548,7 @@ class FAnogan(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=256,
-                    kernel_size=4,
+                    kernel_size=5,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
@@ -564,7 +564,7 @@ class FAnogan(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=512,
-                    kernel_size=4,
+                    kernel_size=5,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
@@ -576,27 +576,23 @@ class FAnogan(BaseModel):
                 x_e = tf.nn.leaky_relu(
                     features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
+                x_e = tf.layers.Flatten()(x_e)
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
-                    filters=self.config.trainer.noise_dim,
-                    kernel_size=4,
-                    padding="same",
-                    strides=(2, 2),
+                x_e = tf.layers.Dense(
+                    units=self.config.trainer.noise_dim,
                     kernel_initializer=self.init_kernel,
-                    name="conv",
+                    name="fc",
                 )(x_e)
-                x_e = tf.layers.batch_normalization(
-                    x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training_enc
-                )
-                x_e = tf.nn.leaky_relu(
-                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
-                )
-                x_e = tf.squeeze(x_e, [1, 2])
         return x_e
 
-    def mse_loss(self, pred, data):
-        loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
+    def mse_loss(self, pred, data, mode="norm"):
+        if mode == "norm":
+            delta = pred - data
+            delta = tf.layers.Flatten()(delta)
+            loss_val =tf.reduce_sum( tf.norm(delta, ord=2, axis=1, keepdims=False))
+        elif mode == "mse":
+            loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
         return loss_val
 
     def init_saver(self):
