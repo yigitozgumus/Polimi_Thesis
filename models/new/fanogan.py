@@ -57,21 +57,35 @@ class FAnogan(BaseModel):
         with tf.name_scope("Loss_Funcions"):
             with tf.name_scope("Encoder"):
                 if self.config.trainer.encoder_training_mode == "ziz":
-                    self.loss_encoder = self.mse_loss(self.encoded_gen_noise, self.noise_tensor, mode=self.config.trainer.encoder_loss_mode) * (
-                        1.0 / self.config.trainer.noise_dim
-                    )
+                    self.loss_encoder = self.mse_loss(
+                        self.encoded_gen_noise,
+                        self.noise_tensor,
+                        mode=self.config.trainer.encoder_loss_mode,
+                    ) * (1.0 / self.config.trainer.noise_dim)
                 elif self.config.trainer.encoder_training_mode == "izi":
-                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img, mode=self.config.trainer.encoder_loss_mode) * (
+                    self.izi_reconstruction = self.mse_loss(
+                        self.image_input,
+                        self.gen_enc_img,
+                        mode=self.config.trainer.encoder_loss_mode,
+                    ) * (
                         1.0
                         / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.loss_encoder = self.izi_reconstruction
                 elif self.config.trainer.encoder_training_mode == "izi_f":
-                    self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img, mode=self.config.trainer.encoder_loss_mode) * (
+                    self.izi_reconstruction = self.mse_loss(
+                        self.image_input,
+                        self.gen_enc_img,
+                        mode=self.config.trainer.encoder_loss_mode,
+                    ) * (
                         1.0
                         / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
-                    self.izi_disc = self.mse_loss(self.disc_f_real_izi, self.disc_f_fake_izi, mode=self.config.trainer.encoder_loss_mode) * (
+                    self.izi_disc = self.mse_loss(
+                        self.disc_f_real_izi,
+                        self.disc_f_fake_izi,
+                        mode=self.config.trainer.encoder_loss_mode,
+                    ) * (
                         1.0
                         * self.config.trainer.kappa_weight_factor
                         / self.config.trainer.feature_layer_dim
@@ -590,7 +604,7 @@ class FAnogan(BaseModel):
         if mode == "norm":
             delta = pred - data
             delta = tf.layers.Flatten()(delta)
-            loss_val =tf.reduce_sum( tf.norm(delta, ord=2, axis=1, keepdims=False))
+            loss_val = tf.reduce_sum(tf.norm(delta, ord=2, axis=1, keepdims=False))
         elif mode == "mse":
             loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
         return loss_val
