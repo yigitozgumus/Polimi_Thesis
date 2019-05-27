@@ -111,7 +111,7 @@ class FAnogan(BaseModel):
                 elif self.config.trainer.mode == "wgan":
                     self.loss_d_fake = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_real = -tf.reduce_mean(self.disc_real)
-                    self.loss_discriminator = -self.loss_d_fake - self.loss_d_real
+                    self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
 
                 # Weight Clipping and Encoder Part

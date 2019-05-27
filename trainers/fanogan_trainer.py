@@ -148,7 +148,7 @@ class FAnoganTrainer(BaseTrainMulti):
         true_labels, generated_labels = self.generate_labels(
             self.config.trainer.soft_labels, self.config.trainer.flip_labels
         )
-        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch)
+        real_noise, fake_noise = self.generate_noise(self.config.trainer.include_noise, cur_epoch, self.batch_size)
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
