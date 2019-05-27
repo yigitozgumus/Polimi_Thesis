@@ -217,8 +217,8 @@ class FAnoganTrainer(BaseTrainMulti):
                 self.model.is_training_dis: False,
                 self.model.is_training_enc: False,
             }
-            scores_izi_f.append(self.sess.run(self.model.izi_f_score, feed_dict=feed_dict))
-            scores_ziz.append(self.sess.run(self.model.ziz_score, feed_dict=feed_dict))
+            scores_izi_f +=self.sess.run(self.model.izi_f_score, feed_dict=feed_dict).tolist()
+            scores_ziz += self.sess.run(self.model.ziz_score, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
