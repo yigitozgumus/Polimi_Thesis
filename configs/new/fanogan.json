@@ -44,6 +44,7 @@
     "flip_labels": false,
     "noise_probability": 0.05,
     "standard_lr": 2e-4,
+    "standard_lr_disc": 2e-5,
     "wgan_lr" : 5e-5,
     "wgan_gp_lr": 1e-4,
     "wgan_gp_lambda": 10,

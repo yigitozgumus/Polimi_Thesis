@@ -62,12 +62,14 @@ class FAnogan(BaseModel):
                     )
                 elif self.config.trainer.encoder_training_mode == "izi":
                     self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
-                        1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
+                        1.0
+                        / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.loss_encoder = self.izi_reconstruction
                 elif self.config.trainer.encoder_training_mode == "izi_f":
                     self.izi_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img) * (
-                        1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
+                        1.0
+                        / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
                     self.izi_disc = self.mse_loss(self.disc_f_real_izi, self.disc_f_fake_izi) * (
                         1.0
@@ -111,7 +113,7 @@ class FAnogan(BaseModel):
                 elif self.config.trainer.mode == "wgan":
                     self.loss_d_fake = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_real = -tf.reduce_mean(self.disc_real)
-                    self.loss_discriminator = -self.loss_d_fake - self.loss_d_real
+                    self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
 
                 # Weight Clipping and Encoder Part
@@ -142,7 +144,7 @@ class FAnogan(BaseModel):
                     beta2=self.config.trainer.optimizer_adam_beta2,
                 )
                 self.discriminator_optimizer = tf.train.AdamOptimizer(
-                    self.config.trainer.standard_lr,
+                    self.config.trainer.standard_lr_disc,
                     beta1=self.config.trainer.optimizer_adam_beta1,
                     beta2=self.config.trainer.optimizer_adam_beta2,
                 )
@@ -157,7 +159,11 @@ class FAnogan(BaseModel):
                 self.discriminator_optimizer = tf.train.RMSPropOptimizer(
                     self.config.trainer.wgan_lr
                 )
-                self.encoder_optimizer = tf.train.RMSPropOptimizer(self.config.trainer.wgan_lr)
+                self.encoder_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.wgan_lr,
+                    beta1=self.config.trainer.optimizer_adam_beta1,
+                    beta2=self.config.trainer.optimizer_adam_beta2,
+                )
             elif self.config.trainer.mode == "wgan-gp":
                 # Build the optimizers
                 self.generator_optimizer = tf.train.AdamOptimizer(
@@ -279,17 +285,23 @@ class FAnogan(BaseModel):
 
         with tf.name_scope("Testing"):
             with tf.name_scope("izi_f_loss"):
-                self.score_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img_ema) * (
+                self.score_reconstruction = self.mse_loss(
+                    self.image_input, self.gen_enc_img_ema
+                ) * (
                     1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                 )
-                self.score_disc = self.mse_loss(self.disc_f_real_izi_ema, self.disc_f_fake_izi_ema) * (
+                self.score_disc = self.mse_loss(
+                    self.disc_f_real_izi_ema, self.disc_f_fake_izi_ema
+                ) * (
                     1.0
                     * self.config.trainer.kappa_weight_factor
                     / self.config.trainer.feature_layer_dim
                 )
                 self.izi_f_score = self.score_reconstruction + self.score_disc
             with tf.name_scope("ziz_loss"):
-                self.score_reconstruction = self.mse_loss(self.image_input, self.gen_enc_img_ema) * (
+                self.score_reconstruction = self.mse_loss(
+                    self.image_input, self.gen_enc_img_ema
+                ) * (
                     1.0 / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                 )
                 self.ziz_score = self.score_reconstruction
