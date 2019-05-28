@@ -42,6 +42,7 @@ class FenceGAN(BaseModel):
         with tf.name_scope("Loss_Functions"):
             # Discriminator Loss
             # Generator Loss
+            pass
 
         # Optimizers
         with tf.name_scope("Optimizers"):
@@ -100,18 +101,20 @@ class FenceGAN(BaseModel):
         self.logger.info("Building Testing Graph...")
         with tf.variable_scope("FenceGAN"):
             with tf.variable_scope("Generator_Model"):
-                self.image_gen_ema = self.generator(self.noise_tensor,getter=get_getter(self.gen_ema)
-)
+                self.image_gen_ema = self.generator(
+                    self.noise_tensor, getter=get_getter(self.gen_ema)
+                )
 
             with tf.variable_scope("Discriminator_Model"):
                 self.disc_real_ema, self.f_layer_real_ema = self.discriminator(
-                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
-                    ,getter=get_getter(self.dis_ema)
+                    self.image_input,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    getter=get_getter(self.dis_ema),
                 )
                 self.disc_fake_ema, self.f_layer_fake_ema = self.discriminator(
-                    self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
-                    ,getter=get_getter(self.dis_ema)
-
+                    self.image_gen,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    getter=get_getter(self.dis_ema),
                 )
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
@@ -325,11 +328,13 @@ class FenceGAN(BaseModel):
                         training=self.is_training,
                         name="dropout",
                     )
-                    out = tf.layers.Dense(units=1, kernel_initializer=self.init_kernel, activation=tf.nn.sigmoid,name="fc")(
-                        x_e
-                    )
+                    out = tf.layers.Dense(
+                        units=1,
+                        kernel_initializer=self.init_kernel,
+                        activation=tf.nn.sigmoid,
+                        name="fc",
+                    )(x_e)
         return out, feature_layer
-
 
     def init_saver(self):
         self.saver = tf.train.Saver(max_to_keep=self.config.log.max_to_keep)
