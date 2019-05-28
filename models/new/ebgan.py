@@ -14,7 +14,10 @@ class EBGAN(BaseModel):
     def build_model(self):
         # Initializations
         # Kernel initialization for the convolutions
-        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        # self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        self.init_kernel = tf.contrib.layers.xavier_initializer(
+            uniform=False, seed=None, dtype=tf.float32
+        )
         # Placeholders
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
@@ -171,7 +174,7 @@ class EBGAN(BaseModel):
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 256, kernel_initializer=self.init_kernel, name="fc"
                 )(noise_input)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -182,12 +185,12 @@ class EBGAN(BaseModel):
                 x_g = tf.nn.leaky_relu(
                     features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="relu"
                 )
-            x_g = tf.reshape(x_g, [-1, 4, 4, 512])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 256])
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=512,
-                    kernel_size=4,
+                    filters=128,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -205,8 +208,8 @@ class EBGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=256,
-                    kernel_size=4,
+                    filters=64,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -224,8 +227,8 @@ class EBGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
-                    kernel_size=4,
+                    filters=32,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -245,7 +248,7 @@ class EBGAN(BaseModel):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=1,
                     kernel_size=5,
-                    strides=1,
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv2t",

@@ -15,7 +15,7 @@ class FenceGAN(BaseModel):
         # Initializations
         # Kernel initialization for the convolutions
         self.init_kernel = tf.contrib.layers.xavier_initializer(
-            uniform=False, seed=None, dtype=tf.dtypes.float32
+            uniform=False, seed=None, dtype=tf.float32
         )
         # Placeholders
         self.is_training = tf.placeholder(tf.bool)
