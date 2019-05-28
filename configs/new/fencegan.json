@@ -1,11 +1,11 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["flip_labels", "soft_labels", "include_noise"],
-    "vals": [false, true]
+    "params": ["mode"],
+    "vals": ["standard", "wgan", "wgan-gp"]
   },
   "model": {
-    "name": "alad.ALAD"
+    "name": "fencegan.FenceGAN"
   },
   "dirs": {
     "data": "data",
@@ -18,7 +18,7 @@
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
-    "num_epochs": 50,
+    "num_epochs": 800,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 2583,
@@ -30,30 +30,36 @@
     "validation_percent": 10
   },
   "trainer": {
-    "name": "alad_trainer.ALAD_Trainer",
-    "noise_dim": 100,
+    "name": "fencegan_trainer.FenceGANTrainer",
+    "mode": "non_standard",
+    "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,
-    "soft_labels": false,
-    "flip_labels": false,
+    "soft_labels": true,
+    "flip_labels": true,
     "noise_probability": 0.05,
-    "discriminator_l_rate": 2e-4,
-    "generator_l_rate": 1e-3,
+    "standard_lr": 1e-3,
+    "critic_iters": 2,
+    "encirclement_alpha": 0.5,
+    "dispersion_beta":10,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.25,
+    "dis_inter_layer_dim": 1024,
+    "loss_method": "fm",
+    "dropout_rate": 0.2,
     "ema_decay": 0.999,
-    "spectral_norm": true,
+    "do_spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": false,
     "degree": 1,
+    "weight": 0.75,
+    "label": 0,
     "frequency_eval": 2,
-    "patience": 20,
+    "patience": 10,
     "test_at_end": true,
-  "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
-
+    "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
   },
   "log": {
     "name": "summarizer.Summarizer",

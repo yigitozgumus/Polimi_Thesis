@@ -1,11 +1,11 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["flip_labels", "soft_labels", "include_noise"],
-    "vals": [false, true]
+    "params": ["mode"],
+    "vals": ["standard", "wgan", "wgan-gp"]
   },
   "model": {
-    "name": "alad.ALAD"
+    "name": "bigan_conv.BIGAN"
   },
   "dirs": {
     "data": "data",
@@ -30,30 +30,38 @@
     "validation_percent": 10
   },
   "trainer": {
-    "name": "alad_trainer.ALAD_Trainer",
+    "name": "bigan_trainer.BIGANTrainer",
+    "mode": "standard",
+    "feature_match_weight": 0.4,
     "noise_dim": 100,
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": false,
     "flip_labels": false,
     "noise_probability": 0.05,
-    "discriminator_l_rate": 2e-4,
-    "generator_l_rate": 1e-3,
+    "standard_lr": 2e-4,
+    "wgan_lr" : 5e-5,
+    "wgan_gp_lr": 1e-5,
+    "wgan_gp_lambda": 10,
+    "critic_iters": 5,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
-    "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.25,
+    "leakyReLU_alpha": 0.25,
+    "dis_inter_layer_dim": 1024,
+    "loss_method": "fm",
+    "dropout_rate": 0.5,
     "ema_decay": 0.999,
-    "spectral_norm": true,
+    "do_spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": false,
     "degree": 1,
+    "weight": 0.75,
+    "label": 0,
     "frequency_eval": 2,
-    "patience": 20,
+    "patience": 10,
     "test_at_end": true,
-  "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
-
+    "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
   },
   "log": {
     "name": "summarizer.Summarizer",

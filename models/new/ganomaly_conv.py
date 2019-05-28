@@ -36,7 +36,6 @@ class GANomaly(BaseModel):
 
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
-
                 self.noise_gen, self.img_rec, self.noise_rec = self.generator(
                     self.image_input + self.fake_noise,
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
@@ -219,7 +218,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=64,
+                        filters=32,
                         kernel_size=5,
                         strides=2,
                         padding="same",
@@ -234,7 +233,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=128,
+                        filters=64,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -255,7 +254,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=256,
+                        filters=128,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -272,15 +271,47 @@ class GANomaly(BaseModel):
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
                     # 4 x 4 x 256
-                x_e = tf.layers.Flatten()(x_e)
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
-                    x_e = tf.layers.Dense(
-                        units=self.config.trainer.noise_dim,
+                    x_e = layers.conv2d(
+                        x_e,
+                        filters=256,
+                        kernel_size=5,
+                        padding="same",
+                        strides=2,
                         kernel_initializer=self.init_kernel,
-                        name="fc",
-                    )(x_e)
-
+                        name="conv",
+                    )
+                    x_e = tf.layers.batch_normalization(
+                        x_e,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                    )
+                    x_e = tf.nn.leaky_relu(
+                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )
+                net_name = "Layer_5"
+                with tf.variable_scope(net_name):
+                    x_e = layers.conv2d(
+                        x_e,
+                        filters=self.config.trainer.noise_dim,
+                        kernel_size=5,
+                        padding="same",
+                        strides=2,
+                        kernel_initializer=self.init_kernel,
+                        name="conv",
+                    )
+                    x_e = tf.layers.batch_normalization(
+                        x_e,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                    )
+                    x_e = tf.nn.leaky_relu(
+                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )
+                    x_e = tf.squeeze(x_e, [1, 2])
             noise_gen = x_e
 
             with tf.variable_scope("Decoder"):
@@ -402,7 +433,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = layers.conv2d(
                         x_e_2,
-                        filters=64,
+                        filters=32,
                         kernel_size=5,
                         strides=2,
                         padding="same",
@@ -416,7 +447,7 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = layers.conv2d(
                         x_e_2,
-                        filters=128,
+                        filters=64,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -436,6 +467,26 @@ class GANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e_2 = layers.conv2d(
                         x_e_2,
+                        filters=128,
+                        kernel_size=5,
+                        padding="same",
+                        strides=2,
+                        kernel_initializer=self.init_kernel,
+                        name="conv",
+                    )
+                    x_e_2 = tf.layers.batch_normalization(
+                        x_e_2,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                    )
+                    x_e_2 = tf.nn.leaky_relu(
+                        features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )
+                net_name = "Layer_4"
+                with tf.variable_scope(net_name):
+                    x_e_2 = layers.conv2d(
+                        x_e_2,
                         filters=256,
                         kernel_size=5,
                         padding="same",
@@ -452,14 +503,27 @@ class GANomaly(BaseModel):
                     x_e_2 = tf.nn.leaky_relu(
                         features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
-                x_e_2 = tf.layers.Flatten()(x_e_2)
-                net_name = "Layer_4"
+                net_name = "Layer_5"
                 with tf.variable_scope(net_name):
-                    x_e_2 = tf.layers.Dense(
-                        units=self.config.trainer.noise_dim,
+                    x_e_2 = layers.conv2d(
+                        x_e_2,
+                        filters=self.config.trainer.noise_dim,
+                        kernel_size=5,
+                        padding="same",
+                        strides=2,
                         kernel_initializer=self.init_kernel,
-                        name="fc",
-                    )(x_e_2)
+                        name="conv",
+                    )
+                    x_e_2 = tf.layers.batch_normalization(
+                        x_e_2,
+                        momentum=self.config.trainer.batch_momentum,
+                        epsilon=self.config.trainer.batch_epsilon,
+                        training=self.is_training,
+                    )
+                    x_e_2 = tf.nn.leaky_relu(
+                        features=x_e_2, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                    )
+                    x_e_2 = tf.squeeze(x_e_2, [1, 2])
             noise_rec = x_e_2
             return noise_gen, image_rec, noise_rec
 

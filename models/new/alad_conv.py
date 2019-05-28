@@ -369,7 +369,7 @@ class ALAD(BaseModel):
                     img_tensor,
                     filters=32,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
@@ -390,7 +390,7 @@ class ALAD(BaseModel):
                     net,
                     filters=64,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
@@ -411,7 +411,7 @@ class ALAD(BaseModel):
                     net,
                     filters=128,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
@@ -431,7 +431,7 @@ class ALAD(BaseModel):
                     net,
                     filters=256,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
@@ -452,10 +452,19 @@ class ALAD(BaseModel):
                     net,
                     filters=self.config.trainer.noise_dim,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
+                )
+                net = tf.layers.batch_normalization(
+                    inputs=net,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training,
+                    name="bn",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                 )
                 net = tf.squeeze(net, [1, 2])
         return net
@@ -491,7 +500,7 @@ class ALAD(BaseModel):
                 net = tf.layers.Conv2DTranspose(
                     filters=512,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="tconv2",
@@ -511,7 +520,7 @@ class ALAD(BaseModel):
                 net = tf.layers.Conv2DTranspose(
                     filters=256,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="tconv3",
@@ -531,7 +540,7 @@ class ALAD(BaseModel):
                 net = tf.layers.Conv2DTranspose(
                     filters=128,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="tconv4",
@@ -578,7 +587,7 @@ class ALAD(BaseModel):
                     img_tensor,
                     filters=128,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv1",
@@ -593,7 +602,7 @@ class ALAD(BaseModel):
                     x,
                     filters=256,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv2",
@@ -613,7 +622,7 @@ class ALAD(BaseModel):
                     x,
                     filters=512,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv2",
@@ -638,7 +647,7 @@ class ALAD(BaseModel):
                     z,
                     filters=512,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
@@ -659,7 +668,7 @@ class ALAD(BaseModel):
                     z,
                     filters=512,
                     kernel_size=4,
-                    strides=2,
+                    strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
                 )
