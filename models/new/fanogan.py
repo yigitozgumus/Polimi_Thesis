@@ -604,7 +604,7 @@ class FAnogan(BaseModel):
         if mode == "norm":
             delta = pred - data
             delta = tf.layers.Flatten()(delta)
-            loss_val = (tf.norm(delta, ord=2, axis=1, keepdims=False))
+            loss_val = tf.norm(delta, ord=2, axis=1, keepdims=False)
         elif mode == "mse":
             loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
         return loss_val

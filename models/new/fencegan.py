@@ -5,16 +5,18 @@ from utils.alad_utils import get_getter
 import utils.alad_utils as sn
 
 
-class EBGAN(BaseModel):
+class FenceGAN(BaseModel):
     def __init__(self, config):
-        super(EBGAN, self).__init__(config)
+        super(FenceGAN, self).__init__(config)
         self.build_model()
         self.init_saver()
 
     def build_model(self):
         # Initializations
         # Kernel initialization for the convolutions
-        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        self.init_kernel = tf.contrib.layers.xavier_initializer(
+            uniform=False, seed=None, dtype=tf.dtypes.float32
+        )
         # Placeholders
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
@@ -25,30 +27,21 @@ class EBGAN(BaseModel):
         )
         # Build Training Graph
         self.logger.info("Building training graph...")
-        with tf.variable_scope("EBGAN"):
+        with tf.variable_scope("FenceGAN"):
             with tf.variable_scope("Generator_Model"):
                 self.image_gen = self.generator(self.noise_tensor)
 
             with tf.variable_scope("Discriminator_Model"):
-                self.embedding_real, self.decoded_real = self.discriminator(
+                self.disc_real, self.f_layer_real = self.discriminator(
                     self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
-                self.embedding_fake, self.decoded_fake = self.discriminator(
+                self.disc_fake, self.f_layer_fake = self.discriminator(
                     self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
         # Loss functions
         with tf.name_scope("Loss_Functions"):
             # Discriminator Loss
-            self.disc_loss_real = self.mse_loss(self.decoded_real, self.image_input)
-            self.disc_loss_fake = self.mse_loss(self.decoded_fake, self.image_gen)
-            self.loss_discriminator = (
-                self.config.trainer.disc_margin - self.disc_loss_fake + self.disc_loss_real
-            )
             # Generator Loss
-            pt_loss = 0
-            if self.config.trainer.pullaway:
-                pt_loss = self.pullaway_loss(self.embedding_fake)
-            self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
 
         # Optimizers
         with tf.name_scope("Optimizers"):
@@ -66,19 +59,19 @@ class EBGAN(BaseModel):
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             # Generator Network Variables
             self.generator_vars = [
-                v for v in all_variables if v.name.startswith("EBGAN/Generator_Model")
+                v for v in all_variables if v.name.startswith("FenceGAN/Generator_Model")
             ]
             # Discriminator Network Variables
             self.discriminator_vars = [
-                v for v in all_variables if v.name.startswith("EBGAN/Discriminator_Model")
+                v for v in all_variables if v.name.startswith("FenceGAN/Discriminator_Model")
             ]
             # Generator Network Operations
             self.gen_update_ops = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="EBGAN/Generator_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="FenceGAN/Generator_Model"
             )
             # Discriminator Network Operations
             self.disc_update_ops = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="EBGAN/Discriminator_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="FenceGAN/Discriminator_Model"
             )
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
@@ -105,22 +98,20 @@ class EBGAN(BaseModel):
 
         # Build Test Graph
         self.logger.info("Building Testing Graph...")
-        with tf.variable_scope("EBGAN"):
-            with tf.variable_scope("Discriminator_Model"):
-                self.embedding_q_ema, self.decoded_q_ema = self.discriminator(
-                    self.image_input,
-                    getter=get_getter(self.dis_ema),
-                    do_spectral_norm=self.config.trainer.do_spectral_norm,
-                )
+        with tf.variable_scope("FenceGAN"):
             with tf.variable_scope("Generator_Model"):
-                self.image_gen_ema = self.generator(
-                    self.embedding_q_ema, getter=get_getter(self.gen_ema)
-                )
+                self.image_gen_ema = self.generator(self.noise_tensor,getter=get_getter(self.gen_ema)
+)
+
             with tf.variable_scope("Discriminator_Model"):
-                self.embedding_rec_ema, self.decoded_rec_ema = self.discriminator(
-                    self.image_gen_ema,
-                    getter=get_getter(self.dis_ema),
-                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                self.disc_real_ema, self.f_layer_real_ema = self.discriminator(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                    ,getter=get_getter(self.dis_ema)
+                )
+                self.disc_fake_ema, self.f_layer_fake_ema = self.discriminator(
+                    self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
+                    ,getter=get_getter(self.dis_ema)
+
                 )
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
@@ -171,7 +162,7 @@ class EBGAN(BaseModel):
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Dense(
-                    units=4 * 4 * 512, kernel_initializer=self.init_kernel, name="fc"
+                    units=2 * 2 * 256, kernel_initializer=self.init_kernel, name="fc"
                 )(noise_input)
                 x_g = tf.layers.batch_normalization(
                     x_g,
@@ -182,12 +173,12 @@ class EBGAN(BaseModel):
                 x_g = tf.nn.leaky_relu(
                     features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="relu"
                 )
-            x_g = tf.reshape(x_g, [-1, 4, 4, 512])
+            x_g = tf.reshape(x_g, [-1, 2, 2, 256])
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=512,
-                    kernel_size=4,
+                    filters=128,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -205,8 +196,8 @@ class EBGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=256,
-                    kernel_size=4,
+                    filters=64,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -224,8 +215,8 @@ class EBGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
-                    kernel_size=4,
+                    filters=32,
+                    kernel_size=5,
                     strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -245,7 +236,7 @@ class EBGAN(BaseModel):
                 x_g = tf.layers.Conv2DTranspose(
                     filters=1,
                     kernel_size=5,
-                    strides=1,
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv2t",
@@ -265,7 +256,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=64,
+                        filters=32,
                         kernel_size=5,
                         strides=2,
                         padding="same",
@@ -280,7 +271,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=128,
+                        filters=64,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -298,7 +289,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=256,
+                        filters=128,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -311,132 +302,34 @@ class EBGAN(BaseModel):
                     x_e = tf.nn.leaky_relu(
                         features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
-                    # 4 x 4 x 256
-                x_e = tf.layers.Flatten()(x_e)
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
-                    x_e = layers.dense(
+                    x_e = layers.conv2d(
                         x_e,
-                        units=self.config.trainer.noise_dim,
-                        kernel_initializer=self.init_kernel,
-                        name="fc",
-                    )
-
-            embedding = x_e
-            with tf.variable_scope("Decoder"):
-                net = tf.reshape(embedding, [-1, 1, 1, self.config.trainer.noise_dim])
-                net_name = "layer_1"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
                         filters=256,
                         kernel_size=5,
-                        strides=(2, 2),
                         padding="same",
+                        strides=2,
                         kernel_initializer=self.init_kernel,
-                        name="tconv1",
-                    )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="tconv1/bn",
+                        name="conv",
                     )
-                    net = tf.nn.relu(features=net, name="tconv1/relu")
-
-                net_name = "layer_2"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=128,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv2",
-                    )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="tconv2/bn",
+                    x_e = tf.nn.leaky_relu(
+                        features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
                     )
-                    net = tf.nn.relu(features=net, name="tconv2/relu")
-
-                net_name = "layer_3"
+                    feature_layer = x_e
+                net_name = "Layer_4"
                 with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=64,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv3",
-                    )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
+                    x_e = tf.layers.dropout(
+                        x_e,
+                        rate=self.config.trainer.dropout_rate,
                         training=self.is_training,
-                        name="tconv3/bn",
+                        name="dropout",
                     )
-                    net = tf.nn.relu(features=net, name="tconv3/relu")
-                net_name = "layer_4"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=32,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv4",
-                    )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="tconv4/bn",
+                    out = tf.layers.Dense(units=1, kernel_initializer=self.init_kernel, activation=tf.nn.sigmoid,name="fc")(
+                        x_e
                     )
-                    net = tf.nn.relu(features=net, name="tconv4/relu")
-                net_name = "layer_5"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=16,
-                        kernel_size=5,
-                        strides=(2, 2),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv5",
-                    )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="tconv4/bn",
-                    )
-                    net = tf.nn.relu(features=net, name="tconv5/relu")
+        return out, feature_layer
 
-                net_name = "layer_6"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=1,
-                        kernel_size=5,
-                        strides=(1, 1),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv6",
-                    )(net)
-                    decoded = tf.nn.tanh(net, name="tconv6/tanh")
-        return embedding, decoded
-
-    def mse_loss(self, pred, data):
-        loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
-        return loss_val
-
-    def pullaway_loss(self, embeddings):
-        norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keepdims=True))
-        normalized_embeddings = embeddings / norm
-        similarity = tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
-        batch_size = tf.cast(tf.shape(embeddings)[0], tf.float32)
-        pt_loss = (tf.reduce_sum(similarity) - batch_size) / (batch_size * (batch_size - 1))
-        return pt_loss
 
     def init_saver(self):
         self.saver = tf.train.Saver(max_to_keep=self.config.log.max_to_keep)

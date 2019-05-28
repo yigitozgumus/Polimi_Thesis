@@ -216,7 +216,6 @@ class BIGANTrainer(BaseTrain):
             feed_dict=feed_dict,
         )
 
-
         return lg, np.mean(ld), le, sm_g, sm_d
 
     def generate_labels(self, soft_labels, flip_labels):

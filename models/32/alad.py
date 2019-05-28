@@ -148,7 +148,6 @@ class ALAD(BaseModel):
                 logits=z_logit_fake, labels=tf.ones_like(z_logit_fake)
             )
 
-
             cost_x = tf.reduce_mean(x_real_gen + x_fake_gen)
             cost_z = tf.reduce_mean(z_real_gen + z_fake_gen)
 
