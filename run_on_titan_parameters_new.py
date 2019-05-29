@@ -24,6 +24,8 @@ def run_multi():
         config[section][params[0]] = i
         config.exp.name = args.experiment + "_{}".format(i)
         process_config(config)
+        # Set the random seed
+        tf.random.set_random_seed(config.data_loader.random_seed)
         create_dirs(
             [
                 config.log.summary_dir,

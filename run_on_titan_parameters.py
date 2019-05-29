@@ -16,6 +16,7 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
+
     values = config.exp.vals
     params = config.exp.params
     section = config.exp.section
@@ -30,6 +31,8 @@ def run_multi():
                 config[section][params[2]] = k
                 config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
                 process_config(config)
+                # Set the random seed
+                tf.random.set_random_seed(config.data_loader.random_seed)
                 create_dirs(
                     [
                         config.log.summary_dir,

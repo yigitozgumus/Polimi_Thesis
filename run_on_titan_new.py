@@ -19,6 +19,8 @@ def run():
     config, _ = get_config_from_json(args.config)
     config.exp.name = args.experiment
     config = process_config(config)
+    # Set the random seed
+    tf.random.set_random_seed(config.data_loader.random_seed)
     # create the experiments dirs
     create_dirs(
         [
