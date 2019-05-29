@@ -42,8 +42,16 @@ class EBGAN(BaseModel):
         # Loss functions
         with tf.name_scope("Loss_Functions"):
             # Discriminator Loss
-            self.disc_loss_real = self.mse_loss(self.decoded_real, self.image_input)
-            self.disc_loss_fake = self.mse_loss(self.decoded_fake, self.image_gen)
+            if self.config.trainer.mse_mode == "norm":
+                self.disc_loss_real = tf.reduce_mean(
+                    self.mse_loss(self.decoded_real, self.image_input, mode="norm")
+                )
+                self.disc_loss_fake = tf.reduce_mean(
+                    self.mse_loss(self.decoded_fake, self.image_gen, mode="norm")
+                )
+            elif self.config.trainer.mse_mode == "mse":
+                self.disc_loss_real = self.mse_loss(self.decoded_real, self.image_input, mode="mse")
+                self.disc_loss_fake = self.mse_loss(self.decoded_fake, self.image_gen, mode="mse")
             self.loss_discriminator = (
                 self.config.trainer.disc_margin - self.disc_loss_fake + self.disc_loss_real
             )
@@ -130,11 +138,11 @@ class EBGAN(BaseModel):
                 delta = self.image_input - self.image_gen_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l1 = tf.norm(
-                    delta_flat, ord=1, axis=1, keepdims=False, name="img_loss__1"
+                    delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__1"
                 )
                 self.img_score_l1 = tf.squeeze(img_score_l1)
 
-                delta = self.image_input - self.image_gen_ema
+                delta = self.image_input - self.decoded_rec_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l2 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
@@ -268,7 +276,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=64,
+                        filters=32,
                         kernel_size=5,
                         strides=2,
                         padding="same",
@@ -283,7 +291,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=128,
+                        filters=64,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -301,7 +309,7 @@ class EBGAN(BaseModel):
                 with tf.variable_scope(net_name):
                     x_e = layers.conv2d(
                         x_e,
-                        filters=256,
+                        filters=128,
                         kernel_size=5,
                         padding="same",
                         strides=2,
@@ -401,36 +409,23 @@ class EBGAN(BaseModel):
                 net_name = "layer_5"
                 with tf.variable_scope(net_name):
                     net = tf.layers.Conv2DTranspose(
-                        filters=16,
+                        filters=1,
                         kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="tconv5",
                     )(net)
-                    net = tf.layers.batch_normalization(
-                        inputs=net,
-                        momentum=self.config.trainer.batch_momentum,
-                        training=self.is_training,
-                        name="tconv4/bn",
-                    )
-                    net = tf.nn.relu(features=net, name="tconv5/relu")
-
-                net_name = "layer_6"
-                with tf.variable_scope(net_name):
-                    net = tf.layers.Conv2DTranspose(
-                        filters=1,
-                        kernel_size=5,
-                        strides=(1, 1),
-                        padding="same",
-                        kernel_initializer=self.init_kernel,
-                        name="tconv6",
-                    )(net)
-                    decoded = tf.nn.tanh(net, name="tconv6/tanh")
+                    decoded = tf.nn.tanh(net, name="tconv5/tanh")
         return embedding, decoded
 
-    def mse_loss(self, pred, data):
-        loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
+    def mse_loss(self, pred, data, mode="norm"):
+        if mode == "norm":
+            delta = pred - data
+            delta = tf.layers.Flatten()(delta)
+            loss_val = tf.norm(delta, ord=2, axis=1, keepdims=False)
+        elif mode == "mse":
+            loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
         return loss_val
 
     def pullaway_loss(self, embeddings):
