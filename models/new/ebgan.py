@@ -67,12 +67,12 @@ class EBGAN(BaseModel):
         # Optimizers
         with tf.name_scope("Optimizers"):
             self.generator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.standard_lr,
+                self.config.trainer.standard_lr_gen,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
             self.discriminator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.standard_lr,
+                self.config.trainer.standard_lr_dis,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
