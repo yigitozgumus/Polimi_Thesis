@@ -226,7 +226,7 @@ class EncEBGAN(BaseModel):
                 )
                 self.img_score_l1 = tf.squeeze(img_score_l1)
 
-                delta = self.image_input - self.decoded_rec_ema
+                delta = self.embedding_enc_fake_ema - self.embedding_enc_real_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l2 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
@@ -252,14 +252,20 @@ class EncEBGAN(BaseModel):
                     tf.summary.scalar("loss_disc_fake", self.disc_loss_fake, ["dis"])
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
+                with tf.name_scope("enc_summary"):
+                    tf.summary.scalar("loss_encoder", self.loss_encoder, ["enc"])
                 with tf.name_scope("img_summary"):
-                    tf.summary.image("input_image", self.image_input, 3, ["img"])
-                    tf.summary.image("reconstructed", self.image_gen, 3, ["img"])
+                    tf.summary.image("input_image", self.image_input, 3, ["img_1"])
+                    tf.summary.image("reconstructed", self.image_gen, 3, ["img_1"])
+                    tf.summary.image("input_enc", self.image_input, 3, ["img_2"])
+                    tf.summary.image("reconstructed", self.image_gen_enc, 3, ["img_2"])
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
+        self.sum_op_enc = tf.summary.merge_all("enc")
+        self.sum_op_im_1 = tf.summary.merge_all("image_1")
+        self.sum_op_im_2 = tf.summary.merge_all("image_2")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
-        self.sum_op_im = tf.summary.merge_all("img")
 
     def generator(self, noise_input, getter=None):
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
