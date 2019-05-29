@@ -31,7 +31,8 @@
   },
   "trainer": {
     "name": "ganomaly_trainer.GANomalyTrainer",
-    "noise_dim": 100,
+    "init_type": "xavier",
+    "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": false,

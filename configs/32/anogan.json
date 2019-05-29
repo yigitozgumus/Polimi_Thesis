@@ -31,7 +31,8 @@
   },
   "trainer": {
     "name": "anogan_trainer.ANOGAN_Trainer",
-    "noise_dim": 100,
+    "init_type": "xavier",
+    "noise_dim": 256,
     "image_dims": [
       32,
       32,
