@@ -144,6 +144,8 @@ class FAnoganTrainer(BaseTrainMulti):
                 [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
                 feed_dict=feed_dict,
             )
+            if self.config.trainer.mode == "wgan":
+                _ = self.sess.run(self.model.clip_disc_weights)
             ld_t += ld
         # Train Generator
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])

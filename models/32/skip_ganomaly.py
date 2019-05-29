@@ -35,7 +35,6 @@ class SkipGANomaly(BaseModel):
         self.fake_noise = tf.placeholder(
             dtype=tf.float32, shape=[None] + self.config.trainer.image_dims, name="fake_noise"
         )
-
         #######################################################################
         # GRAPH
         ########################################################################

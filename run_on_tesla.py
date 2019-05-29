@@ -19,8 +19,7 @@ def run():
     config, _ = get_config_from_json(args.config)
     config.exp.name = args.experiment
     config = process_config(config)
-    # Set the random seed
-    tf.random.set_random_seed(config.data_loader.random_seed)
+
     # create the experiments dirs
     create_dirs(
         [
@@ -35,6 +34,8 @@ def run():
     copy_codebase(config)
     l = Logger(config)
     logger = l.get_logger(__name__)
+    # Set the random seed
+    tf.random.set_random_seed(config.data_loader.random_seed)
     # Create the tensorflow session
     sess = tf.Session()
     # Create the dataloader
