@@ -59,6 +59,7 @@ class FAnogan(BaseModel):
                 # IZI Training
                 self.disc_real_izi, self.disc_f_real_izi = self.discriminator(self.image_input)
                 self.disc_fake_izi, self.disc_f_fake_izi = self.discriminator(self.gen_enc_img)
+
         with tf.name_scope("Loss_Funcions"):
             with tf.name_scope("Encoder"):
                 if self.config.trainer.encoder_training_mode == "ziz":
