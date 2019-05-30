@@ -58,50 +58,45 @@ class EncEBGAN(BaseModel):
                 )
         # Loss functions
         with tf.name_scope("Loss_Functions"):
-            with tf.name_scope("Generator_Discriminator"):
-                # Discriminator Loss
-                if self.config.trainer.mse_mode == "norm":
-                    self.disc_loss_real = tf.reduce_mean(
-                        self.mse_loss(self.decoded_real, self.image_input, mode="norm")
-                    )
-                    self.disc_loss_fake = tf.reduce_mean(
-                        self.mse_loss(self.decoded_fake, self.image_gen, mode="norm")
-                    )
-                elif self.config.trainer.mse_mode == "mse":
-                    self.disc_loss_real = self.mse_loss(
-                        self.decoded_real, self.image_input, mode="mse"
-                    )
-                    self.disc_loss_fake = self.mse_loss(
-                        self.decoded_fake, self.image_gen, mode="mse"
-                    )
-                self.loss_discriminator = (
-                    tf.math.maximum(self.config.trainer.disc_margin - self.disc_loss_fake, 0)
-                    + self.disc_loss_real
-                )
-                # Generator Loss
-                pt_loss = 0
-                if self.config.trainer.pullaway:
-                    pt_loss = self.pullaway_loss(self.embedding_fake)
-                self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
 
-            with tf.name_scope("Encoder"):
-                if self.config.trainer.mse_mode == "norm":
-                    self.loss_enc_rec = tf.reduce_mean(
-                        self.mse_loss(self.image_gen_enc, self.image_input, mode="norm")
-                    )
-                    self.loss_enc_f = tf.reduce_mean(
-                        self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="norm")
-                    )
-                elif self.config.trainer.mse_mode == "mse":
-                    self.loss_enc_rec = tf.reduce_mean(
-                        self.mse_loss(self.image_gen_enc, self.image_input, mode="mse")
-                    )
-                    self.loss_enc_f = tf.reduce_mean(
-                        self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="mse")
-                    )
-                self.loss_encoder = (
-                    self.loss_enc_rec + self.config.trainer.encoder_f_factor * self.loss_enc_f
+            # Discriminator Loss
+            if self.config.trainer.mse_mode == "norm":
+                self.disc_loss_real = tf.reduce_mean(
+                    self.mse_loss(self.decoded_real, self.image_input, mode="norm")
                 )
+                self.disc_loss_fake = tf.reduce_mean(
+                    self.mse_loss(self.decoded_fake, self.image_gen, mode="norm")
+                )
+            elif self.config.trainer.mse_mode == "mse":
+                self.disc_loss_real = self.mse_loss(self.decoded_real, self.image_input, mode="mse")
+                self.disc_loss_fake = self.mse_loss(self.decoded_fake, self.image_gen, mode="mse")
+            self.loss_discriminator = (
+                tf.math.maximum(self.config.trainer.disc_margin - self.disc_loss_fake, 0)
+                + self.disc_loss_real
+            )
+            # Generator Loss
+            pt_loss = 0
+            if self.config.trainer.pullaway:
+                pt_loss = self.pullaway_loss(self.embedding_fake)
+            self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
+
+            if self.config.trainer.mse_mode == "norm":
+                self.loss_enc_rec = tf.reduce_mean(
+                    self.mse_loss(self.image_gen_enc, self.image_input, mode="norm")
+                )
+                self.loss_enc_f = tf.reduce_mean(
+                    self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="norm")
+                )
+            elif self.config.trainer.mse_mode == "mse":
+                self.loss_enc_rec = tf.reduce_mean(
+                    self.mse_loss(self.image_gen_enc, self.image_input, mode="mse")
+                )
+                self.loss_enc_f = tf.reduce_mean(
+                    self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="mse")
+                )
+            self.loss_encoder = (
+                self.loss_enc_rec + self.config.trainer.encoder_f_factor * self.loss_enc_f
+            )
 
         # Optimizers
         with tf.name_scope("Optimizers"):
