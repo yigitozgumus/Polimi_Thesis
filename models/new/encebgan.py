@@ -14,7 +14,6 @@ class EncEBGAN(BaseModel):
     def build_model(self):
         # Initializations
         # Kernel initialization for the convolutions
-        # self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
         if self.config.trainer.init_type == "normal":
             self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
         elif self.config.trainer.init_type == "xavier":
@@ -205,7 +204,7 @@ class EncEBGAN(BaseModel):
 
             with tf.variable_scope("Generator_Model"):
                 self.image_gen_enc_ema = self.generator(
-                    self.image_encoded, getter=get_getter(self.gen_ema)
+                    self.image_encoded_ema, getter=get_getter(self.gen_ema)
                 )
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_enc_fake_ema, self.decoded_enc_fake_ema = self.discriminator(
