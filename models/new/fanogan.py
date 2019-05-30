@@ -140,7 +140,7 @@ class FAnogan(BaseModel):
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
 
                 # Weight Clipping and Encoder Part
-                elif self.config.traiiner.mode == "wgan_gp":
+                elif self.config.trainer.mode == "wgan_gp":
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_fake = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_real = -tf.reduce_mean(self.disc_real)
