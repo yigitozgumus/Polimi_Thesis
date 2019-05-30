@@ -12,6 +12,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 
+import pdb; pdb.set_trace()  # XXX BREAKPOINT
 def run_multi():
     # Get the arguments
     args = get_args()

@@ -2,7 +2,7 @@
   "exp": {
     "section": "trainer",
     "params": ["mode", "init_type"],
-    "vals_1": ["standard", "wgan", "wgan_gp"],
+    "vals_1": [ "wgan_gp"],
     "vals_2": ["normal", "xavier"]
   },
   "model": {

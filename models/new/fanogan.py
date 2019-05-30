@@ -187,7 +187,7 @@ class FAnogan(BaseModel):
                     beta1=self.config.trainer.optimizer_adam_beta1,
                     beta2=self.config.trainer.optimizer_adam_beta2,
                 )
-            elif self.config.trainer.mode == "wgan-gp":
+            elif self.config.trainer.mode == "wgan_gp":
                 # Build the optimizers
                 self.generator_optimizer = tf.train.AdamOptimizer(
                     self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9
