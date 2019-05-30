@@ -88,7 +88,7 @@ class BIGAN(BaseModel):
                 delta = inter_layer_inp - inter_layer_rct
                 delta = tf.layers.Flatten()(delta)
                 self.loss_generator_fm = tf.reduce_mean(
-                    tf.norm(delta), ord=2, axis=1, keepdims=False
+                    tf.norm(delta, ord=2, axis=1, keepdims=False)
                 )
                 self.loss_generator = self.loss_generator_ce + 0.1 * self.loss_generator_fm
                 # Encoder

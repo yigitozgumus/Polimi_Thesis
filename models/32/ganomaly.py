@@ -41,9 +41,11 @@ class GANomaly(BaseModel):
 
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
-                self.noise_gen, self.img_rec, self.noise_rec = self.generator(
-                    self.image_input + self.fake_noise,
-                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                self.noise_gen, self.img_rec, self.noise_rec = (
+                    self.generator(
+                        self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                    )
+                    + self.fake_noise
                 )
 
             with tf.variable_scope("Discriminator_Model"):
