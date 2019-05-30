@@ -153,7 +153,7 @@ class BIGAN(BaseModel):
                     self.config.trainer.discriminator_l_rate
                 )
                 self.encoder_optimizer = tf.train.AdamOptimizer(
-                    self.config.wgan_lr,
+                    self.config.trainer.wgan_lr,
                     beta1=self.config.trainer.optimizer_adam_beta1,
                     beta2=self.config.trainer.optimizer_adam_beta2,
                 )
