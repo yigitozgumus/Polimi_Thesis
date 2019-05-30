@@ -293,12 +293,14 @@ class BIGAN(BaseModel):
             with tf.name_scope("Summary"):
                 with tf.name_scope("Disc_Summary"):
                     tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
-                    tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
-                    tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
+                        tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
-                    tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
-                    tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
+                        tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
                 with tf.name_scope("Image_Summary"):
                     tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
