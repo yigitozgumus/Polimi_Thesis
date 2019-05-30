@@ -51,11 +51,13 @@ class BIGAN(BaseModel):
 
             with tf.variable_scope("Discriminator_Model"):
                 # E(x) and x --> This being real is the output of discriminator
-                l_encoder, inter_layer_inp = self.discriminator(
+                self.l_encoder, self.inter_layer_inp = self.discriminator(
                     self.noise_gen, self.image_input + self.real_noise
                 )
                 # z and G(z)
-                l_generator, inter_layer_rct = self.discriminator(self.noise_tensor, self.image_gen)
+                self.l_generator, self.inter_layer_rct = self.discriminator(
+                    self.noise_tensor, self.image_gen
+                )
 
         # Loss Function Implementations
         with tf.name_scope("Loss_Functions"):
@@ -64,28 +66,30 @@ class BIGAN(BaseModel):
             if self.config.trainer.mode == "standard":
                 self.loss_dis_enc = tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(
-                        labels=self.true_labels, logits=l_encoder
+                        labels=self.true_labels, logits=self.l_encoder
                     )
                 )
                 self.loss_dis_gen = tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(
-                        labels=self.generated_labels, logits=l_generator
+                        labels=self.generated_labels, logits=self.l_generator
                     )
                 )
                 self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
 
                 if self.config.trainer.flip_labels:
-                    labels_gen = tf.zeros_like(l_generator)
-                    labels_enc = tf.ones_like(l_encoder)
+                    labels_gen = tf.zeros_like(self.l_generator)
+                    labels_enc = tf.ones_like(self.l_encoder)
                 else:
-                    labels_gen = tf.ones_like(l_generator)
-                    labels_enc = tf.zeros_like(l_encoder)
+                    labels_gen = tf.ones_like(self.l_generator)
+                    labels_enc = tf.zeros_like(self.l_encoder)
                 # Generator
                 # Generator is considered as the true ones here because it tries to fool discriminator
                 self.loss_generator_ce = tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=labels_gen, logits=self.l_generator
+                    )
                 )
-                delta = inter_layer_inp - inter_layer_rct
+                delta = self.inter_layer_inp - self.inter_layer_rct
                 delta = tf.layers.Flatten()(delta)
                 self.loss_generator_fm = tf.reduce_mean(
                     tf.norm(delta, ord=2, axis=1, keepdims=False)
@@ -94,22 +98,24 @@ class BIGAN(BaseModel):
                 # Encoder
                 # Encoder is considered as the fake one because it tries to fool the discriminator also
                 self.loss_encoder = tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_enc, logits=l_encoder)
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=labels_enc, logits=self.l_encoder
+                    )
                 )
             elif self.config.trainer.mode == "wgan":
 
-                self.loss_d_fake = -tf.reduce_mean(self.loss_dis_gen)
-                self.loss_d_real = -tf.reduce_mean(self.loss_dis_enc)
+                self.loss_d_fake = -tf.reduce_mean(self.l_generator)
+                self.loss_d_real = -tf.reduce_mean(self.l_encoder)
                 self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
-                self.loss_generator = -tf.reduce_mean(self.loss_dis_gen)
-                self.loss_encoder = -tf.reduce_mean(self.loss_dis_enc)
+                self.loss_generator = -tf.reduce_mean(self.l_generator)
+                self.loss_encoder = -tf.reduce_mean(self.l_encoder)
 
             elif self.config.trainer.mode == "wgan_gp":
-                self.loss_d_fake = -tf.reduce_mean(self.loss_dis_gen)
-                self.loss_d_real = -tf.reduce_mean(self.loss_dis_enc)
+                self.loss_d_fake = -tf.reduce_mean(self.l_generator)
+                self.loss_d_real = -tf.reduce_mean(self.l_encoder)
                 self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
-                self.loss_generator = -tf.reduce_mean(self.loss_dis_gen)
-                self.loss_encoder = -tf.reduce_mean(self.loss_dis_enc)
+                self.loss_generator = -tf.reduce_mean(self.l_generator)
+                self.loss_encoder = -tf.reduce_mean(self.l_encoder)
 
                 alpha_x = tf.random_uniform(
                     shape=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
