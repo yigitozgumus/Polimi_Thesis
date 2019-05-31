@@ -263,8 +263,8 @@ class EncEBGAN(BaseModel):
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_enc = tf.summary.merge_all("enc")
-        self.sum_op_im_1 = tf.summary.merge_all("image_1")
-        self.sum_op_im_2 = tf.summary.merge_all("image_2")
+        self.sum_op_im_1 = tf.summary.merge_all("img_1")
+        self.sum_op_im_2 = tf.summary.merge_all("img_2")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
 
     def generator(self, noise_input, getter=None):
