@@ -172,6 +172,7 @@ class EncEBGANTrainer(BaseTrainMulti):
         scores_im2 = []
         scores_z1 = []
         scores_z2 = []
+        scores_comb = []
         inference_time = []
         true_labels = []
         # Create the scores
@@ -195,12 +196,14 @@ class EncEBGANTrainer(BaseTrainMulti):
             scores_im2 += self.sess.run(self.model.img_score_l2, feed_dict=feed_dict).tolist()
             scores_z1 += self.sess.run(self.model.z_score_l1, feed_dict=feed_dict).tolist()
             scores_z2 += self.sess.run(self.model.z_score_l2, feed_dict=feed_dict).tolist()
+            scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         scores_im1 = np.asarray(scores_im1)
         scores_im2 = np.asarray(scores_im2)
         scores_z1 = np.asarray(scores_z1)
         scores_z2 = np.asarray(scores_z2)
+        scores_comb = np.asarray(scores_comb)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
@@ -255,6 +258,20 @@ class EncEBGANTrainer(BaseTrainMulti):
             self.config.model.name,
             self.config.data_loader.dataset_name,
             "z2",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_comb,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "comb",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,

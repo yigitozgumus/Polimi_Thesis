@@ -232,6 +232,10 @@ class EncEBGAN(BaseModel):
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
                 )
                 self.img_score_l2 = tf.squeeze(img_score_l2)
+                self.score_comb = (
+                    (1 - self.config.trainer.feature_match_weight) * self.img_score_l1
+                    + self.config.trainer.feature_match_weight * self.img_score_l2
+                )
             with tf.name_scope("Noise_Based"):
                 delta = self.embedding_rec_ema - self.embedding_q_ema
                 delta_flat = tf.layers.Flatten()(delta)
@@ -523,7 +527,7 @@ class EncEBGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=64,
-                    kernel_size=4,
+                    kernel_size=5,
                     strides=(2, 2),
                     padding="same",
                     kernel_initializer=self.init_kernel,
@@ -539,7 +543,7 @@ class EncEBGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=128,
-                    kernel_size=4,
+                    kernel_size=5,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,
@@ -555,7 +559,7 @@ class EncEBGAN(BaseModel):
             with tf.variable_scope(net_name):
                 x_e = tf.layers.Conv2D(
                     filters=256,
-                    kernel_size=4,
+                    kernel_size=5,
                     padding="same",
                     strides=(2, 2),
                     kernel_initializer=self.init_kernel,

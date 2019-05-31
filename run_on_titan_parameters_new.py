@@ -39,12 +39,12 @@ def run_multi():
                 ]
             )
             # Copy the model code and the trainer code to the experiment folder
-            run(config)
+            run(config, args)
             tf.reset_default_graph()
             # Delete the session and the model
 
 
-def run(config):
+def run(config, args):
     copy_codebase(config)
 
     l = Logger(config)
@@ -64,7 +64,8 @@ def run(config):
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
+    if args.train:
+        trainer.train()
     # Test the model
     if config.trainer.test_at_end:
         trainer.test()

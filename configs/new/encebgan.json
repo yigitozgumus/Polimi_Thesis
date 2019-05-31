@@ -1,9 +1,9 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["mode", "init_type"],
-    "vals_1": ["standard", "wgan", "wgan_gp"],
-    "vals_2": ["normal", "xavier"]
+    "params": ["feature_match_weight"],
+    "vals": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+
   },
   "model": {
     "name": "encebgan.EncEBGAN"
@@ -18,10 +18,10 @@
     "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
-    "batch_size": 64,
-    "num_epochs_gan": 50,
-    "num_epochs_enc": 100,
-    "num_iter_per_epoch": 800,
+    "batch_size": 128,
+    "num_epochs_gan": 75,
+    "num_epochs_enc": 150,
+    "num_iter_per_epoch": 400,
     "num_parallel_calls": 8,
     "num_iter_per_test": 2583,
     "mode": "anomaly",
@@ -33,8 +33,8 @@
   },
   "trainer": {
     "name": "encebgan_trainer.EncEBGANTrainer",
-    "feature_match_weight": 0.1,
-    "mode": "standard",
+    "feature_match_weight": 0.25,
+    "mode": "non_standard",
     "init_type": "xavier",
     "mse_mode" :"norm",
     "feature_layer_dim": 4096,
@@ -44,10 +44,7 @@
     "noise_probability": 0.05,
     "standard_lr_gen": 5e-4,
     "standard_lr_dis": 5e-6,
-    "wgan_lr" : 5e-5,
-    "wgan_gp_lr": 1e-4,
-    "wgan_gp_lambda": 10,
-    "critic_iters": 5,
+    "critic_iters": 1,
     "disc_margin": 20,
     "pt_weight": 0.25,
     "pullaway": true,
