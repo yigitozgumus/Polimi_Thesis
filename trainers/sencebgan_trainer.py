@@ -6,9 +6,9 @@ from time import time
 from utils.evaluations import save_results
 
 
-class EncEBGANTrainer(BaseTrainSequential):
+class SENCEBGANTrainer(BaseTrainSequential):
     def __init__(self, sess, model, data, config, logger):
-        super(EncEBGANTrainer, self).__init__(sess, model, data, config, logger)
+        super(SENCEBGANTrainer, self).__init__(sess, model, data, config, logger)
         self.batch_size = self.config.data_loader.batch_size
         self.noise_dim = self.config.trainer.noise_dim
         self.img_dims = self.config.trainer.image_dims
