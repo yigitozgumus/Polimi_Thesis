@@ -5,9 +5,9 @@ from utils.alad_utils import get_getter
 import utils.alad_utils as sn
 
 
-class EncEBGAN(BaseModel):
+class SENCEBGAN(BaseModel):
     def __init__(self, config):
-        super(EncEBGAN, self).__init__(config)
+        super(SENCEBGAN, self).__init__(config)
         self.build_model()
         self.init_saver()
 
@@ -23,7 +23,8 @@ class EncEBGAN(BaseModel):
         # Placeholders
         self.is_training_gen = tf.placeholder(tf.bool)
         self.is_training_dis = tf.placeholder(tf.bool)
-        self.is_training_enc = tf.placeholder(tf.bool)
+        self.is_training_enc_g = tf.placeholder(tf.bool)
+        self.is_training_enc_r = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
             tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"
         )
@@ -32,7 +33,8 @@ class EncEBGAN(BaseModel):
         )
         # Build Training Graph
         self.logger.info("Building training graph...")
-        with tf.variable_scope("EncEBGAN"):
+        with tf.variable_scope("SENCEBGAN"):
+            # First training part
             with tf.variable_scope("Generator_Model"):
                 self.image_gen = self.generator(self.noise_tensor)
 
@@ -43,8 +45,9 @@ class EncEBGAN(BaseModel):
                 self.embedding_fake, self.decoded_fake = self.discriminator(
                     self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
-            with tf.variable_scope("Encoder_Model"):
-                self.image_encoded = self.encoder(self.image_input)
+            # Second training part
+            with tf.variable_scope("Encoder_G_Model"):
+                self.image_encoded = self.encoder_g(self.image_input)
 
             with tf.variable_scope("Generator_Model"):
                 self.image_gen_enc = self.generator(self.image_encoded)
@@ -56,6 +59,16 @@ class EncEBGAN(BaseModel):
                 self.embedding_enc_real, self.decoded_enc_real = self.discriminator(
                     self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
+            # Third training part
+            with tf.variable_scope("Encoder_G_Model"):
+                self.image_encoded_r = self.encoder_g(self.image_input)
+
+            with tf.variable_scope("Generator_Model"):
+                self.image_gen_enc_r = self.generator(self.image_encoded_r)
+
+            with tf.variable_scope("Encoder_R_Model"):
+                self.image_ege = self.encoder_r(self.image_gen_enc_r)
+
         # Loss functions
         with tf.name_scope("Loss_Functions"):
             with tf.name_scope("Generator_Discriminator"):
@@ -84,7 +97,7 @@ class EncEBGAN(BaseModel):
                     pt_loss = self.pullaway_loss(self.embedding_fake)
                 self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
 
-            with tf.name_scope("Encoder"):
+            with tf.name_scope("Encoder_G"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_enc_rec = tf.reduce_mean(
                         self.mse_loss(self.image_gen_enc, self.image_input, mode="norm")
@@ -99,9 +112,18 @@ class EncEBGAN(BaseModel):
                     self.loss_enc_f = tf.reduce_mean(
                         self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="mse")
                     )
-                self.loss_encoder = (
+                self.loss_encoder_g = (
                     self.loss_enc_rec + self.config.trainer.encoder_f_factor * self.loss_enc_f
                 )
+            with tf.name_scope("Encoder_R"):
+                if self.config.trainer.mse_mode == "norm":
+                    self.loss_encoder_r = tf.reduce_mean(
+                        self.mse_loss(self.image_ege - self.image_gen_enc_r, mode="mse")
+                    )
+                elif self.config.trainer.mse_mode == "norm":
+                    self.loss_encoder_r = tf.reduce_mean(
+                        self.mse_loss(self.image_ege - self.image_gen_enc_r, mode="mse")
+                    )
 
         # Optimizers
         with tf.name_scope("Optimizers"):
@@ -110,7 +132,12 @@ class EncEBGAN(BaseModel):
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
-            self.encoder_optimizer = tf.train.AdamOptimizer(
+            self.encoder_g_optimizer = tf.train.AdamOptimizer(
+                self.config.trainer.standard_lr_enc,
+                beta1=self.config.trainer.optimizer_adam_beta1,
+                beta2=self.config.trainer.optimizer_adam_beta2,
+            )
+            self.encoder_r_optimizer = tf.train.AdamOptimizer(
                 self.config.trainer.standard_lr_enc,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
@@ -124,26 +151,33 @@ class EncEBGAN(BaseModel):
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             # Generator Network Variables
             self.generator_vars = [
-                v for v in all_variables if v.name.startswith("EncEBGAN/Generator_Model")
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Generator_Model")
             ]
             # Discriminator Network Variables
             self.discriminator_vars = [
-                v for v in all_variables if v.name.startswith("EncEBGAN/Discriminator_Model")
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Discriminator_Model")
             ]
             # Discriminator Network Variables
-            self.encoder_vars = [
-                v for v in all_variables if v.name.startswith("EncEBGAN/Encoder_Model")
+            self.encoder_g_vars = [
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Encoder_G_Model")
+            ]
+            self.encoder_r_vars = [
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Encoder_R_Model")
             ]
             # Generator Network Operations
             self.gen_update_ops = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="EncEBGAN/Generator_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Generator_Model"
             )
             # Discriminator Network Operations
             self.disc_update_ops = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="EncEBGAN/Discriminator_Model"
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Discriminator_Model"
             )
-            self.enc_update_ops = tf.get_collection(
-                tf.GraphKeys.UPDATE_OPS, scope="EncEBGAN/Encoder_Model"
+            self.encg_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Encoder_G_Model"
+            )
+
+            self.encr_update_ops = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Encoder_R_Model"
             )
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
@@ -155,9 +189,13 @@ class EncEBGAN(BaseModel):
                 self.disc_op = self.discriminator_optimizer.minimize(
                     self.loss_discriminator, var_list=self.discriminator_vars
                 )
-            with tf.control_dependencies(self.enc_update_ops):
-                self.enc_op = self.encoder_optimizer.minimize(
-                    self.loss_encoder, var_list=self.encoder_vars
+            with tf.control_dependencies(self.encg_update_ops):
+                self.encg_op = self.encoder_g_optimizer.minimize(
+                    self.loss_encoder_g, var_list=self.encoder_g_vars
+                )
+            with tf.control_dependencies(self.encr_update_ops):
+                self.encr_op = self.encoder_r_optimizer.minimize(
+                    self.loss_encoder_r, var_list=self.encoder_r_vars
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
@@ -166,8 +204,11 @@ class EncEBGAN(BaseModel):
             self.gen_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_gen = self.gen_ema.apply(self.generator_vars)
 
-            self.enc_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
-            maintain_averages_op_enc = self.enc_ema.apply(self.encoder_vars)
+            self.encg_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_encg = self.encg_ema.apply(self.encoder_g_vars)
+
+            self.encr_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_encr = self.encg_ema.apply(self.encoder_r_vars)
 
             with tf.control_dependencies([self.disc_op]):
                 self.train_dis_op = tf.group(maintain_averages_op_dis)
@@ -175,12 +216,15 @@ class EncEBGAN(BaseModel):
             with tf.control_dependencies([self.gen_op]):
                 self.train_gen_op = tf.group(maintain_averages_op_gen)
 
-            with tf.control_dependencies([self.enc_op]):
-                self.train_enc_op = tf.group(maintain_averages_op_enc)
+            with tf.control_dependencies([self.encg_op]):
+                self.train_enc_g_op = tf.group(maintain_averages_op_encg)
+
+            with tf.control_dependencies([self.encr_op]):
+                self.train_enc_r_op = tf.group(maintain_averages_op_encr)
 
         # Build Test Graph
         self.logger.info("Building Testing Graph...")
-        with tf.variable_scope("EncEBGAN"):
+        with tf.variable_scope("SENCEBGAN"):
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_q_ema, self.decoded_q_ema = self.discriminator(
                     self.image_input,
@@ -197,9 +241,9 @@ class EncEBGAN(BaseModel):
                     getter=get_getter(self.dis_ema),
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
-            with tf.variable_scope("Encoder_Model"):
-                self.image_encoded_ema = self.encoder(
-                    self.image_input, getter=get_getter(self.enc_ema)
+            with tf.variable_scope("Encoder_G_Model"):
+                self.image_encoded_ema = self.encoder_g(
+                    self.image_input, getter=get_getter(self.encg_ema)
                 )
 
             with tf.variable_scope("Generator_Model"):
@@ -217,6 +261,16 @@ class EncEBGAN(BaseModel):
                     getter=get_getter(self.dis_ema),
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
+            # Third training part
+            with tf.variable_scope("Encoder_G_Model"):
+                self.image_encoded_r_ema = self.encoder_g(self.image_input)
+
+            with tf.variable_scope("Generator_Model"):
+                self.image_gen_enc_r_ema = self.generator(self.image_encoded_r_ema)
+
+            with tf.variable_scope("Encoder_R_Model"):
+                self.image_ege_ema = self.encoder_r(self.image_gen_enc_r_ema)
+
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
                 delta = self.image_input - self.image_gen_enc_ema
@@ -247,6 +301,11 @@ class EncEBGAN(BaseModel):
                 z_score_l2 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_2")
                 self.z_score_l2 = tf.squeeze(z_score_l2)
 
+                delta = self.image_encoded_r_ema - self.image_ege_ema
+                delta_flat = tf.layers.Flatten()(delta)
+                final_score = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score")
+                self.final_score = tf.squeeze(final_score)
+
         # Tensorboard
         if self.config.log.enable_summary:
             with tf.name_scope("train_summary"):
@@ -257,7 +316,8 @@ class EncEBGAN(BaseModel):
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                 with tf.name_scope("enc_summary"):
-                    tf.summary.scalar("loss_encoder", self.loss_encoder, ["enc"])
+                    tf.summary.scalar("loss_encoder_g", self.loss_encoder_g, ["enc_g"])
+                    tf.summary.scalar("loss_encoder_r", self.loss_encoder_r, ["enc_r"])
                 with tf.name_scope("img_summary"):
                     tf.summary.image("input_image", self.image_input, 3, ["img_1"])
                     tf.summary.image("reconstructed", self.image_gen, 3, ["img_1"])
@@ -266,7 +326,8 @@ class EncEBGAN(BaseModel):
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
-        self.sum_op_enc = tf.summary.merge_all("enc")
+        self.sum_op_enc_g = tf.summary.merge_all("enc_g")
+        self.sum_op_enc_r = tf.summary.merge_all("enc_r")
         self.sum_op_im_1 = tf.summary.merge_all("img_1")
         self.sum_op_im_2 = tf.summary.merge_all("img_2")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
@@ -517,8 +578,8 @@ class EncEBGAN(BaseModel):
                     decoded = tf.nn.tanh(net, name="tconv5/tanh")
         return embedding, decoded
 
-    def encoder(self, image_input, getter=None):
-        with tf.variable_scope("Encoder", custom_getter=getter, reuse=tf.AUTO_REUSE):
+    def encoder_g(self, image_input, getter=None):
+        with tf.variable_scope("Encoder_G", custom_getter=getter, reuse=tf.AUTO_REUSE):
             x_e = tf.reshape(
                 image_input,
                 [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
@@ -534,7 +595,9 @@ class EncEBGAN(BaseModel):
                     name="conv",
                 )(x_e)
                 x_e = tf.layers.batch_normalization(
-                    x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training_enc
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_g,
                 )
                 x_e = tf.nn.leaky_relu(
                     features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -550,7 +613,9 @@ class EncEBGAN(BaseModel):
                     name="conv",
                 )(x_e)
                 x_e = tf.layers.batch_normalization(
-                    x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training_enc
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_g,
                 )
                 x_e = tf.nn.leaky_relu(
                     features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
@@ -566,7 +631,79 @@ class EncEBGAN(BaseModel):
                     name="conv",
                 )(x_e)
                 x_e = tf.layers.batch_normalization(
-                    x_e, momentum=self.config.trainer.batch_momentum, training=self.is_training_enc
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_g,
+                )
+                x_e = tf.nn.leaky_relu(
+                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                )
+            x_e = tf.layers.Flatten()(x_e)
+            net_name = "Layer_4"
+            with tf.variable_scope(net_name):
+                x_e = tf.layers.Dense(
+                    units=self.config.trainer.noise_dim,
+                    kernel_initializer=self.init_kernel,
+                    name="fc",
+                )(x_e)
+        return x_e
+
+    def encoder_r(self, image_input, getter=None):
+        with tf.variable_scope("Encoder_R", custom_getter=getter, reuse=tf.AUTO_REUSE):
+            x_e = tf.reshape(
+                image_input,
+                [-1, self.config.data_loader.image_size, self.config.data_loader.image_size, 1],
+            )
+            net_name = "Layer_1"
+            with tf.variable_scope(net_name):
+                x_e = tf.layers.Conv2D(
+                    filters=64,
+                    kernel_size=5,
+                    strides=(2, 2),
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="conv",
+                )(x_e)
+                x_e = tf.layers.batch_normalization(
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_r,
+                )
+                x_e = tf.nn.leaky_relu(
+                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                )
+            net_name = "Layer_2"
+            with tf.variable_scope(net_name):
+                x_e = tf.layers.Conv2D(
+                    filters=128,
+                    kernel_size=5,
+                    padding="same",
+                    strides=(2, 2),
+                    kernel_initializer=self.init_kernel,
+                    name="conv",
+                )(x_e)
+                x_e = tf.layers.batch_normalization(
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_r,
+                )
+                x_e = tf.nn.leaky_relu(
+                    features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
+                )
+            net_name = "Layer_3"
+            with tf.variable_scope(net_name):
+                x_e = tf.layers.Conv2D(
+                    filters=256,
+                    kernel_size=5,
+                    padding="same",
+                    strides=(2, 2),
+                    kernel_initializer=self.init_kernel,
+                    name="conv",
+                )(x_e)
+                x_e = tf.layers.batch_normalization(
+                    x_e,
+                    momentum=self.config.trainer.batch_momentum,
+                    training=self.is_training_enc_r,
                 )
                 x_e = tf.nn.leaky_relu(
                     features=x_e, alpha=self.config.trainer.leakyReLU_alpha, name="leaky_relu"
