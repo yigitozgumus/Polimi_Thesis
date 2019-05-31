@@ -43,7 +43,7 @@
     "image_dims": [32, 32, 1],
     "noise_probability": 0.05,
     "standard_lr_gen": 1e-5,
-    "standard_lr_enc": 1e-3,
+    "standard_lr_enc": 5e-5,
     "standard_lr_dis": 5e-6,
     "critic_iters": 1,
     "disc_margin": 20,

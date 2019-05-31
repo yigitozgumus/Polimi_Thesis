@@ -163,7 +163,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.noise_tensor: noise,
                 self.model.is_training_gen: True,
                 self.model.is_training_dis: True,
-                self.model.is_training_enc: False,
+                self.model.is_training_enc_g: False,
+                self.model.is_training_enc_r: False,
             }
             _, ld, sm_d = self.sess.run(
                 [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
@@ -183,7 +184,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.noise_tensor: noise,
                 self.model.is_training_gen: True,
                 self.model.is_training_dis: True,
-                self.model.is_training_enc: False,
+                self.model.is_training_enc_g: False,
+                self.model.is_training_enc_r: False,
             }
             _, lg, sm_g = self.sess.run(
                 [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],

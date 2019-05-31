@@ -206,7 +206,7 @@ class EncEBGANTrainer(BaseTrainMulti):
         scores_z1 = np.asarray(scores_z1)
         scores_z2 = np.asarray(scores_z2)
         scores_comb = np.asarray(scores_comb)
-        scores_comb2 = np.asarray(scores_comb_2)
+        scores_comb2 = np.asarray(scores_comb2)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))

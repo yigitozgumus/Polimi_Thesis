@@ -118,11 +118,11 @@ class SENCEBGAN(BaseModel):
             with tf.name_scope("Encoder_R"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege - self.image_gen_enc_r, mode="mse")
+                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
                     )
                 elif self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege - self.image_gen_enc_r, mode="mse")
+                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
                     )
 
         # Optimizers
