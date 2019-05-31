@@ -201,9 +201,8 @@ class EncEBGANTrainer(BaseTrainMulti):
         scores_im2 = np.asarray(scores_im2)
         scores_z1 = np.asarray(scores_z1)
         scores_z2 = np.asarray(scores_z2)
-        # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
-        # normal images are 0 meaning that contains no anomaly and anomalous images are 1 meaning that it contains
-        # an anomalous region, we first scale the scores and then invert them to match the scores
+        true_labels = np.asarray(true_labels)
+        inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         step = self.sess.run(self.model.global_step_tensor)
         percentiles = np.asarray(self.config.trainer.percentiles)
