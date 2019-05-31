@@ -208,7 +208,7 @@ class SENCEBGAN(BaseModel):
             maintain_averages_op_encg = self.encg_ema.apply(self.encoder_g_vars)
 
             self.encr_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
-            maintain_averages_op_encr = self.encg_ema.apply(self.encoder_r_vars)
+            maintain_averages_op_encr = self.encr_ema.apply(self.encoder_r_vars)
 
             with tf.control_dependencies([self.disc_op]):
                 self.train_dis_op = tf.group(maintain_averages_op_dis)
@@ -276,14 +276,14 @@ class SENCEBGAN(BaseModel):
                 delta = self.image_input - self.image_gen_enc_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l1 = tf.norm(
-                    delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__1"
+                    delta_flat, ord=1, axis=1, keepdims=False, name="img_loss__1"
                 )
                 self.img_score_l1 = tf.squeeze(img_score_l1)
 
                 delta = self.embedding_enc_fake_ema - self.embedding_enc_real_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l2 = tf.norm(
-                    delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
+                    delta_flat, ord=1, axis=1, keepdims=False, name="img_loss__2"
                 )
                 self.img_score_l2 = tf.squeeze(img_score_l2)
                 self.score_comb = (

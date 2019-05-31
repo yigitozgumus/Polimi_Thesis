@@ -103,7 +103,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
             )
         enc_m = np.mean(enc_losses)
         self.logger.info(
-            "Epoch: {} | time = {} s | loss enc= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+            "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
         )
         self.model.save(self.sess)
 
@@ -124,28 +124,10 @@ class SENCEBGANTrainer(BaseTrainSequential):
             enc_losses.append(le)
             summaries.append(sum_e)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
-        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid")
-        # Check for reconstruction
-        # if cur_epoch % self.config.log.frequency_test == 0:
-        #     noise = np.random.normal(
-        #         loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
-        #     )
-        #     image_eval = self.sess.run(image)
-        #     feed_dict = {
-        #         self.model.image_input: image_eval,
-        #         self.model.noise_tensor: noise,
-        #         self.model.is_training_gen: False,
-        #         self.model.is_training_enc_r: True,
-        #         self.model.is_training_enc_g: False,
-        #         self.model.is_training_dis: False,
-        #     }
-        #     reconstruction = self.sess.run(self.model.sum_op_im_2, feed_dict=feed_dict)
-        #     self.summarizer.add_tensorboard(
-        #         step=cur_epoch, summaries=[reconstruction], summarizer="valid"
-        #     )
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid_2")
         enc_m = np.mean(enc_losses)
         self.logger.info(
-            "Epoch: {} | time = {} s | loss enc= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+            "Epoch: {} | time = {} s | loss enc reconstruction= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
         )
         self.model.save(self.sess)
 
