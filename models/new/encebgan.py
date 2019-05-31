@@ -111,7 +111,7 @@ class EncEBGAN(BaseModel):
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )
             self.encoder_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.standard_lr_gen,
+                self.config.trainer.standard_lr_enc,
                 beta1=self.config.trainer.optimizer_adam_beta1,
                 beta2=self.config.trainer.optimizer_adam_beta2,
             )

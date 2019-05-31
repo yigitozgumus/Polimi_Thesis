@@ -107,7 +107,7 @@ class EncEBGANTrainer(BaseTrainMulti):
         self.model.save(self.sess)
 
     def train_step_gan(self, image, cur_epoch):
-        ld_t, lg_t, sm_g, sm_d = 0, 0, None, None
+        ld_t, lg_t, sm_g, sm_d = [], [], None, None
         image_eval = self.sess.run(image)
         if self.config.trainer.mode == "standard":
             disc_iters = 1
@@ -126,7 +126,7 @@ class EncEBGANTrainer(BaseTrainMulti):
                 [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
                 feed_dict=feed_dict,
             )
-            ld_t += ld
+            ld_t.append(ld)
 
         if self.config.trainer.mode == "standard":
             gen_iters = 1
@@ -146,7 +146,7 @@ class EncEBGANTrainer(BaseTrainMulti):
                 [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
                 feed_dict=feed_dict,
             )
-            lg_t += lg
+            lg_t.append(lg)
 
         return np.mean(lg_t), np.mean(ld_t), sm_g, sm_d
 

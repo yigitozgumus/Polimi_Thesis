@@ -1,8 +1,8 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["feature_match_weight"],
-    "vals": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+    "params": ["init_type"],
+    "vals": ["normal", "xavier"]
 
   },
   "model": {
@@ -18,10 +18,10 @@
     "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
-    "batch_size": 128,
-    "num_epochs_gan": 75,
-    "num_epochs_enc": 150,
-    "num_iter_per_epoch": 400,
+    "batch_size": 64,
+    "num_epochs_gan": 100,
+    "num_epochs_enc": 400,
+    "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 2583,
     "mode": "anomaly",
@@ -42,7 +42,8 @@
     "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "noise_probability": 0.05,
-    "standard_lr_gen": 5e-4,
+    "standard_lr_gen": 1e-5,
+    "standard_lr_enc": 1e-3,
     "standard_lr_dis": 5e-6,
     "critic_iters": 1,
     "disc_margin": 20,
