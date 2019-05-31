@@ -216,92 +216,95 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     enc_layer_1 = tf.layers.Conv2D(
                         filters=64,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="enc_conv1",
                     )(model_entry)
-                    enc_layer_1 = tf.layers.batch_normalization(
+                    enc_layer_1_sep = tf.layers.batch_normalization(
                         enc_layer_1,
                         momentum=self.config.trainer.batch_momentum,
                         training=self.is_training,
                         name="enc_bn1",
                     )
                     enc_layer_1 = tf.nn.leaky_relu(
-                        enc_layer_1, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_1"
+                        enc_layer_1_sep, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_1"
                     )
                     # Current layer is  Batch_size x 16 x 16 x 64
                 net_name = "Layer_2"
                 with tf.variable_scope(net_name):
                     enc_layer_2 = tf.layers.Conv2D(
                         filters=128,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="enc_conv2",
                     )(enc_layer_1)
-                    enc_layer_2 = tf.layers.batch_normalization(
+                    enc_layer_2_sep = tf.layers.batch_normalization(
                         enc_layer_2,
                         momentum=self.config.trainer.batch_momentum,
                         training=self.is_training,
                         name="enc_bn2",
                     )
                     enc_layer_2 = tf.nn.leaky_relu(
-                        enc_layer_2, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_2"
+                        enc_layer_2_sep, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_2"
                     )
                     # Current layer is  Batch_size x 8 x 8 x 128
                 net_name = "Layer_3"
                 with tf.variable_scope(net_name):
                     enc_layer_3 = tf.layers.Conv2D(
                         filters=256,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="enc_conv3",
                     )(enc_layer_2)
-                    enc_layer_3 = tf.layers.batch_normalization(
+                    enc_layer_3_sep = tf.layers.batch_normalization(
                         enc_layer_3,
                         momentum=self.config.trainer.batch_momentum,
                         training=self.is_training,
                         name="enc_bn3",
                     )
                     enc_layer_3 = tf.nn.leaky_relu(
-                        enc_layer_3, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_3"
+                        enc_layer_3_sep, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_3"
                     )
                     # Current layer is  Batch_size x 4 x 4 x 256
                 net_name = "Layer_4"
                 with tf.variable_scope(net_name):
                     enc_layer_4 = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="enc_conv4",
                     )(enc_layer_3)
-                    enc_layer_4 = tf.layers.batch_normalization(
+                    enc_layer_4_sep = tf.layers.batch_normalization(
                         enc_layer_4,
                         momentum=self.config.trainer.batch_momentum,
                         training=self.is_training,
                         name="enc_bn4",
                     )
                     enc_layer_4 = tf.nn.leaky_relu(
-                        enc_layer_4, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_4"
+                        enc_layer_4_sep, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_4"
                     )
                     # Current layer is  Batch_size x 2 x 2 x 512
                 net_name = "Layer_5"
                 with tf.variable_scope(net_name):
                     enc_layer_5 = tf.layers.Conv2D(
                         filters=512,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="enc_conv5",
                     )(enc_layer_4)
+                    enc_layer_5 = tf.nn.leaky_relu(
+                        enc_layer_5, alpha=self.config.trainer.leakyReLU_alpha, name="enc_lrelu_5"
+                    )
             # Decoder Part
             with tf.variable_scope("Decoder"):
                 gen_noise_entry = enc_layer_5
@@ -309,16 +312,16 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_1 = tf.layers.Conv2DTranspose(
                         filters=512,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="dec_convt1",
                     )(gen_noise_entry)
-                    dec_layer_1 = tf.concat([enc_layer_4, dec_layer_1], axis=-1)
                     dec_layer_1 = tf.layers.batch_normalization(
                         dec_layer_1, momentum=self.config.trainer.batch_momentum, name="dec_bn1"
                     )
+                    dec_layer_1 = tf.concat([enc_layer_4_sep, dec_layer_1], axis=-1)
                     dec_layer_1 = tf.nn.relu(dec_layer_1, name="dec_relu1")
 
                     # Current layer is Batch_size x 2 x 2 x 1024
@@ -326,16 +329,16 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_2 = tf.layers.Conv2DTranspose(
                         filters=256,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="dec_convt2",
                     )(dec_layer_1)
-                    dec_layer_2 = tf.concat([enc_layer_3, dec_layer_2], axis=-1)
                     dec_layer_2 = tf.layers.batch_normalization(
                         dec_layer_2, momentum=self.config.trainer.batch_momentum, name="dec_bn2"
                     )
+                    dec_layer_2 = tf.concat([enc_layer_3_sep, dec_layer_2], axis=-1)
                     dec_layer_2 = tf.nn.relu(dec_layer_2, name="dec_relu1")
 
                     # Current layer is Batch_size x 4 x 4 x 512
@@ -343,7 +346,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_3 = tf.layers.Conv2DTranspose(
                         filters=128,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
@@ -360,16 +363,16 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_4 = tf.layers.Conv2DTranspose(
                         filters=64,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         kernel_initializer=self.init_kernel,
                         name="dec_convt4",
                     )(dec_layer_3)
-                    dec_layer_4 = tf.concat([enc_layer_1, dec_layer_4], axis=-1)
                     dec_layer_4 = tf.layers.batch_normalization(
                         dec_layer_4, momentum=self.config.trainer.batch_momentum, name="dec_bn4"
                     )
+                    dec_layer_4 = tf.concat([enc_layer_1_sep, dec_layer_4], axis=-1)
                     dec_layer_4 = tf.nn.relu(dec_layer_4, name="dec_relu4")
 
                     # Current layer is Batch_size x 16 x 16 x 128
@@ -377,7 +380,7 @@ class SkipGANomaly(BaseModel):
                 with tf.variable_scope(net_name):
                     dec_layer_5 = tf.layers.Conv2DTranspose(
                         filters=1,
-                        kernel_size=4,
+                        kernel_size=5,
                         strides=(2, 2),
                         padding="same",
                         activation=tf.nn.tanh,

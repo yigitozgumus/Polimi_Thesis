@@ -35,7 +35,7 @@
     "name": "encebgan_trainer.EncEBGANTrainer",
     "feature_match_weight": 0.25,
     "mode": "non_standard",
-    "init_type": "xavier",
+    "init_type": "normal",
     "mse_mode" :"norm",
     "feature_layer_dim": 4096,
     "encoder_f_factor" : 0.4,
