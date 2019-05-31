@@ -57,6 +57,9 @@ def get_args():
     argparser.add_argument(
         '-e', dest='experiment',
         help='Experiment name of the model')
+    argparser.add_argument('--train', dest='train', action='store_true')
+    argparser.add_argument('--test', dest='train', action='store_false')
+    argparser.set_defaults(train=True)
 
     args = argparser.parse_args()
     return args
