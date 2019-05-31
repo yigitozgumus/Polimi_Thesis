@@ -242,10 +242,15 @@ class EncEBGAN(BaseModel):
                 z_score_l1 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_1")
                 self.z_score_l1 = tf.squeeze(z_score_l1)
 
-                delta = self.embedding_enc_real - self.embedding_enc_fake_ema
+                delta = self.embedding_enc_real_ema - self.embedding_enc_fake_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 z_score_l2 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_2")
                 self.z_score_l2 = tf.squeeze(z_score_l2)
+
+                self.score_comb_2 = (
+                    (1 - self.config.trainer.feature_match_weight) * self.z_score_l1
+                    + self.config.trainer.feature_match_weight * self.z_score_l2
+                )
 
         # Tensorboard
         if self.config.log.enable_summary:
