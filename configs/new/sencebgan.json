@@ -60,6 +60,8 @@
     "ema_decay": 0.999,
     "do_spectral_norm": false,
     "enable_early_stop": false,
+    "enable_disc_zz": false,
+    "enable_disc_xx": false,
     "degree": 1,
     "weight": 0.75,
     "label": 0,

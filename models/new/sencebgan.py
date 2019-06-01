@@ -12,7 +12,9 @@ class SENCEBGAN(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        # Initializations
+        ############################################################################################
+        # INIT
+        ############################################################################################
         # Kernel initialization for the convolutions
         if self.config.trainer.init_type == "normal":
             self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
@@ -31,13 +33,16 @@ class SENCEBGAN(BaseModel):
         self.noise_tensor = tf.placeholder(
             tf.float32, shape=[None, self.config.trainer.noise_dim], name="noise"
         )
-        # Build Training Graph
+        ############################################################################################
+        # MODEL
+        ############################################################################################
         self.logger.info("Building training graph...")
         with tf.variable_scope("SENCEBGAN"):
             # First training part
+            # G(z) ==> x'
             with tf.variable_scope("Generator_Model"):
                 self.image_gen = self.generator(self.noise_tensor)
-
+            # Discriminator outputs
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_real, self.decoded_real = self.discriminator(
                     self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
@@ -46,18 +51,30 @@ class SENCEBGAN(BaseModel):
                     self.image_gen, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
             # Second training part
+            # E(x) ==> z'
             with tf.variable_scope("Encoder_G_Model"):
                 self.image_encoded = self.encoder_g(self.image_input)
-
+            # G(z') ==> G(E(x)) ==> x''
             with tf.variable_scope("Generator_Model"):
                 self.image_gen_enc = self.generator(self.image_encoded)
-
+            # Discriminator outputs
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_enc_fake, self.decoded_enc_fake = self.discriminator(
                     self.image_gen_enc, do_spectral_norm=self.config.trainer.do_spectral_norm
                 )
                 self.embedding_enc_real, self.decoded_enc_real = self.discriminator(
                     self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
+            with tf.variable_scope("Discriminator_Model_XX"):
+                self.im_logit_real, self.im_f_real = self.discriminator_xx(
+                    self.image_input,
+                    self.image_input,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
+                self.im_logit_fake, self.im_f_fake = self.discriminator_xx(
+                    self.image_input,
+                    self.image_gen_enc,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
             # Third training part
             with tf.variable_scope("Encoder_G_Model"):
@@ -69,7 +86,21 @@ class SENCEBGAN(BaseModel):
             with tf.variable_scope("Encoder_R_Model"):
                 self.image_ege = self.encoder_r(self.image_gen_enc_r)
 
-        # Loss functions
+            with tf.variable_scope("Discriminator_Model_ZZ"):
+                self.z_logit_real, self.z_f_real = self.discriminator_zz(
+                    self.image_encoded_r,
+                    self.image_encoded_r,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
+                self.z_logit_fake, self.z_f_fake = self.discriminator_zz(
+                    self.image_encoded_r,
+                    self.image_ege,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                )
+
+        ############################################################################################
+        # LOSS FUNCTIONS
+        ############################################################################################
         with tf.name_scope("Loss_Functions"):
             with tf.name_scope("Generator_Discriminator"):
                 # Discriminator Loss
@@ -115,17 +146,57 @@ class SENCEBGAN(BaseModel):
                 self.loss_encoder_g = (
                     self.loss_enc_rec + self.config.trainer.encoder_f_factor * self.loss_enc_f
                 )
+                if self.config.trainer.enable_disc_xx:
+                    self.enc_xx_real = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.im_logit_real, labels=tf.zeros_like(self.im_logit_real)
+                    )
+                    self.enc_xx_fake = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.im_logit_fake, labels=tf.ones_like(self.im_logit_fake)
+                    )
+                    self.enc_loss_xx = tf.reduce_mean(self.enc_xx_real + self.enc_xx_fake)
+                    self.loss_encoder_g += self.enc_loss_xx
+
             with tf.name_scope("Encoder_R"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
+                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="mse")
                     )
                 elif self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
+                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="mse")
                     )
+                if self.config.trainer.enable_disc_zz:
+                    self.enc_zz_real = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.z_logit_real, labels=tf.zeros_like(self.z_logit_real)
+                    )
+                    self.enc_zz_fake = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.z_logit_fake, labels=tf.ones_like(self.z_logit_fake)
+                    )
+                    self.enc_loss_zz = tf.reduce_mean(self.enc_zz_real + self.enc_zz_fake)
+                    self.loss_encoder_r += self.enc_loss_zz
 
-        # Optimizers
+            if self.config.trainer.enable_disc_xx:
+                with tf.name_scope("Discriminator_XX"):
+                    self.loss_xx_real = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.im_logit_real, labels=tf.ones_like(self.im_logit_real)
+                    )
+                    self.loss_xx_fake = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.im_logit_fake, labels=tf.zeros_like(self.im_logit_fake)
+                    )
+                    self.dis_loss_xx = tf.reduce_mean(self.loss_xx_real + self.loss_xx_fake)
+            if self.config.trainer.enable_disc_zz:
+                with tf.name_scope("Discriminator_ZZ"):
+                    self.loss_zz_real = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.z_logit_real, labels=tf.ones_like(self.z_logit_real)
+                    )
+                    self.loss_zz_fake = tf.nn.sigmoid_cross_entropy_with_logits(
+                        logits=self.z_logit_fake, labels=tf.zeros_like(self.z_logit_fake)
+                    )
+                    self.dis_loss_zz = tf.reduce_mean(self.loss_zz_real + self.loss_zz_fake)
+
+        ############################################################################################
+        # OPTIMIZERS
+        ############################################################################################
         with tf.name_scope("Optimizers"):
             self.generator_optimizer = tf.train.AdamOptimizer(
                 self.config.trainer.standard_lr_gen,
@@ -164,6 +235,12 @@ class SENCEBGAN(BaseModel):
             self.encoder_r_vars = [
                 v for v in all_variables if v.name.startswith("SENCEBGAN/Encoder_R_Model")
             ]
+            self.dxxvars = [
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Discriminator_Model_XX")
+            ]
+            self.dzzvars = [
+                v for v in all_variables if v.name.startswith("SENCEBGAN/Discriminator_Model_ZZ")
+            ]
             # Generator Network Operations
             self.gen_update_ops = tf.get_collection(
                 tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Generator_Model"
@@ -178,6 +255,12 @@ class SENCEBGAN(BaseModel):
 
             self.encr_update_ops = tf.get_collection(
                 tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Encoder_R_Model"
+            )
+            self.update_ops_dis_xx = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Discriminator_Model_XX"
+            )
+            self.update_ops_dis_zz = tf.get_collection(
+                tf.GraphKeys.UPDATE_OPS, scope="SENCEBGAN/Discriminator_Model_ZZ"
             )
             with tf.control_dependencies(self.gen_update_ops):
                 self.gen_op = self.generator_optimizer.minimize(
@@ -197,6 +280,16 @@ class SENCEBGAN(BaseModel):
                 self.encr_op = self.encoder_r_optimizer.minimize(
                     self.loss_encoder_r, var_list=self.encoder_r_vars
                 )
+
+            with tf.control_dependencies(self.update_ops_dis_xx):
+                self.dis_op_xx = self.discriminator_optimizer.minimize(
+                    self.dis_loss_xx, var_list=self.dxxvars
+                )
+
+            with tf.control_dependencies(self.update_ops_dis_zz):
+                self.dis_op_zz = self.discriminator_optimizer.minimize(
+                    self.dis_loss_zz, var_list=self.dzzvars
+                )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_dis = self.dis_ema.apply(self.discriminator_vars)
@@ -210,6 +303,12 @@ class SENCEBGAN(BaseModel):
             self.encr_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_encr = self.encr_ema.apply(self.encoder_r_vars)
 
+            self.dis_xx_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_dis_xx = self.dis_xx_ema.apply(self.dxxvars)
+
+            self.dis_zz_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_dis_zz = self.dis_zz_ema.apply(self.dzzvars)
+
             with tf.control_dependencies([self.disc_op]):
                 self.train_dis_op = tf.group(maintain_averages_op_dis)
 
@@ -222,7 +321,15 @@ class SENCEBGAN(BaseModel):
             with tf.control_dependencies([self.encr_op]):
                 self.train_enc_r_op = tf.group(maintain_averages_op_encr)
 
-        # Build Test Graph
+            with tf.control_dependencies([self.disc_op_xx]):
+                self.train_dis_op_xx = tf.group(maintain_averages_op_dis_xx)
+
+            with tf.control_dependencies([self.disc_op_zz]):
+                self.train_dis_op_zz = tf.group(maintain_averages_op_dis_zz)
+
+        ############################################################################################
+        # TESTING
+        ############################################################################################
         self.logger.info("Building Testing Graph...")
         with tf.variable_scope("SENCEBGAN"):
             with tf.variable_scope("Discriminator_Model"):
@@ -294,21 +401,31 @@ class SENCEBGAN(BaseModel):
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                final_score_1 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_2")
+                final_score_1 = tf.norm(
+                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_2"
+                )
                 self.final_score_1 = tf.squeeze(final_score_1)
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                final_score_2 = tf.norm(delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1")
+                final_score_2 = tf.norm(
+                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1"
+                )
                 self.final_score_2 = tf.squeeze(final_score_2)
 
-        # Tensorboard
+        ############################################################################################
+        # TENSORBOARD
+        ############################################################################################
         if self.config.log.enable_summary:
             with tf.name_scope("train_summary"):
                 with tf.name_scope("dis_summary"):
                     tf.summary.scalar("loss_disc", self.loss_discriminator, ["dis"])
                     tf.summary.scalar("loss_disc_real", self.disc_loss_real, ["dis"])
                     tf.summary.scalar("loss_disc_fake", self.disc_loss_fake, ["dis"])
+                    if self.config.trainer.enable_disc_xx:
+                        tf.summary.scalar("loss_dis_xz", self.dis_loss_xz, ["enc_g"])
+                    if self.config.trainer.enable_disc_zz:
+                        tf.summary.scalar("loss_dis_xx", self.dis_loss_xx, ["enc_r"])
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                 with tf.name_scope("enc_summary"):
@@ -328,6 +445,9 @@ class SENCEBGAN(BaseModel):
         self.sum_op_im_2 = tf.summary.merge_all("img_2")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
 
+    ###############################################################################################
+    # MODULES
+    ###############################################################################################
     def generator(self, noise_input, getter=None):
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
             net_name = "Layer_1"
@@ -714,6 +834,126 @@ class SENCEBGAN(BaseModel):
                 )(x_e)
         return x_e
 
+    # Regularizer discriminator for the Generator Encoder
+    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=False):
+        """ Discriminator architecture in tensorflow
+
+        Discriminates between (x, x) and (x, rec_x)
+        Args:
+            img_tensor:
+            recreated_img:
+            getter: for exponential moving average during inference
+            reuse: sharing variables or not
+            do_spectral_norm:
+        """
+        layers = sn if do_spectral_norm else tf.layers
+        with tf.variable_scope("Discriminator_xx", reuse=tf.AUTO_REUSE, custom_getter=getter):
+            net = tf.concat([img_tensor, recreated_img], axis=1)
+            net_name = "layer_1"
+            with tf.variable_scope(net_name):
+                net = layers.conv2d(
+                    net,
+                    filters=64,
+                    kernel_size=4,
+                    strides=2,
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="conv1",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
+                )
+                net = tf.layers.dropout(
+                    net,
+                    rate=self.config.trainer.dropout_rate,
+                    training=self.is_training,
+                    name="dropout",
+                )
+            with tf.variable_scope(net_name, reuse=True):
+                weights = tf.get_variable("conv1/kernel")
+
+            net_name = "layer_2"
+            with tf.variable_scope(net_name):
+                net = layers.conv2d(
+                    net,
+                    filters=128,
+                    kernel_size=4,
+                    strides=2,
+                    padding="same",
+                    kernel_initializer=self.init_kernel,
+                    name="conv2",
+                )
+                net = tf.nn.leaky_relu(
+                    features=net, alpha=self.config.trainer.leakyReLU_alpha, name="conv2/leaky_relu"
+                )
+                net = tf.layers.dropout(
+                    net,
+                    rate=self.config.trainer.dropout_rate,
+                    training=self.is_training,
+                    name="dropout",
+                )
+            net = tf.layers.Flatten()(net)
+
+            intermediate_layer = net
+
+            net_name = "layer_3"
+            with tf.variable_scope(net_name):
+                net = tf.layers.dense(net, units=1, kernel_initializer=self.init_kernel, name="fc")
+                logits = tf.squeeze(net)
+
+        return logits, intermediate_layer
+
+    # Regularizer discriminator for the Reconstruction Encoder
+
+    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=False):
+        """ Discriminator architecture in tensorflow
+
+        Discriminates between (z, z) and (z, rec_z)
+        Args:
+            noise_tensor:
+            recreated_noise:
+            getter: for exponential moving average during inference
+            reuse: sharing variables or not
+            do_spectral_norm:
+        """
+        layers = sn if do_spectral_norm else tf.layers
+
+        with tf.variable_scope("Discriminator_zz", reuse=tf.AUTO_REUSE, custom_getter=getter):
+            y = tf.concat([noise_tensor, recreated_noise], axis=-1)
+
+            net_name = "y_layer_1"
+            with tf.variable_scope(net_name):
+                y = layers.dense(y, units=64, kernel_initializer=self.init_kernel, name="fc")
+                y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
+                y = tf.layers.dropout(
+                    y,
+                    rate=self.config.trainer.dropout_rate,
+                    training=self.is_training,
+                    name="dropout",
+                )
+
+            net_name = "y_layer_2"
+            with tf.variable_scope(net_name):
+                y = layers.dense(y, units=32, kernel_initializer=self.init_kernel, name="fc")
+                y = tf.nn.leaky_relu(features=y, alpha=self.config.trainer.leakyReLU_alpha)
+                y = tf.layers.dropout(
+                    y,
+                    rate=self.config.trainer.dropout_rate,
+                    training=self.is_training,
+                    name="dropout",
+                )
+
+            intermediate_layer = y
+
+            net_name = "y_layer_3"
+            with tf.variable_scope(net_name):
+                y = layers.dense(y, units=1, kernel_initializer=self.init_kernel, name="fc")
+                logits = tf.squeeze(y)
+
+        return logits, intermediate_layer
+    ###############################################################################################
+    # CUSTOM LOSSES
+    ###############################################################################################
     def mse_loss(self, pred, data, mode="norm"):
         if mode == "norm":
             delta = pred - data

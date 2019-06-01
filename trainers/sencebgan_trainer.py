@@ -71,6 +71,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
         # Make the loop of the epoch iterations
         loop = tqdm(range(self.config.data_loader.num_iter_per_epoch))
         enc_losses = []
+        disc_xx_losses = []
         summaries = []
         image = self.data.image
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
@@ -78,8 +79,10 @@ class SENCEBGANTrainer(BaseTrainSequential):
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            le, sum_e = self.train_step_enc_gen(image, cur_epoch)
+            le, sum_e, ldxx = self.train_step_enc_gen(image, cur_epoch)
             enc_losses.append(le)
+            if self.config.trainer.enable_disc_xx:
+                disc_xx_losses.append(ldxx)
             summaries.append(sum_e)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid")
@@ -102,9 +105,15 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 step=cur_epoch, summaries=[reconstruction], summarizer="valid"
             )
         enc_m = np.mean(enc_losses)
-        self.logger.info(
-            "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+        if self.config.trainer.enable_disc_xx:
+            dis_xx_m = np.mean(disc_xx_losses)
+            self.logger.info(
+            "Epoch: {} | time = {} s | loss enc generation= {:4f}  | loss dis xx = {:4f}".format(cur_epoch, time() - begin, enc_m, dis_xx_m)
         )
+        else:
+            self.logger.info(
+                "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+            )
         self.model.save(self.sess)
 
     def train_epoch_enc_rec(self):
@@ -113,6 +122,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
         # Make the loop of the epoch iterations
         loop = tqdm(range(self.config.data_loader.num_iter_per_epoch))
         enc_losses = []
+        disc_zz_losses = []
         summaries = []
         image = self.data.image
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
@@ -120,15 +130,23 @@ class SENCEBGANTrainer(BaseTrainSequential):
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            le, sum_e = self.train_step_enc_rec(image, cur_epoch)
+            le, sum_e, ldzz = self.train_step_enc_rec(image, cur_epoch)
             enc_losses.append(le)
+            if self.config.trainer.enable_disc_zz:
+                disc_xx_losses.append(ldzz)
             summaries.append(sum_e)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid_2")
         enc_m = np.mean(enc_losses)
-        self.logger.info(
-            "Epoch: {} | time = {} s | loss enc reconstruction= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+        if self.config.trainer.enable_disc_xx:
+            dis_zz_m = np.mean(disc_zz_losses)
+            self.logger.info(
+            "Epoch: {} | time = {} s | loss enc generation= {:4f}  | loss dis xx = {:4f}".format(cur_epoch, time() - begin, enc_m, dis_zz_m)
         )
+        else:
+            self.logger.info(
+                "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+            )
         self.model.save(self.sess)
 
     def train_step_gan(self, image, cur_epoch):
@@ -188,11 +206,15 @@ class SENCEBGANTrainer(BaseTrainSequential):
             self.model.is_training_enc_g: True,
             self.model.is_training_enc_r: False,
         }
-        _, le, sm_e = self.sess.run(
-            [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
-            feed_dict=feed_dict,
-        )
-        return le, sm_e
+        ldxx=0
+        if self.config.trainer.enable_disc_xx:
+            _,_,le,sm_e,ldxx, = self.sess.run([self.model.train.enc_g_op,self.model.train_dis_op_xx,self.model.loss_encoder_g, self.model.sum_op_enc_g,self.model.diss_loss_xx],feed_dict=feed_dict)
+        else:
+            _, le, sm_e = self.sess.run(
+                [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
+                feed_dict=feed_dict,
+            )
+        return le, sm_e, ldxx
 
     def train_step_enc_rec(self, image, cur_epoch):
         image_eval = self.sess.run(image)
@@ -205,10 +227,14 @@ class SENCEBGANTrainer(BaseTrainSequential):
             self.model.is_training_enc_g: False,
             self.model.is_training_enc_r: True,
         }
-        _, le, sm_e = self.sess.run(
-            [self.model.train_enc_r_op, self.model.loss_encoder_r, self.model.sum_op_enc_r],
-            feed_dict=feed_dict,
-        )
+        ldzz = 0
+        if self.config.trainer.enable_disc_zz:
+            _,_,le,sm_e,ldxx, = self.sess.run([self.model.train.enc_r_op,self.model.train_dis_op_zz,self.model.loss_encoder_r, self.model.sum_op_enc_r,self.model.diss_loss_zz],feed_dict=feed_dict)
+        else:
+            _, le, sm_e = self.sess.run(
+                [self.model.train_enc_r_op, self.model.loss_encoder_r, self.model.sum_op_enc_r],
+                feed_dict=feed_dict,
+            )
         return le, sm_e
 
     def test_epoch(self):
