@@ -1,8 +1,10 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["init_type"],
-    "vals": ["normal", "xavier"]
+    "params": ["do_spectral_norm","init_type","mse_mode"],
+    "vals_0": ["false","true"]
+    "vals_1": ["normal", "xavier"],
+    "vals_2": ["norm", "mse"]
 
   },
   "model": {
@@ -19,9 +21,9 @@
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
-    "num_epochs_gan": 75,
-    "num_epochs_enc_gen": 100,
-    "num_epochs_enc_rec": 100,
+    "num_epochs_gan": 100,
+    "num_epochs_enc_gen": 400,
+    "num_epochs_enc_rec": 600,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 2583,

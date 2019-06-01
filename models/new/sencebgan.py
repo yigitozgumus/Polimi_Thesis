@@ -47,10 +47,14 @@ class SENCEBGAN(BaseModel):
                 )
             # Second training part
             with tf.variable_scope("Encoder_G_Model"):
-                self.image_encoded = self.encoder_g(self.image_input)
+                self.image_encoded = self.encoder_g(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Generator_Model"):
-                self.image_gen_enc = self.generator(self.image_encoded)
+                self.image_gen_enc = self.generator(
+                    self.image_encoded, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Discriminator_Model"):
                 self.embedding_enc_fake, self.decoded_enc_fake = self.discriminator(
@@ -61,13 +65,19 @@ class SENCEBGAN(BaseModel):
                 )
             # Third training part
             with tf.variable_scope("Encoder_G_Model"):
-                self.image_encoded_r = self.encoder_g(self.image_input)
+                self.image_encoded_r = self.encoder_g(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Generator_Model"):
-                self.image_gen_enc_r = self.generator(self.image_encoded_r)
+                self.image_gen_enc_r = self.generator(
+                    self.image_encoded_r, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Encoder_R_Model"):
-                self.image_ege = self.encoder_r(self.image_gen_enc_r)
+                self.image_ege = self.encoder_r(
+                    self.image_gen_enc_r, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
         # Loss functions
         with tf.name_scope("Loss_Functions"):
@@ -118,11 +128,11 @@ class SENCEBGAN(BaseModel):
             with tf.name_scope("Encoder_R"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
+                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="mse")
                     )
                 elif self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege , self.image_encoded_r, mode="mse")
+                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="mse")
                     )
 
         # Optimizers
@@ -243,7 +253,9 @@ class SENCEBGAN(BaseModel):
                 )
             with tf.variable_scope("Encoder_G_Model"):
                 self.image_encoded_ema = self.encoder_g(
-                    self.image_input, getter=get_getter(self.encg_ema)
+                    self.image_input,
+                    do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    getter=get_getter(self.encg_ema),
                 )
 
             with tf.variable_scope("Generator_Model"):
@@ -263,13 +275,17 @@ class SENCEBGAN(BaseModel):
                 )
             # Third training part
             with tf.variable_scope("Encoder_G_Model"):
-                self.image_encoded_r_ema = self.encoder_g(self.image_input)
+                self.image_encoded_r_ema = self.encoder_g(
+                    self.image_input, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Generator_Model"):
                 self.image_gen_enc_r_ema = self.generator(self.image_encoded_r_ema)
 
             with tf.variable_scope("Encoder_R_Model"):
-                self.image_ege_ema = self.encoder_r(self.image_gen_enc_r_ema)
+                self.image_ege_ema = self.encoder_r(
+                    self.image_gen_enc_r_ema, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
@@ -291,19 +307,19 @@ class SENCEBGAN(BaseModel):
                     + self.config.trainer.feature_match_weight * self.img_score_l2
                 )
             with tf.name_scope("Noise_Based"):
-                delta = self.image_encoded_ema - self.embedding_enc_fake_ema
-                delta_flat = tf.layers.Flatten()(delta)
-                z_score_l1 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_1")
-                self.z_score_l1 = tf.squeeze(z_score_l1)
-
-                delta = self.embedding_enc_real - self.embedding_enc_fake_ema
-                delta_flat = tf.layers.Flatten()(delta)
-                z_score_l2 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_2")
-                self.z_score_l2 = tf.squeeze(z_score_l2)
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                final_score = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score")
+                final_score_1 = tf.norm(
+                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_2"
+                )
+                self.final_score = tf.squeeze(final_score)
+
+                delta = self.image_encoded_r_ema - self.image_ege_ema
+                delta_flat = tf.layers.Flatten()(delta)
+                final_score_2 = tf.norm(
+                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1"
+                )
                 self.final_score = tf.squeeze(final_score)
 
         # Tensorboard
@@ -578,7 +594,8 @@ class SENCEBGAN(BaseModel):
                     decoded = tf.nn.tanh(net, name="tconv5/tanh")
         return embedding, decoded
 
-    def encoder_g(self, image_input, getter=None):
+    def encoder_g(self, image_input, getter=None, do_spectral_norm=False):
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Encoder_G", custom_getter=getter, reuse=tf.AUTO_REUSE):
             x_e = tf.reshape(
                 image_input,
@@ -586,14 +603,15 @@ class SENCEBGAN(BaseModel):
             )
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=64,
                     kernel_size=5,
-                    strides=(2, 2),
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
@@ -604,14 +622,15 @@ class SENCEBGAN(BaseModel):
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=128,
                     kernel_size=5,
                     padding="same",
-                    strides=(2, 2),
+                    strides=2,
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
@@ -622,14 +641,15 @@ class SENCEBGAN(BaseModel):
                 )
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=256,
                     kernel_size=5,
                     padding="same",
-                    strides=(2, 2),
+                    strides=2,
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
@@ -648,7 +668,8 @@ class SENCEBGAN(BaseModel):
                 )(x_e)
         return x_e
 
-    def encoder_r(self, image_input, getter=None):
+    def encoder_r(self, image_input, getter=None, do_spectral_norm=False):
+        layers = sn if do_spectral_norm else tf.layers
         with tf.variable_scope("Encoder_R", custom_getter=getter, reuse=tf.AUTO_REUSE):
             x_e = tf.reshape(
                 image_input,
@@ -656,14 +677,15 @@ class SENCEBGAN(BaseModel):
             )
             net_name = "Layer_1"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=64,
                     kernel_size=5,
-                    strides=(2, 2),
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
@@ -674,14 +696,15 @@ class SENCEBGAN(BaseModel):
                 )
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=128,
                     kernel_size=5,
                     padding="same",
-                    strides=(2, 2),
+                    strides=2,
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
@@ -692,14 +715,15 @@ class SENCEBGAN(BaseModel):
                 )
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
-                x_e = tf.layers.Conv2D(
+                x_e = layers.conv2d(
+                    x_e,
                     filters=256,
                     kernel_size=5,
                     padding="same",
-                    strides=(2, 2),
+                    strides=2,
                     kernel_initializer=self.init_kernel,
                     name="conv",
-                )(x_e)
+                )
                 x_e = tf.layers.batch_normalization(
                     x_e,
                     momentum=self.config.trainer.batch_momentum,
