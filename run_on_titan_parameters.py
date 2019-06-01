@@ -29,7 +29,7 @@ def run_multi():
             for k in values_init:
                 config[section][params[0]] = i
                 config[section][params[1]] = j
-                config[section][params[1]] = k
+                config[section][params[2]] = k
                 config.exp.name = args.experiment + "_{}_{}_{}".format(i, j, k)
                 process_config(config)
                 create_dirs(
@@ -42,7 +42,7 @@ def run_multi():
                     ]
                 )
                 # Copy the model code and the trainer code to the experiment folder
-                run(config)
+                run(config, args)
                 tf.reset_default_graph()
                 # Delete the session and the model
 
