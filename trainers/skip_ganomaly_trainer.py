@@ -46,6 +46,7 @@ class SkipGANomalyTrainer(BaseTrain):
         # Check for reconstruction
         if cur_epoch % self.config.log.frequency_test == 0:
             image_eval = self.sess.run(image)
+            cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
             real_noise, fake_noise = self.generate_noise(False, cur_epoch)
             feed_dict = {
                 self.model.image_input: image_eval,
@@ -113,6 +114,7 @@ class SkipGANomalyTrainer(BaseTrain):
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
             test_loop.refresh()  # to show immediately the update
             sleep(0.01)
+
             feed_dict = {self.model.image_input: test_batch, self.model.is_training: False}
             scores += self.sess.run(self.model.anomaly_score, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
