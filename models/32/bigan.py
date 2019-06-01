@@ -16,7 +16,13 @@ class BIGAN(BaseModel):
 
     def build_model(self):
         # Kernel initialization for the convolutions
-        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        if self.config.trainer.init_type == "normal":
+            self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        elif self.config.trainer.init_type == "xavier":
+            self.init_kernel = tf.contrib.layers.xavier_initializer(
+                uniform=False, seed=None, dtype=tf.float32
+            )
+            # TODO different weight init
         # Placeholders
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
@@ -45,64 +51,122 @@ class BIGAN(BaseModel):
 
             with tf.variable_scope("Discriminator_Model"):
                 # E(x) and x --> This being real is the output of discriminator
-                l_encoder, inter_layer_inp = self.discriminator(
+                self.l_encoder, self.inter_layer_inp = self.discriminator(
                     self.noise_gen, self.image_input + self.real_noise
                 )
                 # z and G(z)
-                l_generator, inter_layer_rct = self.discriminator(self.noise_tensor, self.image_gen)
+                self.l_generator, self.inter_layer_rct = self.discriminator(
+                    self.noise_tensor, self.image_gen
+                )
 
         # Loss Function Implementations
         with tf.name_scope("Loss_Functions"):
             # Discriminator
             # Discriminator sees the encoder result as true because it discriminates E(x), x as the real pair
-            self.loss_dis_enc = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.true_labels, logits=l_encoder)
-            )
-            self.loss_dis_gen = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    labels=self.generated_labels, logits=l_generator
+            if self.config.trainer.mode == "standard":
+                self.loss_dis_enc = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.true_labels, logits=self.l_encoder
+                    )
                 )
-            )
-            self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
+                self.loss_dis_gen = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=self.generated_labels, logits=self.l_generator
+                    )
+                )
+                self.loss_discriminator = self.loss_dis_enc + self.loss_dis_gen
 
-            if self.config.trainer.flip_labels:
-                labels_gen = tf.zeros_like(l_generator)
-                labels_enc = tf.ones_like(l_encoder)
-            else:
-                labels_gen = tf.ones_like(l_generator)
-                labels_enc = tf.zeros_like(l_encoder)
-            # Generator
-            # Generator is considered as the true ones here because it tries to fool discriminator
-            self.loss_generator_ce = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_gen, logits=l_generator)
-            )
-            delta = inter_layer_inp - inter_layer_rct
-            delta = tf.layers.Flatten()(delta)
-            self.loss_generator_fm = tf.reduce_mean(tf.norm(delta), ord=2, axis=1, keepdims=False)
-            self.loss_generator = self.loss_generator_ce + 0.1 * self.loss_generator_fm
-            # Encoder
-            # Encoder is considered as the fake one because it tries to fool the discriminator also
-            self.loss_encoder = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=labels_enc, logits=l_encoder)
-            )
+                if self.config.trainer.flip_labels:
+                    labels_gen = tf.zeros_like(self.l_generator)
+                    labels_enc = tf.ones_like(self.l_encoder)
+                else:
+                    labels_gen = tf.ones_like(self.l_generator)
+                    labels_enc = tf.zeros_like(self.l_encoder)
+                # Generator
+                # Generator is considered as the true ones here because it tries to fool discriminator
+                self.loss_generator_ce = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=labels_gen, logits=self.l_generator
+                    )
+                )
+                delta = self.inter_layer_inp - self.inter_layer_rct
+                delta = tf.layers.Flatten()(delta)
+                self.loss_generator_fm = tf.reduce_mean(
+                    tf.norm(delta, ord=2, axis=1, keepdims=False)
+                )
+                self.loss_generator = self.loss_generator_ce + 0.1 * self.loss_generator_fm
+                # Encoder
+                # Encoder is considered as the fake one because it tries to fool the discriminator also
+                self.loss_encoder = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(
+                        labels=labels_enc, logits=self.l_encoder
+                    )
+                )
+            elif self.config.trainer.mode == "wgan":
+
+                self.loss_d_fake = -tf.reduce_mean(self.l_generator)
+                self.loss_d_real = -tf.reduce_mean(self.l_encoder)
+                self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
+                self.loss_generator = -tf.reduce_mean(self.l_generator)
+                self.loss_encoder = -tf.reduce_mean(self.l_encoder)
+
+            elif self.config.trainer.mode == "wgan_gp":
+                self.loss_d_fake = -tf.reduce_mean(self.l_generator)
+                self.loss_d_real = -tf.reduce_mean(self.l_encoder)
+                self.loss_discriminator = -self.loss_d_fake + self.loss_d_real
+                self.loss_generator = -tf.reduce_mean(self.l_generator)
+                self.loss_encoder = -tf.reduce_mean(self.l_encoder)
+
+                alpha_x = tf.random_uniform(
+                    shape=[self.config.data_loader.batch_size] + self.config.trainer.image_dims,
+                    minval=0.0,
+                    maxval=1.0,
+                )
+                differences_x = self.image_gen - self.image_input
+                interpolates_x = self.image_input + (alpha_x * differences_x)
+                gradients = tf.gradients(self.discriminator(interpolates_x), [interpolates_x])[0]
+                slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[2]))
+                gradient_penalty = tf.reduce_mean((slopes - 1.0) ** 2)
+                self.loss_discriminator += self.config.trainer.wgan_gp_lambda * gradient_penalty
         # Optimizer Implementations
         with tf.name_scope("Optimizers"):
-            # Build the optimizers
-            self.generator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.generator_l_rate,
-                beta1=self.config.trainer.optimizer_adam_beta1,
-                beta2=self.config.trainer.optimizer_adam_beta2,
-            )
-            self.discriminator_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.discriminator_l_rate,
-                beta1=self.config.trainer.optimizer_adam_beta1,
-                beta2=self.config.trainer.optimizer_adam_beta2,
-            )
-            self.encoder_optimizer = tf.train.AdamOptimizer(
-                self.config.trainer.generator_l_rate,
-                beta1=self.config.trainer.optimizer_adam_beta1,
-                beta2=self.config.trainer.optimizer_adam_beta2,
-            )
+            if self.config.trainer.mode == "standard":
+                # Build the optimizers
+                self.generator_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.generator_l_rate,
+                    beta1=self.config.trainer.optimizer_adam_beta1,
+                    beta2=self.config.trainer.optimizer_adam_beta2,
+                )
+                self.discriminator_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.discriminator_l_rate,
+                    beta1=self.config.trainer.optimizer_adam_beta1,
+                    beta2=self.config.trainer.optimizer_adam_beta2,
+                )
+                self.encoder_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.generator_l_rate,
+                    beta1=self.config.trainer.optimizer_adam_beta1,
+                    beta2=self.config.trainer.optimizer_adam_beta2,
+                )
+            elif self.config.trainer.mode == "wgan":
+                self.generator_optimizer = tf.train.RMSPropOptimizer(self.config.trainer.wgan_lr)
+                self.discriminator_optimizer = tf.train.RMSPropOptimizer(
+                    self.config.trainer.discriminator_l_rate
+                )
+                self.encoder_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.wgan_lr,
+                    beta1=self.config.trainer.optimizer_adam_beta1,
+                    beta2=self.config.trainer.optimizer_adam_beta2,
+                )
+            elif self.config.trainer.mode == "wgan_gp":
+                self.generator_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9
+                )
+                self.discriminator_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.discriminator_l_rate, beta1=0.0, beta2=0.9
+                )
+                self.encoder_optimizer = tf.train.AdamOptimizer(
+                    self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9
+                )
             # Collect all the variables
             all_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             # Generator Network Variables
@@ -113,6 +177,14 @@ class BIGAN(BaseModel):
             self.discriminator_vars = [
                 v for v in all_variables if v.name.startswith("BIGAN/Discriminator_Model")
             ]
+            if self.config.trainer.mode == "wgan":
+                clip_ops = []
+                for var in self.discriminator_vars:
+                    clip_bounds = [-0.01, 0.01]
+                    clip_ops.append(
+                        tf.assign(var, tf.clip_by_value(var, clip_bounds[0], clip_bounds[1]))
+                    )
+                self.clip_disc_weights = tf.group(*clip_ops)
             # Encoder Network Variables
             self.encoder_vars = [
                 v for v in all_variables if v.name.startswith("BIGAN/Encoder_Model")
@@ -221,12 +293,14 @@ class BIGAN(BaseModel):
             with tf.name_scope("Summary"):
                 with tf.name_scope("Disc_Summary"):
                     tf.summary.scalar("loss_discriminator", self.loss_discriminator, ["dis"])
-                    tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
-                    tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_dis_encoder", self.loss_dis_enc, ["dis"])
+                        tf.summary.scalar("loss_dis_gen", self.loss_dis_gen, ["dis"])
                 with tf.name_scope("Gen_Summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
-                    tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
-                    tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
+                    if self.config.trainer.mode == "standard":
+                        tf.summary.scalar("loss_generator_ce", self.loss_generator_ce, ["gen"])
+                        tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
                 with tf.name_scope("Image_Summary"):
                     tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])

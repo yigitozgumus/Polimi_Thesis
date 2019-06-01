@@ -169,7 +169,7 @@ class EBGANTrainer(BaseTrain):
         if self.config.trainer.mode == "standard":
             gen_iters = 1
         else:
-            gen_iters = 2
+            gen_iters = 3
         lg_t = 0
         sm_g = 0
         ld_t = 0

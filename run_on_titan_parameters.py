@@ -16,19 +16,21 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values = config.exp.vals
+    values_sn = config.exp.vals_0
+    values_train = config.exp.vals_1
+    values_init = config.exp.vals_2
     params = config.exp.params
     section = config.exp.section
-    # flip labels
-    for i in values:
-        # soft labels
-        for j in values:
-            # include noise
-            for k in values:
+    # Spectral Normalization
+    for i in values_sn:
+    # Mode
+        for j in values_train:
+        # Init
+            for k in values_init:
                 config[section][params[0]] = i
                 config[section][params[1]] = j
                 config[section][params[2]] = k
-                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
+                config.exp.name = args.experiment + "_{}_{}_{}".format(i, j, k)
                 process_config(config)
                 create_dirs(
                     [
@@ -40,7 +42,7 @@ def run_multi():
                     ]
                 )
                 # Copy the model code and the trainer code to the experiment folder
-                run(config)
+                run(config, args)
                 tf.reset_default_graph()
                 # Delete the session and the model
 
@@ -50,12 +52,14 @@ def run(config):
 
     l = Logger(config)
     logger = l.get_logger(__name__)
+    # Set the random seed
+    tf.random.set_random_seed(config.data_loader.random_seed)
     # Create the tensorflow session
     sess = tf.Session()
     # Create the dataloader
     data = create("data_loader." + config.data_loader.name)(config)
     # Create the model instance
-    model = create("models.{}.".format("new") + config.model.name)(config)
+    model = create("models.32." + config.model.name)(config)
     # Create the summarizer Object
     summarizer = create("utils." + config.log.name)(sess, config)
     # Create the trainer

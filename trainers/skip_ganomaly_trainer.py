@@ -123,8 +123,8 @@ class SkipGANomalyTrainer(BaseTrain):
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         scores = np.asarray(scores)
-
         step = self.sess.run(self.model.global_step_tensor)
+        percentiles = np.asarray(self.config.trainer.percentiles)
         save_results(
             self.config.log.result_dir,
             scores,
@@ -137,6 +137,7 @@ class SkipGANomalyTrainer(BaseTrain):
             self.config.data_loader.random_seed,
             self.logger,
             step,
+            percentile=percentiles,
         )
 
     def train_step(self, image, cur_epoch):

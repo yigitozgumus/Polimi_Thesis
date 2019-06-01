@@ -12,7 +12,12 @@ class FAnogan(BaseModel):
 
     def build_model(self):
         # Kernel initialization for the convolutions
-        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        if self.config.trainer.init_type == "normal":
+            self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        elif self.config.trainer.init_type == "xavier":
+            self.init_kernel = tf.contrib.layers.xavier_initializer(
+                uniform=False, seed=None, dtype=tf.float32
+            )
         # Placeholders
         self.is_training_gen = tf.placeholder(tf.bool)
         self.is_training_dis = tf.placeholder(tf.bool)
@@ -54,14 +59,18 @@ class FAnogan(BaseModel):
                 # IZI Training
                 self.disc_real_izi, self.disc_f_real_izi = self.discriminator(self.image_input)
                 self.disc_fake_izi, self.disc_f_fake_izi = self.discriminator(self.gen_enc_img)
+
         with tf.name_scope("Loss_Funcions"):
             with tf.name_scope("Encoder"):
                 if self.config.trainer.encoder_training_mode == "ziz":
-                    self.loss_encoder = self.mse_loss(
-                        self.encoded_gen_noise,
-                        self.noise_tensor,
-                        mode=self.config.trainer.encoder_loss_mode,
-                    ) * (1.0 / self.config.trainer.noise_dim)
+                    self.loss_encoder = tf.reduce_mean(
+                        self.mse_loss(
+                            self.encoded_gen_noise,
+                            self.noise_tensor,
+                            mode=self.config.trainer.encoder_loss_mode,
+                        )
+                        * (1.0 / self.config.trainer.noise_dim)
+                    )
                 elif self.config.trainer.encoder_training_mode == "izi":
                     self.izi_reconstruction = self.mse_loss(
                         self.image_input,
@@ -71,7 +80,7 @@ class FAnogan(BaseModel):
                         1.0
                         / (self.config.data_loader.image_size * self.config.data_loader.image_size)
                     )
-                    self.loss_encoder = self.izi_reconstruction
+                    self.loss_encoder = tf.reduce_mean(self.izi_reconstruction)
                 elif self.config.trainer.encoder_training_mode == "izi_f":
                     self.izi_reconstruction = self.mse_loss(
                         self.image_input,
@@ -90,7 +99,7 @@ class FAnogan(BaseModel):
                         * self.config.trainer.kappa_weight_factor
                         / self.config.trainer.feature_layer_dim
                     )
-                    self.loss_encoder = self.izi_reconstruction + self.izi_disc
+                    self.loss_encoder = tf.reduce_mean(self.izi_reconstruction + self.izi_disc)
             with tf.name_scope("Discriminator_Generator"):
                 if self.config.trainer.mode == "standard":
                     self.loss_disc_real = tf.reduce_mean(
@@ -131,7 +140,7 @@ class FAnogan(BaseModel):
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
 
                 # Weight Clipping and Encoder Part
-                elif self.config.traiiner.mode == "wgan_gp":
+                elif self.config.trainer.mode == "wgan_gp":
                     self.loss_generator = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_fake = -tf.reduce_mean(self.disc_fake)
                     self.loss_d_real = -tf.reduce_mean(self.disc_real)
@@ -171,20 +180,20 @@ class FAnogan(BaseModel):
                 # Build the optimizers
                 self.generator_optimizer = tf.train.RMSPropOptimizer(self.config.trainer.wgan_lr)
                 self.discriminator_optimizer = tf.train.RMSPropOptimizer(
-                    self.config.trainer.wgan_lr
+                    self.config.trainer.standard_lr_disc
                 )
                 self.encoder_optimizer = tf.train.AdamOptimizer(
                     self.config.trainer.wgan_lr,
                     beta1=self.config.trainer.optimizer_adam_beta1,
                     beta2=self.config.trainer.optimizer_adam_beta2,
                 )
-            elif self.config.trainer.mode == "wgan-gp":
+            elif self.config.trainer.mode == "wgan_gp":
                 # Build the optimizers
                 self.generator_optimizer = tf.train.AdamOptimizer(
                     self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9
                 )
                 self.discriminator_optimizer = tf.train.AdamOptimizer(
-                    self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9
+                    self.config.trainer.standard_lr_disc, beta1=0.0, beta2=0.9
                 )
                 self.encoder_optimizer = tf.train.AdamOptimizer(
                     self.config.trainer.wgan_gp_lr, beta1=0.0, beta2=0.9

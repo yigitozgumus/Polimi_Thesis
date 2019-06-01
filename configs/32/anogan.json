@@ -14,7 +14,7 @@
   },
   "data_loader": {
     "name": "data_generator.DataGenerator",
-    "random_seed": 42,
+    "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
@@ -31,7 +31,8 @@
   },
   "trainer": {
     "name": "anogan_trainer.ANOGAN_Trainer",
-    "noise_dim": 100,
+    "init_type": "xavier",
+    "noise_dim": 256,
     "image_dims": [
       32,
       32,
@@ -40,7 +41,7 @@
     "include_noise": false,
     "soft_labels": false,
     "flip_labels": false,
-    "discriminator_l_rate": 2e-5,
+    "discriminator_l_rate": 1e-6,
     "generator_l_rate": 2e-4,
     "noise_probability": 0.05,
     "optimizer_adam_beta1": 0.5,

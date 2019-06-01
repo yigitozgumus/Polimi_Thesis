@@ -17,7 +17,12 @@ class GANomaly(BaseModel):
 
     def build_model(self):
         # Kernel initialization for the convolutions
-        self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        if self.config.trainer.init_type == "normal":
+            self.init_kernel = tf.random_normal_initializer(mean=0.0, stddev=0.02)
+        elif self.config.trainer.init_type == "xavier":
+            self.init_kernel = tf.contrib.layers.xavier_initializer(
+                uniform=False, seed=None, dtype=tf.float32
+            )
         # Placeholders
         self.is_training = tf.placeholder(tf.bool)
         self.image_input = tf.placeholder(
@@ -36,7 +41,6 @@ class GANomaly(BaseModel):
 
         with tf.variable_scope("GANomaly"):
             with tf.variable_scope("Generator_Model"):
-
                 self.noise_gen, self.img_rec, self.noise_rec = self.generator(
                     self.image_input + self.fake_noise,
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
