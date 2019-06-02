@@ -128,6 +128,15 @@ class SENCEBGAN(BaseModel):
                     pt_loss = self.pullaway_loss(self.embedding_fake)
                 self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
 
+                # Second Part Generator Loss
+                pt_loss_2 = 0
+                if self.config.trainer.pullaway:
+                    pt_loss_2 = self.pullaway_loss(self.embedding_enc_fake)
+                self.loss_generator_2 = (
+                    self.mse_loss(self.decoded_enc_fake, self.image_gen_enc)
+                    + self.config.trainer.pt_weight * pt_loss_2
+                )
+
             with tf.name_scope("Encoder_G"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_enc_rec = tf.reduce_mean(
@@ -274,11 +283,15 @@ class SENCEBGAN(BaseModel):
                 )
             with tf.control_dependencies(self.encg_update_ops):
                 self.encg_op = self.encoder_g_optimizer.minimize(
-                    self.loss_encoder_g, var_list=self.encoder_g_vars
+                    self.loss_encoder_g,
+                    var_list=self.encoder_g_vars,
+                    global_step=self.global_step_tensor,
                 )
             with tf.control_dependencies(self.encr_update_ops):
                 self.encr_op = self.encoder_r_optimizer.minimize(
-                    self.loss_encoder_r, var_list=self.encoder_r_vars
+                    self.loss_encoder_r,
+                    var_list=self.encoder_r_vars,
+                    global_step=self.global_step_tensor,
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xx):
@@ -290,12 +303,21 @@ class SENCEBGAN(BaseModel):
                 self.dis_op_zz = self.discriminator_optimizer.minimize(
                     self.dis_loss_zz, var_list=self.dzzvars
                 )
+
+            with tf.control_dependencies(self.gen_update_ops):
+                self.gen_2_op = self.generator_optimizer.minimize(
+                    self.loss_generator_2, var_list=self.generator_vars
+                )
+
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_dis = self.dis_ema.apply(self.discriminator_vars)
 
             self.gen_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_gen = self.gen_ema.apply(self.generator_vars)
+
+            self.gen_2_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+            maintain_averages_op_gen_2 = self.gen_2_ema.apply(self.generator_vars)
 
             self.encg_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_encg = self.encg_ema.apply(self.encoder_g_vars)
@@ -314,6 +336,9 @@ class SENCEBGAN(BaseModel):
 
             with tf.control_dependencies([self.gen_op]):
                 self.train_gen_op = tf.group(maintain_averages_op_gen)
+
+            with tf.control_dependencies([self.gen_2_op]):
+                self.train_gen_op_2 = tf.group(maintain_averages_op_gen_2)
 
             with tf.control_dependencies([self.encg_op]):
                 self.train_enc_g_op = tf.group(maintain_averages_op_encg)
@@ -428,6 +453,7 @@ class SENCEBGAN(BaseModel):
                         tf.summary.scalar("loss_dis_xx", self.dis_loss_xx, ["enc_r"])
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
+                    tf.summary.scalar("loss_generator_2", self.loss_generator_2, ["enc_g"])
                 with tf.name_scope("enc_summary"):
                     tf.summary.scalar("loss_encoder_g", self.loss_encoder_g, ["enc_g"])
                     tf.summary.scalar("loss_encoder_r", self.loss_encoder_r, ["enc_r"])
@@ -437,13 +463,13 @@ class SENCEBGAN(BaseModel):
                     tf.summary.image("input_enc", self.image_input, 3, ["img_2"])
                     tf.summary.image("reconstructed", self.image_gen_enc, 3, ["img_2"])
 
-        self.sum_op_dis = tf.summary.merge_all("dis")
-        self.sum_op_gen = tf.summary.merge_all("gen")
-        self.sum_op_enc_g = tf.summary.merge_all("enc_g")
-        self.sum_op_enc_r = tf.summary.merge_all("enc_r")
-        self.sum_op_im_1 = tf.summary.merge_all("img_1")
-        self.sum_op_im_2 = tf.summary.merge_all("img_2")
-        self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
+            self.sum_op_dis = tf.summary.merge_all("dis")
+            self.sum_op_gen = tf.summary.merge_all("gen")
+            self.sum_op_enc_g = tf.summary.merge_all("enc_g")
+            self.sum_op_enc_r = tf.summary.merge_all("enc_r")
+            self.sum_op_im_1 = tf.summary.merge_all("img_1")
+            self.sum_op_im_2 = tf.summary.merge_all("img_2")
+            self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
 
     ###############################################################################################
     # MODULES
@@ -951,6 +977,7 @@ class SENCEBGAN(BaseModel):
                 logits = tf.squeeze(y)
 
         return logits, intermediate_layer
+
     ###############################################################################################
     # CUSTOM LOSSES
     ###############################################################################################

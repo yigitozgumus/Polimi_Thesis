@@ -37,6 +37,7 @@
   "trainer": {
     "name": "sencebgan_trainer.SENCEBGANTrainer",
     "feature_match_weight": 0.25,
+    "extra_gan_training":false,
     "mode": "non_standard",
     "init_type": "normal",
     "mse_mode" :"norm",
