@@ -453,7 +453,8 @@ class SENCEBGAN(BaseModel):
                         tf.summary.scalar("loss_dis_zz", self.dis_loss_zz, ["enc_r"])
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
-                    tf.summary.scalar("loss_generator_2", self.loss_generator_2, ["enc_g"])
+                    if self.config.trainer.extra_gan_training:
+                        tf.summary.scalar("loss_generator_2", self.loss_generator_2, ["enc_g"])
                 with tf.name_scope("enc_summary"):
                     tf.summary.scalar("loss_encoder_g", self.loss_encoder_g, ["enc_g"])
                     tf.summary.scalar("loss_encoder_r", self.loss_encoder_r, ["enc_r"])
