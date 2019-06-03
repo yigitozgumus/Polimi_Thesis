@@ -892,7 +892,7 @@ class SENCEBGAN(BaseModel):
                 net = tf.layers.dropout(
                     net,
                     rate=self.config.trainer.dropout_rate,
-                    training=self.is_training,
+                    training=self.is_training_enc_g,
                     name="dropout",
                 )
             with tf.variable_scope(net_name, reuse=True):
@@ -915,7 +915,7 @@ class SENCEBGAN(BaseModel):
                 net = tf.layers.dropout(
                     net,
                     rate=self.config.trainer.dropout_rate,
-                    training=self.is_training,
+                    training=self.is_training_enc_g,
                     name="dropout",
                 )
             net = tf.layers.Flatten()(net)
@@ -954,7 +954,7 @@ class SENCEBGAN(BaseModel):
                 y = tf.layers.dropout(
                     y,
                     rate=self.config.trainer.dropout_rate,
-                    training=self.is_training,
+                    training=self.is_training_enc_r,
                     name="dropout",
                 )
 
@@ -965,7 +965,7 @@ class SENCEBGAN(BaseModel):
                 y = tf.layers.dropout(
                     y,
                     rate=self.config.trainer.dropout_rate,
-                    training=self.is_training,
+                    training=self.is_training_enc_r,
                     name="dropout",
                 )
 
