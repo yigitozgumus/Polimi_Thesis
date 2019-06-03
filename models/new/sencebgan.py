@@ -448,9 +448,9 @@ class SENCEBGAN(BaseModel):
                     tf.summary.scalar("loss_disc_real", self.disc_loss_real, ["dis"])
                     tf.summary.scalar("loss_disc_fake", self.disc_loss_fake, ["dis"])
                     if self.config.trainer.enable_disc_xx:
-                        tf.summary.scalar("loss_dis_xz", self.dis_loss_xz, ["enc_g"])
+                        tf.summary.scalar("loss_dis_xx", self.dis_loss_xx, ["enc_g"])
                     if self.config.trainer.enable_disc_zz:
-                        tf.summary.scalar("loss_dis_xx", self.dis_loss_xx, ["enc_r"])
+                        tf.summary.scalar("loss_dis_zz", self.dis_loss_zz, ["enc_r"])
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                     tf.summary.scalar("loss_generator_2", self.loss_generator_2, ["enc_g"])
