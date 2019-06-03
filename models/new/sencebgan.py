@@ -295,12 +295,12 @@ class SENCEBGAN(BaseModel):
                 )
 
             with tf.control_dependencies(self.update_ops_dis_xx):
-                self.dis_op_xx = self.discriminator_optimizer.minimize(
+                self.disc_op_xx = self.discriminator_optimizer.minimize(
                     self.dis_loss_xx, var_list=self.dxxvars
                 )
 
             with tf.control_dependencies(self.update_ops_dis_zz):
-                self.dis_op_zz = self.discriminator_optimizer.minimize(
+                self.disc_op_zz = self.discriminator_optimizer.minimize(
                     self.dis_loss_zz, var_list=self.dzzvars
                 )
 
