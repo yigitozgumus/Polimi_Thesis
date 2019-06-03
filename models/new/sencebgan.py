@@ -133,7 +133,7 @@ class SENCEBGAN(BaseModel):
                 if self.config.trainer.pullaway:
                     pt_loss_2 = self.pullaway_loss(self.embedding_enc_fake)
                 self.loss_generator_2 = (
-                    self.mse_loss(self.decoded_enc_fake, self.image_gen_enc)
+                    tf.reduce_mean(self.mse_loss(self.decoded_enc_fake, self.image_gen_enc, mode="norm"))
                     + self.config.trainer.pt_weight * pt_loss_2
                 )
 
@@ -293,21 +293,21 @@ class SENCEBGAN(BaseModel):
                     var_list=self.encoder_r_vars,
                     global_step=self.global_step_tensor,
                 )
-
-            with tf.control_dependencies(self.update_ops_dis_xx):
-                self.disc_op_xx = self.discriminator_optimizer.minimize(
-                    self.dis_loss_xx, var_list=self.dxxvars
-                )
-
-            with tf.control_dependencies(self.update_ops_dis_zz):
-                self.disc_op_zz = self.discriminator_optimizer.minimize(
-                    self.dis_loss_zz, var_list=self.dzzvars
-                )
-
-            with tf.control_dependencies(self.gen_update_ops):
-                self.gen_2_op = self.generator_optimizer.minimize(
-                    self.loss_generator_2, var_list=self.generator_vars
-                )
+            if self.config.trainer.enable_disc_xx:
+                with tf.control_dependencies(self.update_ops_dis_xx):
+                    self.disc_op_xx = self.discriminator_optimizer.minimize(
+                        self.dis_loss_xx, var_list=self.dxxvars
+                    )
+            if self.config.trainer.enable_disc_zz:
+                with tf.control_dependencies(self.update_ops_dis_zz):
+                    self.disc_op_zz = self.discriminator_optimizer.minimize(
+                        self.dis_loss_zz, var_list=self.dzzvars
+                    )
+            if self.config.trainer.extra_gan_training:
+                with tf.control_dependencies(self.gen_update_ops):
+                    self.gen_2_op = self.generator_optimizer.minimize(
+                        self.loss_generator_2, var_list=self.generator_vars
+                    )
 
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
@@ -315,9 +315,9 @@ class SENCEBGAN(BaseModel):
 
             self.gen_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_gen = self.gen_ema.apply(self.generator_vars)
-
-            self.gen_2_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
-            maintain_averages_op_gen_2 = self.gen_2_ema.apply(self.generator_vars)
+            if self.config.trainer.extra_gan_training:
+                self.gen_2_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+                maintain_averages_op_gen_2 = self.gen_2_ema.apply(self.generator_vars)
 
             self.encg_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_encg = self.encg_ema.apply(self.encoder_g_vars)
@@ -325,11 +325,13 @@ class SENCEBGAN(BaseModel):
             self.encr_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
             maintain_averages_op_encr = self.encr_ema.apply(self.encoder_r_vars)
 
-            self.dis_xx_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
-            maintain_averages_op_dis_xx = self.dis_xx_ema.apply(self.dxxvars)
+            if self.config.trainer.enable_disc_xx:
+                self.dis_xx_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+                maintain_averages_op_dis_xx = self.dis_xx_ema.apply(self.dxxvars)
 
-            self.dis_zz_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
-            maintain_averages_op_dis_zz = self.dis_zz_ema.apply(self.dzzvars)
+            if self.config.trainer.enable_disc_zz:
+                self.dis_zz_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+                maintain_averages_op_dis_zz = self.dis_zz_ema.apply(self.dzzvars)
 
             with tf.control_dependencies([self.disc_op]):
                 self.train_dis_op = tf.group(maintain_averages_op_dis)
@@ -337,8 +339,9 @@ class SENCEBGAN(BaseModel):
             with tf.control_dependencies([self.gen_op]):
                 self.train_gen_op = tf.group(maintain_averages_op_gen)
 
-            with tf.control_dependencies([self.gen_2_op]):
-                self.train_gen_op_2 = tf.group(maintain_averages_op_gen_2)
+            if self.config.trainer.extra_gan_training:
+                with tf.control_dependencies([self.gen_2_op]):
+                    self.train_gen_op_2 = tf.group(maintain_averages_op_gen_2)
 
             with tf.control_dependencies([self.encg_op]):
                 self.train_enc_g_op = tf.group(maintain_averages_op_encg)
@@ -346,11 +349,13 @@ class SENCEBGAN(BaseModel):
             with tf.control_dependencies([self.encr_op]):
                 self.train_enc_r_op = tf.group(maintain_averages_op_encr)
 
-            with tf.control_dependencies([self.disc_op_xx]):
-                self.train_dis_op_xx = tf.group(maintain_averages_op_dis_xx)
+            if self.config.trainer.enable_disc_xx:
+                with tf.control_dependencies([self.disc_op_xx]):
+                    self.train_dis_op_xx = tf.group(maintain_averages_op_dis_xx)
 
-            with tf.control_dependencies([self.disc_op_zz]):
-                self.train_dis_op_zz = tf.group(maintain_averages_op_dis_zz)
+            if self.config.trainer.enable_disc_zz:
+                with tf.control_dependencies([self.disc_op_zz]):
+                    self.train_dis_op_zz = tf.group(maintain_averages_op_dis_zz)
 
         ############################################################################################
         # TESTING

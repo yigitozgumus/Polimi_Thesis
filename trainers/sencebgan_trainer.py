@@ -209,7 +209,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.is_training_enc_r: False,
             }
             if self.config.trainer.enable_disc_xx:
-                _,_,le,sm_e,ldxx, = self.sess.run([self.model.train_enc_g_op,self.model.train_dis_op_xx,self.model.loss_encoder_g, self.model.sum_op_enc_g,self.model.dis_loss_xx],feed_dict=feed_dict)
+                _,le,sm_e, = self.sess.run([self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
+                _,ldxx = self.sess.run([self.model.train_dis_op_xx,self.model.dis_loss_xx ], feed_dict=feed_dict)
             else:
                 _, le, sm_e = self.sess.run(
                     [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
@@ -225,7 +226,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.is_training_enc_r: False,
             }
             if self.config.trainer.enable_disc_xx:
-                _,_,_,le,sm_e,ldxx, = self.sess.run([self.model.train_gen_op_2,self.model.train_enc_g_op,self.model.train_dis_op_xx,self.model.loss_encoder_g, self.model.sum_op_enc_g,self.model.dis_loss_xx],feed_dict=feed_dict)
+                _,_,le,sm_e, = self.sess.run([self.model.train_gen_op_2,self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
+                _,ldxx = self.sess.run([self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict)
             else:
                 _,_, le, sm_e = self.sess.run(
                     [self.model.train_gen_op_2,self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
