@@ -230,13 +230,14 @@ class SENCEBGANTrainer(BaseTrainSequential):
         }
         ldzz = 0
         if self.config.trainer.enable_disc_zz:
-            _,_,le,sm_e,ldxx, = self.sess.run([self.model.train.enc_r_op,self.model.train_dis_op_zz,self.model.loss_encoder_r, self.model.sum_op_enc_r,self.model.dis_loss_zz],feed_dict=feed_dict)
+            _,le,sm_e, = self.sess.run([self.model.train.enc_r_op,,self.model.loss_encoder_r, self.model.sum_op_enc_r],feed_dict=feed_dict)
+            _, ldzz = self.sess.run([self.model.train_dis_op_zz,self.model.dis_loss_zz ])
         else:
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_r_op, self.model.loss_encoder_r, self.model.sum_op_enc_r],
                 feed_dict=feed_dict,
             )
-        return le, sm_e
+        return le, sm_e, ldzz
 
     def test_epoch(self):
         self.logger.warn("Testing evaluation...")

@@ -1,10 +1,8 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["do_spectral_norm","init_type","mse_mode"],
-    "vals_0": ["false","true"],
-    "vals_1": ["normal", "xavier"],
-    "vals_2": ["norm", "mse"]
+    "params": ["enable_disc_xx","enable_disc_zz"],
+    "vals_0": ["false","true"]
 
   },
   "model": {
