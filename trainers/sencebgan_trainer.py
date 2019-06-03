@@ -199,40 +199,22 @@ class SENCEBGANTrainer(BaseTrainSequential):
         image_eval = self.sess.run(image)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         ldxx=0
-        if not self.config.trainer.extra_gan_training:
-            feed_dict = {
-                self.model.image_input: image_eval,
-                self.model.noise_tensor: noise,
-                self.model.is_training_gen: False,
-                self.model.is_training_dis: False,
-                self.model.is_training_enc_g: True,
-                self.model.is_training_enc_r: False,
-            }
-            if self.config.trainer.enable_disc_xx:
-                _,le,sm_e, = self.sess.run([self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
-                _,ldxx = self.sess.run([self.model.train_dis_op_xx,self.model.dis_loss_xx ], feed_dict=feed_dict)
-            else:
-                _, le, sm_e = self.sess.run(
-                    [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
-                    feed_dict=feed_dict,
-                )
+        feed_dict = {
+            self.model.image_input: image_eval,
+            self.model.noise_tensor: noise,
+            self.model.is_training_gen: False,
+            self.model.is_training_dis: False,
+            self.model.is_training_enc_g: True,
+            self.model.is_training_enc_r: False,
+        }
+        if self.config.trainer.enable_disc_xx:
+            _,le,sm_e, = self.sess.run([self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
+            _,ldxx = self.sess.run([self.model.train_dis_op_xx,self.model.dis_loss_xx ], feed_dict=feed_dict)
         else:
-            feed_dict = {
-                self.model.image_input: image_eval,
-                self.model.noise_tensor: noise,
-                self.model.is_training_gen: True,
-                self.model.is_training_dis: False,
-                self.model.is_training_enc_g: True,
-                self.model.is_training_enc_r: False,
-            }
-            if self.config.trainer.enable_disc_xx:
-                _,_,le,sm_e, = self.sess.run([self.model.train_gen_op_2,self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
-                _,ldxx = self.sess.run([self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict)
-            else:
-                _,_, le, sm_e = self.sess.run(
-                    [self.model.train_gen_op_2,self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
-                    feed_dict=feed_dict,
-                )
+            _, le, sm_e = self.sess.run(
+                [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
+                feed_dict=feed_dict,
+            )
         return le, sm_e, ldxx
 
     def train_step_enc_rec(self, image, cur_epoch):
