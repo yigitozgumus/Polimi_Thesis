@@ -64,7 +64,7 @@ class ANOGAN_Trainer(BaseTrain):
             % (cur_epoch, time() - begin, gl_m, dl_m)
         )
         # Save the model state
-        # self.model.save(self.sess)
+        self.model.save(self.sess)
         if (
             cur_epoch + 1
         ) % self.config.trainer.frequency_eval == 0 and self.config.trainer.enable_early_stop:

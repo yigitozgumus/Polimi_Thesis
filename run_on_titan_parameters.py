@@ -16,9 +16,9 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values_sn = config.exp.vals_0
-    values_train = config.exp.vals_1
-    values_init = config.exp.vals_2
+    values_sn = config.exp.vals
+    values_train = config.exp.vals
+    values_init = config.exp.vals
     params = config.exp.params
     section = config.exp.section
     # Spectral Normalization
@@ -30,7 +30,7 @@ def run_multi():
                 config[section][params[0]] = i
                 config[section][params[1]] = j
                 config[section][params[2]] = k
-                config.exp.name = args.experiment + "_{}_{}_{}".format(i, j, k)
+                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
                 process_config(config)
                 create_dirs(
                     [
