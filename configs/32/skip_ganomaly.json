@@ -69,6 +69,6 @@
     "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Results"
+    "output_folder": "Ablation"
   }
 }
