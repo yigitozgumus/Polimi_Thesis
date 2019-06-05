@@ -469,10 +469,10 @@ class SENCEBGAN(BaseModel):
                 self.final_score_2 = tf.squeeze(final_score_2)
 
                 if self.config.trainer.enable_disc_xx:
-                    delta = self.im_logit_real_ema - self.im_logit_fake_ema
-                    delta_flat = tf.layers.Flattent()(delta)
-                    final_score_3 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_3")
-                    self.final_score_3 = tf.squeeze(final_score_3)
+                    # delta = self.im_logit_real_ema - self.im_logit_fake_ema
+                    # delta_flat = tf.layers.Flattent()(delta)
+                    # final_score_3 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_3")
+                    # self.final_score_3 = tf.squeeze(final_score_3)
 
                     delta = self.im_f_real_ema - self.im_f_fake_ema 
                     delta_flat = tf.layers.Flatten()(delta)
@@ -480,10 +480,10 @@ class SENCEBGAN(BaseModel):
                     self.final_score_4 = tf.squeeze(final_score_4)
 
                 if self.config.trainer.enable_disc_zz:
-                    delta = self.z_logit_real_ema - self.z_logit_fake_ema
-                    delta_flat = tf.layers.Flattent()(delta)
-                    final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
-                    self.final_score_5 = tf.squeeze(final_score_5)
+                    # delta = self.z_logit_real_ema - self.z_logit_fake_ema
+                    # delta_flat = tf.layers.Flattent()(delta)
+                    # final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
+                    # self.final_score_5 = tf.squeeze(final_score_5)
 
                     delta = self.z_f_real_ema - self.z_f_fake_ema 
                     delta_flat = tf.layers.Flatten()(delta)

@@ -296,11 +296,19 @@ class SENCEBGANTrainer(BaseTrainSequential):
             scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
             scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
             if self.config.trainer.enable_disc_xx:
-                scores_final_3 += self.sess.run(self.model.final_score_3, feed_dict=feed_dict).tolist()
-                scores_final_4 += self.sess.run(self.model.final_score_4, feed_dict=feed_dict).tolist()
+                # scores_final_3 += self.sess.run(
+                #     self.model.final_score_3, feed_dict=feed_dict
+                # ).tolist()
+                scores_final_4 += self.sess.run(
+                    self.model.final_score_4, feed_dict=feed_dict
+                ).tolist()
             if self.config.trainer.enable_disc_zz:
-                scores_final_5 += self.sess.run(self.model.final_score_5, feed_dict=feed_dict).tolist()
-                scores_final_6 += self.sess.run(self.model.final_score_6, feed_dict=feed_dict).tolist()
+                # scores_final_5 += self.sess.run(
+                #     self.model.final_score_5, feed_dict=feed_dict
+                # ).tolist()
+                scores_final_6 += self.sess.run(
+                    self.model.final_score_6, feed_dict=feed_dict
+                ).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         scores_im1 = np.asarray(scores_im1)
@@ -309,10 +317,10 @@ class SENCEBGANTrainer(BaseTrainSequential):
         scores_final_1 = np.asarray(scores_final_1)
         scores_final_2 = np.asarray(scores_final_2)
         if self.config.trainer.enable_disc_xx:
-            scores_final_3 = np.asarray(scores_final_3)
+            #scores_final_3 = np.asarray(scores_final_3)
             scores_final_4 = np.asarray(scores_final_4)
         if self.config.trainer.enable_disc_zz:
-            scores_final_5 = np.asarray(scores_final_5)
+            #scores_final_5 = np.asarray(scores_final_5)
             scores_final_6 = np.asarray(scores_final_6)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
@@ -390,60 +398,60 @@ class SENCEBGANTrainer(BaseTrainSequential):
             percentile=percentiles,
         )
         if self.config.trainer.enable_disc_xx:
+            # save_results(
+            #     self.config.log.result_dir,
+            #     scores_final_3,
+            #     true_labels,
+            #     self.config.model.name,
+            #     self.config.data_loader.dataset_name,
+            #     "final_3",
+            #     "paper",
+            #     self.config.trainer.label,
+            #     self.config.data_loader.random_seed,
+            #     self.logger,
+            #     step,
+            #     percentile=percentiles,
+            # )
             save_results(
-            self.config.log.result_dir,
-            scores_final_3,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_3",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
-            save_results(
-            self.config.log.result_dir,
-            scores_final_4,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_4",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
+                self.config.log.result_dir,
+                scores_final_4,
+                true_labels,
+                self.config.model.name,
+                self.config.data_loader.dataset_name,
+                "final_4",
+                "paper",
+                self.config.trainer.label,
+                self.config.data_loader.random_seed,
+                self.logger,
+                step,
+                percentile=percentiles,
+            )
         if self.config.trainer.enable_disc_zz:
+            # save_results(
+            #     self.config.log.result_dir,
+            #     scores_final_5,
+            #     true_labels,
+            #     self.config.model.name,
+            #     self.config.data_loader.dataset_name,
+            #     "final_5",
+            #     "paper",
+            #     self.config.trainer.label,
+            #     self.config.data_loader.random_seed,
+            #     self.logger,
+            #     step,
+            #     percentile=percentiles,
+            # )
             save_results(
-            self.config.log.result_dir,
-            scores_final_5,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_5",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
-            save_results(
-            self.config.log.result_dir,
-            scores_final_6,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_6",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
+                self.config.log.result_dir,
+                scores_final_6,
+                true_labels,
+                self.config.model.name,
+                self.config.data_loader.dataset_name,
+                "final_6",
+                "paper",
+                self.config.trainer.label,
+                self.config.data_loader.random_seed,
+                self.logger,
+                step,
+                percentile=percentiles,
+            )
