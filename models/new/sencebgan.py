@@ -317,11 +317,15 @@ class SENCEBGAN(BaseModel):
             maintain_averages_op_encr = self.encr_ema.apply(self.encoder_r_vars)
 
             if self.config.trainer.enable_disc_xx:
-                self.dis_xx_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+                self.dis_xx_ema = tf.train.ExponentialMovingAverage(
+                    decay=self.config.trainer.ema_decay
+                )
                 maintain_averages_op_dis_xx = self.dis_xx_ema.apply(self.dxxvars)
 
             if self.config.trainer.enable_disc_zz:
-                self.dis_zz_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
+                self.dis_zz_ema = tf.train.ExponentialMovingAverage(
+                    decay=self.config.trainer.ema_decay
+                )
                 maintain_averages_op_dis_zz = self.dis_zz_ema.apply(self.dzzvars)
 
             with tf.control_dependencies([self.disc_op]):
@@ -369,6 +373,7 @@ class SENCEBGAN(BaseModel):
                     getter=get_getter(self.dis_ema),
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
+            # Second Training Part
             with tf.variable_scope("Encoder_G_Model"):
                 self.image_encoded_ema = self.encoder_g(
                     self.image_input, getter=get_getter(self.encg_ema)
@@ -389,6 +394,20 @@ class SENCEBGAN(BaseModel):
                     getter=get_getter(self.dis_ema),
                     do_spectral_norm=self.config.trainer.do_spectral_norm,
                 )
+            if self.config.trainer.enable_disc_xx:
+                with tf.variable_scope("Discriminator_Model_XX"):
+                    self.im_logit_real_ema, self.im_f_real_ema = self.discriminator_xx(
+                        self.image_input,
+                        self.image_input,
+                        getter=get_getter(self.dix_xx_ema),
+                        do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    )
+                    self.im_logit_fake_ema, self.im_f_fake_ema = self.discriminator_xx(
+                        self.image_input,
+                        self.image_gen_enc_ema,
+                        getter=get_getter(self.dix_xx_ema),
+                        do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    )
             # Third training part
             with tf.variable_scope("Encoder_G_Model"):
                 self.image_encoded_r_ema = self.encoder_g(self.image_input)
@@ -398,6 +417,21 @@ class SENCEBGAN(BaseModel):
 
             with tf.variable_scope("Encoder_R_Model"):
                 self.image_ege_ema = self.encoder_r(self.image_gen_enc_r_ema)
+
+            if self.config.trainer.enable_disc_zz:
+                 with tf.variable_scope("Discriminator_Model_ZZ"):
+                    self.z_logit_real_ema, self.z_f_real_ema = self.discriminator_zz(
+                        self.image_encoded_r_ema,
+                        self.image_encoded_r_ema,
+                        getter=get_getter(self.dis_zz_ema),
+                        do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    )
+                    self.z_logit_fake_ema, self.z_f_fake_ema = self.discriminator_zz(
+                        self.image_encoded_r_ema,
+                        self.image_ege_ema,
+                        getter=get_getter(self.dis_zz_ema),
+                        do_spectral_norm=self.config.trainer.do_spectral_norm,
+                    )
 
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
@@ -423,16 +457,40 @@ class SENCEBGAN(BaseModel):
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 final_score_1 = tf.norm(
-                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_2"
+                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_1"
                 )
                 self.final_score_1 = tf.squeeze(final_score_1)
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 final_score_2 = tf.norm(
-                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1"
+                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_2"
                 )
                 self.final_score_2 = tf.squeeze(final_score_2)
+
+                if self.config.trainer.enable_disc_xx:
+                    delta = self.im_logit_real_ema - self.im_logit_fake_ema
+                    delta_flat = tf.layers.Flattent()(delta)
+                    final_score_3 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_3")
+                    self.final_score_3 = tf.squeeze(final_score_3)
+
+                    delta = self.im_f_real_ema - self.im_f_fake_ema 
+                    delta_flat = tf.layers.Flatten()(delta)
+                    final_score_4 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_4")
+                    self.final_score_4 = tf.squeeze(final_score_4)
+
+                if self.config.trainer.enable_disc_zz:
+                    delta = self.z_logit_real_ema - self.z_logit_fake_ema
+                    delta_flat = tf.layers.Flattent()(delta)
+                    final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
+                    self.final_score_5 = tf.squeeze(final_score_5)
+
+                    delta = self.z_f_real_ema - self.z_f_fake_ema 
+                    delta_flat = tf.layers.Flatten()(delta)
+                    final_score_6 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_6")
+                    self.final_score_6 = tf.squeeze(final_score_6)
+
+
 
         ############################################################################################
         # TENSORBOARD

@@ -108,11 +108,15 @@ class SENCEBGANTrainer(BaseTrainSequential):
         if self.config.trainer.enable_disc_xx:
             dis_xx_m = np.mean(disc_xx_losses)
             self.logger.info(
-            "Epoch: {} | time = {} s | loss enc generation= {:4f}  | loss dis xx = {:4f}".format(cur_epoch, time() - begin, enc_m, dis_xx_m)
-        )
+                "Epoch: {} | time = {} s | loss enc generation= {:4f}  | loss dis xx = {:4f}".format(
+                    cur_epoch, time() - begin, enc_m, dis_xx_m
+                )
+            )
         else:
             self.logger.info(
-                "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+                "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(
+                    cur_epoch, time() - begin, enc_m
+                )
             )
         self.model.save(self.sess)
 
@@ -133,19 +137,23 @@ class SENCEBGANTrainer(BaseTrainSequential):
             le, sum_e, ldzz = self.train_step_enc_rec(image, cur_epoch)
             enc_losses.append(le)
             if self.config.trainer.enable_disc_zz:
-                disc_xx_losses.append(ldzz)
+                disc_zz_losses.append(ldzz)
             summaries.append(sum_e)
         self.logger.info("Epoch {} terminated".format(cur_epoch))
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid_2")
         enc_m = np.mean(enc_losses)
-        if self.config.trainer.enable_disc_xx:
+        if self.config.trainer.enable_disc_zz:
             dis_zz_m = np.mean(disc_zz_losses)
             self.logger.info(
-            "Epoch: {} | time = {} s | loss enc generation= {:4f}  | loss dis xx = {:4f}".format(cur_epoch, time() - begin, enc_m, dis_zz_m)
-        )
+                "Epoch: {} | time = {} s | loss enc reconstruction= {:4f}  | loss dis zz = {:4f}".format(
+                    cur_epoch, time() - begin, enc_m, dis_zz_m
+                )
+            )
         else:
             self.logger.info(
-                "Epoch: {} | time = {} s | loss enc generation= {:4f}  ".format(cur_epoch, time() - begin, enc_m)
+                "Epoch: {} | time = {} s | loss enc reconstruction= {:4f}  ".format(
+                    cur_epoch, time() - begin, enc_m
+                )
             )
         self.model.save(self.sess)
 
@@ -198,7 +206,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
     def train_step_enc_gen(self, image, cur_epoch):
         image_eval = self.sess.run(image)
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
-        ldxx=0
+        ldxx = 0
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
@@ -208,8 +216,13 @@ class SENCEBGANTrainer(BaseTrainSequential):
             self.model.is_training_enc_r: False,
         }
         if self.config.trainer.enable_disc_xx:
-            _,le,sm_e, = self.sess.run([self.model.train_enc_g_op,self.model.loss_encoder_g, self.model.sum_op_enc_g],feed_dict=feed_dict)
-            _,ldxx = self.sess.run([self.model.train_dis_op_xx,self.model.dis_loss_xx ], feed_dict=feed_dict)
+            _, le, sm_e, = self.sess.run(
+                [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
+                feed_dict=feed_dict,
+            )
+            _, ldxx = self.sess.run(
+                [self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict
+            )
         else:
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
@@ -230,8 +243,13 @@ class SENCEBGANTrainer(BaseTrainSequential):
         }
         ldzz = 0
         if self.config.trainer.enable_disc_zz:
-            _,le,sm_e, = self.sess.run([self.model.train.enc_r_op,,self.model.loss_encoder_r, self.model.sum_op_enc_r],feed_dict=feed_dict)
-            _, ldzz = self.sess.run([self.model.train_dis_op_zz,self.model.dis_loss_zz ])
+            _, le, sm_e = self.sess.run(
+                [self.model.train_enc_r_op, self.model.loss_encoder_r, self.model.sum_op_enc_r],
+                feed_dict=feed_dict,
+            )
+            _, ldzz = self.sess.run(
+                [self.model.train_dis_op_zz, self.model.dis_loss_zz], feed_dict=feed_dict
+            )
         else:
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_r_op, self.model.loss_encoder_r, self.model.sum_op_enc_r],
@@ -246,6 +264,12 @@ class SENCEBGANTrainer(BaseTrainSequential):
         scores_comb = []
         scores_final_1 = []
         scores_final_2 = []
+        if self.config.trainer.enable_disc_xx:
+            scores_final_3 = []
+            scores_final_4 = []
+        if self.config.trainer.enable_disc_zz:
+            scores_final_5 = []
+            scores_final_6 = []
         inference_time = []
         true_labels = []
         # Create the scores
@@ -271,6 +295,12 @@ class SENCEBGANTrainer(BaseTrainSequential):
             scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
             scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
             scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
+            if self.config.trainer.enable_disc_xx:
+                scores_final_3 += self.sess.run(self.model.final_score_3, feed_dict=feed_dict).tolist()
+                scores_final_4 += self.sess.run(self.model.final_score_4, feed_dict=feed_dict).tolist()
+            if self.config.trainer.enable_disc_zz:
+                scores_final_5 += self.sess.run(self.model.final_score_5, feed_dict=feed_dict).tolist()
+                scores_final_6 += self.sess.run(self.model.final_score_6, feed_dict=feed_dict).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         scores_im1 = np.asarray(scores_im1)
@@ -278,6 +308,12 @@ class SENCEBGANTrainer(BaseTrainSequential):
         scores_comb = np.asarray(scores_comb)
         scores_final_1 = np.asarray(scores_final_1)
         scores_final_2 = np.asarray(scores_final_2)
+        if self.config.trainer.enable_disc_xx:
+            scores_final_3 = np.asarray(scores_final_3)
+            scores_final_4 = np.asarray(scores_final_4)
+        if self.config.trainer.enable_disc_zz:
+            scores_final_5 = np.asarray(scores_final_5)
+            scores_final_6 = np.asarray(scores_final_6)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
@@ -346,6 +382,64 @@ class SENCEBGANTrainer(BaseTrainSequential):
             self.config.model.name,
             self.config.data_loader.dataset_name,
             "final_2",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        if self.config.trainer.enable_disc_xx:
+            save_results(
+            self.config.log.result_dir,
+            scores_final_3,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "final_3",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+            save_results(
+            self.config.log.result_dir,
+            scores_final_4,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "final_4",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        if self.config.trainer.enable_disc_zz:
+            save_results(
+            self.config.log.result_dir,
+            scores_final_5,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "final_5",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+            save_results(
+            self.config.log.result_dir,
+            scores_final_6,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "final_6",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
