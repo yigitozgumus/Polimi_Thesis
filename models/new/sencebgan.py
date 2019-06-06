@@ -445,13 +445,13 @@ class SENCEBGAN(BaseModel):
                     self.im_logit_real_ema, self.im_f_real_ema = self.discriminator_xx(
                         self.image_input,
                         self.image_input,
-                        getter=get_getter(self.dix_xx_ema),
+                        getter=get_getter(self.dis_xx_ema),
                         do_spectral_norm=self.config.trainer.do_spectral_norm,
                     )
                     self.im_logit_fake_ema, self.im_f_fake_ema = self.discriminator_xx(
                         self.image_input,
                         self.image_gen_enc_ema,
-                        getter=get_getter(self.dix_xx_ema),
+                        getter=get_getter(self.dis_xx_ema),
                         do_spectral_norm=self.config.trainer.do_spectral_norm,
                     )
             # Third training part
