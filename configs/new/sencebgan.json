@@ -20,8 +20,8 @@
     "image_size": 32,
     "batch_size": 64,
     "num_epochs_gan": 100,
-    "num_epochs_enc_gen": 300,
-    "num_epochs_enc_rec": 300,
+    "num_epochs_enc_gen": 400,
+    "num_epochs_enc_rec": 400,
     "num_iter_per_epoch": 800,
     "num_parallel_calls": 8,
     "num_iter_per_test": 2583,
@@ -56,9 +56,9 @@
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.5,
     "ema_decay": 0.999,
-    "do_spectral_norm": false,
+    "do_spectral_norm": true,
     "enable_early_stop": false,
-    "enable_disc_zz": true,
+    "enable_disc_zz": false,
     "enable_disc_xx": true,
     "degree": 1,
     "weight": 0.75,
@@ -75,6 +75,6 @@
     "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Results"
+    "output_folder": "Ablation"
   }
 }
