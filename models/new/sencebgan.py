@@ -106,17 +106,33 @@ class SENCEBGAN(BaseModel):
                 # Discriminator Loss
                 if self.config.trainer.mse_mode == "norm":
                     self.disc_loss_real = tf.reduce_mean(
-                        self.mse_loss(self.decoded_real, self.image_input, mode="norm")
+                        self.mse_loss(
+                            self.decoded_real,
+                            self.image_input,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
                     )
                     self.disc_loss_fake = tf.reduce_mean(
-                        self.mse_loss(self.decoded_fake, self.image_gen, mode="norm")
+                        self.mse_loss(
+                            self.decoded_fake,
+                            self.image_gen,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
                     )
                 elif self.config.trainer.mse_mode == "mse":
                     self.disc_loss_real = self.mse_loss(
-                        self.decoded_real, self.image_input, mode="mse"
+                        self.decoded_real,
+                        self.image_input,
+                        mode="mse",
+                        order=self.config.trainer.order,
                     )
                     self.disc_loss_fake = self.mse_loss(
-                        self.decoded_fake, self.image_gen, mode="mse"
+                        self.decoded_fake,
+                        self.image_gen,
+                        mode="mse",
+                        order=self.config.trainer.order,
                     )
                 self.loss_discriminator = (
                     tf.math.maximum(self.config.trainer.disc_margin - self.disc_loss_fake, 0)
@@ -131,17 +147,37 @@ class SENCEBGAN(BaseModel):
             with tf.name_scope("Encoder_G"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_enc_rec = tf.reduce_mean(
-                        self.mse_loss(self.image_gen_enc, self.image_input, mode="norm")
+                        self.mse_loss(
+                            self.image_gen_enc,
+                            self.image_input,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
                     )
                     self.loss_enc_f = tf.reduce_mean(
-                        self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="norm")
+                        self.mse_loss(
+                            self.embedding_enc_real,
+                            self.embedding_enc_fake,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
                     )
                 elif self.config.trainer.mse_mode == "mse":
                     self.loss_enc_rec = tf.reduce_mean(
-                        self.mse_loss(self.image_gen_enc, self.image_input, mode="mse")
+                        self.mse_loss(
+                            self.image_gen_enc,
+                            self.image_input,
+                            mode="mse",
+                            order=self.config.trainer.order,
+                        )
                     )
                     self.loss_enc_f = tf.reduce_mean(
-                        self.mse_loss(self.embedding_enc_real, self.embedding_enc_fake, mode="mse")
+                        self.mse_loss(
+                            self.embedding_enc_real,
+                            self.embedding_enc_fake,
+                            mode="mse",
+                            order=self.config.trainer.order,
+                        )
                     )
                 self.loss_encoder_g = (
                     self.loss_enc_rec + self.config.trainer.encoder_f_factor * self.loss_enc_f
@@ -159,11 +195,21 @@ class SENCEBGAN(BaseModel):
             with tf.name_scope("Encoder_R"):
                 if self.config.trainer.mse_mode == "norm":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="norm")
+                        self.mse_loss(
+                            self.image_ege,
+                            self.image_encoded_r,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
                     )
                 elif self.config.trainer.mse_mode == "mse":
                     self.loss_encoder_r = tf.reduce_mean(
-                        self.mse_loss(self.image_ege, self.image_encoded_r, mode="mse")
+                        self.mse_loss(
+                            self.image_ege,
+                            self.image_encoded_r,
+                            mode="mse",
+                            order=self.config.trainer.order,
+                        )
                     )
                 if self.config.trainer.enable_disc_zz:
                     self.enc_zz_real = tf.nn.sigmoid_cross_entropy_with_logits(
@@ -419,7 +465,7 @@ class SENCEBGAN(BaseModel):
                 self.image_ege_ema = self.encoder_r(self.image_gen_enc_r_ema)
 
             if self.config.trainer.enable_disc_zz:
-                 with tf.variable_scope("Discriminator_Model_ZZ"):
+                with tf.variable_scope("Discriminator_Model_ZZ"):
                     self.z_logit_real_ema, self.z_f_real_ema = self.discriminator_zz(
                         self.image_encoded_r_ema,
                         self.image_encoded_r_ema,
@@ -474,9 +520,11 @@ class SENCEBGAN(BaseModel):
                     # final_score_3 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_3")
                     # self.final_score_3 = tf.squeeze(final_score_3)
 
-                    delta = self.im_f_real_ema - self.im_f_fake_ema 
+                    delta = self.im_f_real_ema - self.im_f_fake_ema
                     delta_flat = tf.layers.Flatten()(delta)
-                    final_score_4 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_4")
+                    final_score_4 = tf.norm(
+                        delta_flat, ord=1, axis=1, keepdims=False, name="final_score_4"
+                    )
                     self.final_score_4 = tf.squeeze(final_score_4)
 
                 if self.config.trainer.enable_disc_zz:
@@ -485,12 +533,12 @@ class SENCEBGAN(BaseModel):
                     # final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
                     # self.final_score_5 = tf.squeeze(final_score_5)
 
-                    delta = self.z_f_real_ema - self.z_f_fake_ema 
+                    delta = self.z_f_real_ema - self.z_f_fake_ema
                     delta_flat = tf.layers.Flatten()(delta)
-                    final_score_6 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_6")
+                    final_score_6 = tf.norm(
+                        delta_flat, ord=1, axis=1, keepdims=False, name="final_score_6"
+                    )
                     self.final_score_6 = tf.squeeze(final_score_6)
-
-
 
         ############################################################################################
         # TENSORBOARD
@@ -1034,11 +1082,11 @@ class SENCEBGAN(BaseModel):
     ###############################################################################################
     # CUSTOM LOSSES
     ###############################################################################################
-    def mse_loss(self, pred, data, mode="norm"):
+    def mse_loss(self, pred, data, mode="norm", order=2):
         if mode == "norm":
             delta = pred - data
             delta = tf.layers.Flatten()(delta)
-            loss_val = tf.norm(delta, ord=2, axis=1, keepdims=False)
+            loss_val = tf.norm(delta, ord=order, axis=1, keepdims=False)
         elif mode == "mse":
             loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
         return loss_val

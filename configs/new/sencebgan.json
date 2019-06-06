@@ -60,7 +60,7 @@
     "enable_early_stop": false,
     "enable_disc_zz": false,
     "enable_disc_xx": true,
-    "degree": 1,
+    "order": 2,
     "weight": 0.75,
     "label": 0,
     "frequency_eval": 2,
