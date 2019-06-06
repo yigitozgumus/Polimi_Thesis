@@ -23,9 +23,9 @@ def run_multi():
     section = config.exp.section
     # Spectral Normalization
     for i in values_sn:
-    # Mode
+        # Mode
         for j in values_train:
-        # Init
+            # Init
             for k in values_init:
                 config[section][params[0]] = i
                 config[section][params[1]] = j
@@ -47,7 +47,7 @@ def run_multi():
                 # Delete the session and the model
 
 
-def run(config):
+def run(config,args):
     copy_codebase(config)
 
     l = Logger(config)
@@ -67,7 +67,8 @@ def run(config):
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
+    if args.train:
+        trainer.train()
     # Test the model
     if config.trainer.test_at_end:
         trainer.test()
