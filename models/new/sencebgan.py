@@ -85,6 +85,14 @@ class SENCEBGAN(BaseModel):
 
             with tf.variable_scope("Encoder_R_Model"):
                 self.image_ege = self.encoder_r(self.image_gen_enc_r)
+            # Discriminator outputs
+            with tf.variable_scope("Discriminator_Model"):
+                self.embedding_enc_fake_2, self.decoded_enc_fake_2 = self.discriminator(
+                    self.image_ege, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
+                self.embedding_enc_real_2, self.decoded_enc_real_2 = self.discriminator(
+                    self.image_encoded_r, do_spectral_norm=self.config.trainer.do_spectral_norm
+                )
 
             with tf.variable_scope("Discriminator_Model_ZZ"):
                 self.z_logit_real, self.z_f_real = self.discriminator_zz(
@@ -194,7 +202,7 @@ class SENCEBGAN(BaseModel):
 
             with tf.name_scope("Encoder_R"):
                 if self.config.trainer.mse_mode == "norm":
-                    self.loss_encoder_r = tf.reduce_mean(
+                    self.loss_encoder_rec_2 = tf.reduce_mean(
                         self.mse_loss(
                             self.image_ege,
                             self.image_encoded_r,
@@ -202,8 +210,16 @@ class SENCEBGAN(BaseModel):
                             order=self.config.trainer.order,
                         )
                     )
+                    self.loss_enc_f_2 = tf.reduce_mean(
+                        self.mse_loss(
+                            self.embedding_enc_real_2,
+                            self.embedding_enc_fake_2,
+                            mode="norm",
+                            order=self.config.trainer.order,
+                        )
+                    )
                 elif self.config.trainer.mse_mode == "mse":
-                    self.loss_encoder_r = tf.reduce_mean(
+                    self.loss_encoder_rec_2 = tf.reduce_mean(
                         self.mse_loss(
                             self.image_ege,
                             self.image_encoded_r,
@@ -211,6 +227,17 @@ class SENCEBGAN(BaseModel):
                             order=self.config.trainer.order,
                         )
                     )
+                    self.loss_enc_f_2 = tf.reduce_mean(
+                        self.mse_loss(
+                            self.embedding_enc_real_2,
+                            self.embedding_enc_fake_2,
+                            mode="mse",
+                            order=self.config.trainer.order,
+                        )
+                    )
+                self.loss_encoder_r = (
+                    self.loss_enc_rec_2 + self.config.trainer.encoder_f_factor * self.loss_enc_f_2
+                )
                 if self.config.trainer.enable_disc_zz:
                     self.enc_zz_real = tf.nn.sigmoid_cross_entropy_with_logits(
                         logits=self.z_logit_real, labels=tf.zeros_like(self.z_logit_real)
