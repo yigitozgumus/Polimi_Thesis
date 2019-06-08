@@ -2,7 +2,7 @@
   "exp": {
     "section": "trainer",
     "params": ["enable_disc_xx","enable_disc_zz"],
-    "vals_0": ["false","true"]
+    "vals_0": [false,true]
 
   },
   "model": {
@@ -39,7 +39,7 @@
     "init_type": "xavier",
     "mse_mode" :"norm",
     "feature_layer_dim": 4096,
-    "encoder_f_factor" : 1,
+    "encoder_f_factor" : 0.4,
     "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "noise_probability": 0.05,
@@ -54,7 +54,7 @@
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.5,
+    "dropout_rate": 0.2,
     "ema_decay": 0.999,
     "do_spectral_norm": true,
     "enable_early_stop": false,
