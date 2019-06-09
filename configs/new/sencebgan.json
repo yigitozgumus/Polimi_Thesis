@@ -54,7 +54,7 @@
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
     "leakyReLU_alpha": 0.2,
-    "dropout_rate": 0.2,
+    "dropout_rate": 0.5,
     "ema_decay": 0.999,
     "do_spectral_norm": true,
     "enable_early_stop": false,
