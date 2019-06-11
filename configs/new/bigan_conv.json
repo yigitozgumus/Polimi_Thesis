@@ -1,10 +1,11 @@
 {
   "exp": {
     "section": "trainer",
-    "params": ["flip_labels", "soft_labels", "include_noise"],
-    "vals": [false, true]  },
+    "params": ["mode"],
+    "vals": ["standard", "wgan", "wgan-gp"]
+  },
   "model": {
-    "name": "bigan.BIGAN"
+    "name": "bigan_conv.BIGAN"
   },
   "dirs": {
     "data": "data",
@@ -13,7 +14,7 @@
   },
   "data_loader": {
     "name": "data_generator.DataGenerator",
-    "random_seed": 652016,
+    "random_seed": 42,
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
@@ -30,29 +31,28 @@
   },
   "trainer": {
     "name": "bigan_trainer.BIGANTrainer",
-    "init_type": "normal",
     "mode": "standard",
-    "noise_dim": 256,
+    "feature_match_weight": 0.4,
+    "noise_dim": 100,
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": false,
     "flip_labels": false,
     "noise_probability": 0.05,
-    "discriminator_l_rate": 1e-6,
-    "generator_l_rate": 5e-5,
+    "standard_lr": 2e-4,
     "wgan_lr" : 5e-5,
-    "wgan_gp_lr": 1e-4,
+    "wgan_gp_lr": 1e-5,
     "wgan_gp_lambda": 10,
     "critic_iters": 5,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
-    "leakyReLU_alpha": 0.2,
+    "leakyReLU_alpha": 0.25,
     "dis_inter_layer_dim": 1024,
     "loss_method": "fm",
     "dropout_rate": 0.5,
     "ema_decay": 0.999,
-    "spectral_norm": true,
+    "do_spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": false,
     "degree": 1,
@@ -70,6 +70,6 @@
     "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Ablation"
+    "output_folder": "Results"
   }
 }

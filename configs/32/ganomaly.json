@@ -14,7 +14,7 @@
   },
   "data_loader": {
     "name": "data_generator.DataGenerator",
-    "random_seed": 42,
+    "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
@@ -31,7 +31,8 @@
   },
   "trainer": {
     "name": "ganomaly_trainer.GANomalyTrainer",
-    "noise_dim": 100,
+    "init_type": "normal",
+    "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": false,
@@ -41,8 +42,8 @@
     "weight_enc": 1,
     "loss_method": "fm",
     "noise_probability": 0.05,
-    "discriminator_l_rate": 2e-5,
-    "generator_l_rate": 2e-4,
+    "discriminator_l_rate": 1e-6,
+    "generator_l_rate": 5e-5,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
@@ -50,7 +51,7 @@
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.25,
     "ema_decay": 0.999,
-    "spectral_norm": true,
+    "do_spectral_norm": true,
     "allow_zz": true,
     "enable_early_stop": false,
     "degree": 1,
@@ -67,6 +68,6 @@
     "max_to_keep": 5,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Results"
+    "output_folder": "Ablation"
   }
 }

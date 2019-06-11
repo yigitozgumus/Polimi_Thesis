@@ -7,7 +7,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from utils.utils import working_directory
-from utils.download_data import download_data
+from utils.download_data import download_data_material
 from utils.dirs import listdir_nohidden
 from utils.logger import Logger
 from shutil import rmtree
@@ -23,6 +23,15 @@ class DataLoader:
         self.image_size = self.config.data_loader.image_size
         log_object = Logger(self.config)
         self.logger = log_object.get_logger(__name__)
+        dataset_type = self.config.data_loader.dataset_name
+        if dataset_type == "material":
+            self.build_material_dataset()
+        elif dataset_type == "cifar10":
+            self.build_cifar10_dataset()
+        elif dataset_type == "mnist":
+            self.build_mnist_dataset()
+
+    def build_material_dataset(self):
         self.data_dir = self.config.dirs.data
         self.train = "train_{}".format(self.image_size)
         self.test = "test_{}".format(self.image_size)
@@ -33,7 +42,7 @@ class DataLoader:
         self.tag_location = os.path.join(self.data_dir, self.test, "labels/")
         if not os.path.exists(self.data_dir):
             self.logger.info("Dataset is not present. Download is started.")
-            download_data(self.data_dir)
+            download_data_material(self.data_dir)
         self.data_dir_normal = self.config.dirs.data_normal
         self.data_dir_anomalous = self.config.dirs.data_anomalous
         # Up until this part only the raw dataset existence is checked and downloaded if not
@@ -56,13 +65,19 @@ class DataLoader:
         self.anorm_tag_array = self.create_image_array(anorm_tag_names, save=False)
         self.image_tag_list = list(zip(self.anorm_img_array, self.anorm_tag_array))
         if not self.config.data_loader.validation:
-            self.populate_train()
+            self.populate_train_material()
         else:
-            self.populate_train_valid()
+            self.populate_train_valid_material()
         if self.config.data_loader.mode == "anomaly":
-            self.populate_test()
+            self.populate_test_material()
 
-    def populate_train(self):
+    def build_cifar10_dataset(self):
+        pass
+
+    def build_mnist_dataset(self):
+        pass
+
+    def populate_train_material(self):
         # Check if we have the data already
         if self.train in self.dir_names:
             self.logger.info("Train Dataset is already populated.")
@@ -88,7 +103,7 @@ class DataLoader:
                     im = Image.fromarray(img)
                     im.save("img_{}.jpg".format(str(idx)))
 
-    def populate_train_valid(self):
+    def populate_train_valid_material(self):
         if self.train in self.dir_names and self.valid in self.dir_names:
             self.logger.info("Train and Validation datasets are already populated")
         else:
@@ -128,7 +143,7 @@ class DataLoader:
                     im = Image.fromarray(img)
                     im.save("img_{}.jpg".format(str(idx)))
 
-    def populate_test(self):
+    def populate_test_material(self):
         if self.test in self.dir_names:
             self.logger.info("Test Dataset is already populated")
         else:

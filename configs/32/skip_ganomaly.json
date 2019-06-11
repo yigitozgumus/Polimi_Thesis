@@ -14,7 +14,7 @@
   },
   "data_loader": {
     "name": "data_generator.DataGenerator",
-     "random_seed": 42,
+    "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
     "batch_size": 64,
@@ -31,7 +31,8 @@
   },
   "trainer": {
     "name": "skip_ganomaly_trainer.SkipGANomalyTrainer",
-    "noise_dim": 100,
+    "init_type": "xavier",
+    "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,
     "soft_labels": false,
@@ -41,12 +42,12 @@
     "weight_lat": 1,
      "loss_method": "fm",
      "noise_probability": 0.05,
-    "discriminator_l_rate": 2e-5,
-    "generator_l_rate": 2e-4,
+    "discriminator_l_rate": 5e-6,
+    "generator_l_rate": 5e-4,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,
-    "leakyReLU_alpha": 0.1,
+    "leakyReLU_alpha": 0.2,
     "dis_inter_layer_dim": 1024,
     "dropout_rate": 0.3,
     "ema_decay": 0.999,
@@ -58,7 +59,8 @@
     "label": 0,
      "frequency_eval": 1,
     "patience": 10,
-    "test_at_end": true
+    "test_at_end": true,
+     "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
   },
   "log": {
     "name": "summarizer.Summarizer",
@@ -67,6 +69,6 @@
     "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Results"
+    "output_folder": "Ablation"
   }
 }

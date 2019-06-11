@@ -5,7 +5,7 @@ from utils.config import get_config_from_json
 from utils.factory import create
 from utils.dirs import create_dirs
 from utils.logger import Logger
-from utils.copy_codebase import copy_codebase
+from utils.copy_codebase_new import copy_codebase
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -16,38 +16,35 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values_sn = config.exp.vals
-    values_train = config.exp.vals
-    values_init = config.exp.vals
+    values_xx = config.exp.vals_0
+    values_zz = config.exp.vals_0
     params = config.exp.params
     section = config.exp.section
     # Spectral Normalization
-    for i in values_sn:
+    for i in values_xx:
         # Mode
-        for j in values_train:
-            # Init
-            for k in values_init:
-                config[section][params[0]] = i
-                config[section][params[1]] = j
-                config[section][params[2]] = k
-                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
-                process_config(config)
-                create_dirs(
-                    [
-                        config.log.summary_dir,
-                        config.log.checkpoint_dir,
-                        config.log.step_generation_dir,
-                        config.log.log_file_dir,
-                        config.log.codebase_dir,
-                    ]
-                )
-                # Copy the model code and the trainer code to the experiment folder
-                run(config, args)
-                tf.reset_default_graph()
-                # Delete the session and the model
+        for j in values_zz:
+
+            config[section][params[0]] = i
+            config[section][params[1]] = j
+            config.exp.name = args.experiment + "_{}_{}".format(i, j)
+            process_config(config)
+            create_dirs(
+                [
+                    config.log.summary_dir,
+                    config.log.checkpoint_dir,
+                    config.log.step_generation_dir,
+                    config.log.log_file_dir,
+                    config.log.codebase_dir,
+                ]
+            )
+            # Copy the model code and the trainer code to the experiment folder
+            run(config, args)
+            tf.reset_default_graph()
+            # Delete the session and the model
 
 
-def run(config,args):
+def run(config, args):
     copy_codebase(config)
 
     l = Logger(config)
@@ -59,7 +56,7 @@ def run(config,args):
     # Create the dataloader
     data = create("data_loader." + config.data_loader.name)(config)
     # Create the model instance
-    model = create("models.32." + config.model.name)(config)
+    model = create("models.new." + config.model.name)(config)
     # Create the summarizer Object
     summarizer = create("utils." + config.log.name)(sess, config)
     # Create the trainer

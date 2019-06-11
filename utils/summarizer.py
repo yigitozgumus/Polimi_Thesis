@@ -14,6 +14,12 @@ class Summarizer:
         self.valid_summary_writer = tf.summary.FileWriter(
             os.path.join(self.config.log.summary_dir, "valid"), self.sess.graph
         )
+        self.valid_summary_writer_2 = tf.summary.FileWriter(
+            os.path.join(self.config.log.summary_dir, "valid_2"), self.sess.graph
+        )
+        self.test_summary_writer = tf.summary.FileWriter(
+            os.path.join(self.config.log.summary_dir, "test"), self.sess.graph
+        )
 
     # it can summarize scalars and images.
     def add_tensorboard(self, step, summarizer="train", scope="", summaries=None):
@@ -24,9 +30,14 @@ class Summarizer:
         :param summaries_dict: the dict of the summaries values (tag,value)
         :return:
         """
-        summary_writer = (
-            self.train_summary_writer if summarizer == "train" else self.valid_summary_writer
-        )
+        if summarizer == "train":
+            summary_writer = self.train_summary_writer
+        elif summarizer == "valid":
+            summary_writer = self.valid_summary_writer
+        elif summarizer == "valid_2":
+            summary_writer = self.valid_summary_writer_2
+        elif summarizer == "test":
+            summary_writer = self.test_summary_writer
         with tf.variable_scope(scope):
             for summary in summaries:
                 summary_writer.add_summary(summary, step)

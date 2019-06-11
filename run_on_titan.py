@@ -35,6 +35,8 @@ def run():
 
     l = Logger(config)
     logger = l.get_logger(__name__)
+    # Set the random seed
+    tf.random.set_random_seed(config.data_loader.random_seed)
     # Create the tensorflow session
     sess = tf.Session()
     # Create the dataloader
@@ -48,7 +50,8 @@ def run():
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
+    if args.train:
+        trainer.train()
     # Test the model
     if config.trainer.test_at_end:
         trainer.test()
