@@ -143,6 +143,13 @@ class SENCEBGAN(BaseModel):
                 if self.config.trainer.pullaway:
                     pt_loss = self.pullaway_loss(self.embedding_fake)
                 self.loss_generator = self.disc_loss_fake + self.config.trainer.pt_weight * pt_loss
+                # New addition to enforce visual similarity
+                delta_noise = self.embedding_real - self.embedding_fake
+                delta_flat = tf.layers.Flatten()(delta_noise)
+                loss_noise_gen = tf.reduce_mean(
+                    tf.norm(delta_flat, ord=2, axis=1, keepdims=False)
+                    )
+                self.loss_generator += (0.25 * loss_noise_gen)
 
             with tf.name_scope("Encoder_G"):
                 if self.config.trainer.mse_mode == "norm":

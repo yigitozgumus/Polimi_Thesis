@@ -210,8 +210,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
-            self.model.is_training_gen: False,
-            self.model.is_training_dis: False,
+            self.model.is_training_gen: True,
+            self.model.is_training_dis: True,
             self.model.is_training_enc_g: True,
             self.model.is_training_enc_r: False,
         }
@@ -223,6 +223,9 @@ class SENCEBGANTrainer(BaseTrainSequential):
             _, ldxx = self.sess.run(
                 [self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict
             )
+            # Additional generator discriminator training
+            _ = self.sess.run([self.model.train_gen_op], feed_dict=feed_dict)
+            _ = self.sess.run([self.model.train_dis_op], feed_dict=feed_dict)
         else:
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
