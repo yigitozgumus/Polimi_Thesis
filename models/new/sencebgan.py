@@ -149,7 +149,7 @@ class SENCEBGAN(BaseModel):
                 loss_noise_gen = tf.reduce_mean(
                     tf.norm(delta_flat, ord=2, axis=1, keepdims=False)
                     )
-                self.loss_generator += (0.25 * loss_noise_gen)
+                self.loss_generator += (0.1 * loss_noise_gen)
 
             with tf.name_scope("Encoder_G"):
                 if self.config.trainer.mse_mode == "norm":
