@@ -1104,7 +1104,7 @@ class SENCEBGAN(BaseModel):
             delta = tf.layers.Flatten()(delta)
             loss_val = tf.norm(delta, ord=order, axis=1, keepdims=False)
         elif mode == "mse":
-            loss_val = tf.sqrt(2 * tf.nn.l2_loss(pred - data)) / self.config.data_loader.batch_size
+            loss_val = tf.reduce_mean(tf.squared_difference(pred, data))
         return loss_val
 
     def pullaway_loss(self, embeddings):
