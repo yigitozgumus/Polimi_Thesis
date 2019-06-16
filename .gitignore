@@ -9,6 +9,7 @@ __pycache__/
 .idea/
 .vscode
 Downloaded/
+Ablation/
 tags/
 # Auxilary
 Logs/
