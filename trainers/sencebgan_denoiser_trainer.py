@@ -252,6 +252,8 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
         scores_comb = []
         scores_final_1 = []
         scores_final_2 = []
+        scores_mask1 = []
+        scores_mask2 = []
         if self.config.trainer.enable_disc_xx:
             scores_final_3 = []
             scores_final_4 = []
@@ -283,6 +285,8 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
             scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
             scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
             scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
+            scores_mask1 += self.sess.run(self.model.mask_score_1, feed_dict=feed_dict).tolist()
+            scores_mask2 += self.sess.run(self.model.mask_score_2, feed_dict=feed_dict).tolist()
             if self.config.trainer.enable_disc_xx:
                 # scores_final_3 += self.sess.run(
                 #     self.model.final_score_3, feed_dict=feed_dict
@@ -304,6 +308,8 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
         scores_comb = np.asarray(scores_comb)
         scores_final_1 = np.asarray(scores_final_1)
         scores_final_2 = np.asarray(scores_final_2)
+        scores_mask1 = np.asarray(scores_mask1)
+        scores_mask2 = np.asarray(scores_mask2)
         if self.config.trainer.enable_disc_xx:
             #scores_final_3 = np.asarray(scores_final_3)
             scores_final_4 = np.asarray(scores_final_4)
@@ -378,6 +384,34 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
             self.config.model.name,
             self.config.data_loader.dataset_name,
             "final_2",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_mask1,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "mask_1",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_mask2,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "mask_2",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
