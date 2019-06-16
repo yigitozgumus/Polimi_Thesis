@@ -250,16 +250,8 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
         scores_im1 = []
         scores_im2 = []
         scores_comb = []
-        scores_final_1 = []
-        scores_final_2 = []
         scores_mask1 = []
         scores_mask2 = []
-        if self.config.trainer.enable_disc_xx:
-            scores_final_3 = []
-            scores_final_4 = []
-        if self.config.trainer.enable_disc_zz:
-            scores_final_5 = []
-            scores_final_6 = []
         inference_time = []
         true_labels = []
         # Create the scores
@@ -283,8 +275,6 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
             scores_im1 += self.sess.run(self.model.img_score_l1, feed_dict=feed_dict).tolist()
             scores_im2 += self.sess.run(self.model.img_score_l2, feed_dict=feed_dict).tolist()
             scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
-            scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
-            scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
             scores_mask1 += self.sess.run(self.model.mask_score_1, feed_dict=feed_dict).tolist()
             scores_mask2 += self.sess.run(self.model.mask_score_2, feed_dict=feed_dict).tolist()
             if self.config.trainer.enable_disc_xx:
@@ -306,8 +296,6 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
         scores_im1 = np.asarray(scores_im1)
         scores_im2 = np.asarray(scores_im2)
         scores_comb = np.asarray(scores_comb)
-        scores_final_1 = np.asarray(scores_final_1)
-        scores_final_2 = np.asarray(scores_final_2)
         scores_mask1 = np.asarray(scores_mask1)
         scores_mask2 = np.asarray(scores_mask2)
         if self.config.trainer.enable_disc_xx:
@@ -356,34 +344,6 @@ class SENCEBGANTrainer_Denoiser(BaseTrainSequential):
             self.config.model.name,
             self.config.data_loader.dataset_name,
             "comb",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
-        save_results(
-            self.config.log.result_dir,
-            scores_final_1,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_1",
-            "paper",
-            self.config.trainer.label,
-            self.config.data_loader.random_seed,
-            self.logger,
-            step,
-            percentile=percentiles,
-        )
-        save_results(
-            self.config.log.result_dir,
-            scores_final_2,
-            true_labels,
-            self.config.model.name,
-            self.config.data_loader.dataset_name,
-            "final_2",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,

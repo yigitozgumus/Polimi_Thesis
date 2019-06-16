@@ -306,7 +306,7 @@ class SENCEBGAN_Denoiser(BaseModel):
                     var_list=self.encoder_g_vars,
                     global_step=self.global_step_tensor,
                 )
-            with tf.control_dependencies(self.encr_update_ops):
+            with tf.control_dependencies(self.den_update_ops):
                 self.den_op = self.denoiser_optimizer.minimize(
                     self.den_loss,
                     var_list=self.denoiser_vars,
@@ -369,7 +369,7 @@ class SENCEBGAN_Denoiser(BaseModel):
             with tf.control_dependencies([self.encg_op]):
                 self.train_enc_g_op = tf.group(maintain_averages_op_encg)
 
-            with tf.control_dependencies([self.encr_op]):
+            with tf.control_dependencies([self.den_op]):
                 self.train_den_op = tf.group(maintain_averages_op_den)
 
             if self.config.trainer.enable_disc_xx:
@@ -470,45 +470,6 @@ class SENCEBGAN_Denoiser(BaseModel):
                 )
             with tf.name_scope("Noise_Based"):
 
-                delta = self.image_encoded_r_ema - self.image_ege_ema
-                delta_flat = tf.layers.Flatten()(delta)
-                final_score_1 = tf.norm(
-                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_1"
-                )
-                self.final_score_1 = tf.squeeze(final_score_1)
-
-                delta = self.image_encoded_r_ema - self.image_ege_ema
-                delta_flat = tf.layers.Flatten()(delta)
-                final_score_2 = tf.norm(
-                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_2"
-                )
-                self.final_score_2 = tf.squeeze(final_score_2)
-
-                if self.config.trainer.enable_disc_xx:
-                    # delta = self.im_logit_real_ema - self.im_logit_fake_ema
-                    # delta_flat = tf.layers.Flattent()(delta)
-                    # final_score_3 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_3")
-                    # self.final_score_3 = tf.squeeze(final_score_3)
-
-                    delta = self.im_f_real_ema - self.im_f_fake_ema
-                    delta_flat = tf.layers.Flatten()(delta)
-                    final_score_4 = tf.norm(
-                        delta_flat, ord=1, axis=1, keepdims=False, name="final_score_4"
-                    )
-                    self.final_score_4 = tf.squeeze(final_score_4)
-
-                if self.config.trainer.enable_disc_zz:
-                    # delta = self.z_logit_real_ema - self.z_logit_fake_ema
-                    # delta_flat = tf.layers.Flattent()(delta)
-                    # final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
-                    # self.final_score_5 = tf.squeeze(final_score_5)
-
-                    delta = self.z_f_real_ema - self.z_f_fake_ema
-                    delta_flat = tf.layers.Flatten()(delta)
-                    final_score_6 = tf.norm(
-                        delta_flat, ord=1, axis=1, keepdims=False, name="final_score_6"
-                    )
-                    self.final_score_6 = tf.squeeze(final_score_6)
                 with tf.variable_scope("Mask_1"):
                     delta_mask = (self.image_input - self.mask_ema) 
                     delta_mask = tf.layers.Flatten()(delta_mask)
