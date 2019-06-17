@@ -163,8 +163,8 @@ class SENCEBGAN(BaseModel):
                     )
                     self.loss_enc_f = tf.reduce_mean(
                         self.mse_loss(
-                            self.embedding_enc_real,
-                            self.embedding_enc_fake,
+                            self.decoded_enc_real,
+                            self.decoded_enc_fake,
                             mode="norm",
                             order=self.config.trainer.order,
                         )
