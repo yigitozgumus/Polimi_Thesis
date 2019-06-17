@@ -468,8 +468,15 @@ class SENCEBGAN_Denoiser(BaseModel):
                     (1 - self.config.trainer.feature_match_weight) * self.img_score_l1
                     + self.config.trainer.feature_match_weight * self.img_score_l2
                 )
+                with tf.variable_scope("Pipeline_Loss_1"):
+                    delta_pipe = self.output_ema - self.image_input
+                    delta_pipe = tf.layers.Flatten()(delta_pipe)
+                    self.pipe_score = tf.norm(delta_pipe, ord=1,axis=1,keepdims=False)
+                with tf.variable_scope("Pipeline_Loss_2"):
+                    delta_pipe = self.output_ema - self.image_input
+                    delta_pipe = tf.layers.Flatten()(delta_pipe)
+                    self.pipe_score_2 = tf.norm(delta_pipe, ord=2,axis=1,keepdims=False)
             with tf.name_scope("Noise_Based"):
-
                 with tf.variable_scope("Mask_1"):
                     delta_mask = (self.image_input - self.mask_ema) 
                     delta_mask = tf.layers.Flatten()(delta_mask)
