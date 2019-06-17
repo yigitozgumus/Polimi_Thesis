@@ -503,7 +503,7 @@ class SENCEBGAN_Denoiser(BaseModel):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                 with tf.name_scope("enc_summary"):
                     tf.summary.scalar("loss_encoder_g", self.loss_encoder_g, ["enc_g"])
-                    tf.summary.scalar("loss_den", self.loss_den, ["den"])
+                    tf.summary.scalar("loss_den", self.den_loss, ["den"])
                 with tf.name_scope("img_summary"):
                     tf.summary.image("input_image", self.image_input, 1, ["img_1"])
                     tf.summary.image("reconstructed", self.image_gen, 1, ["img_1"])
