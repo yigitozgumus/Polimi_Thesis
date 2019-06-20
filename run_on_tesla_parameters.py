@@ -48,7 +48,7 @@ def run_multi():
                 # Delete the session and the model
 
 
-def run(config):
+def run(config,args):
     copy_codebase(config)
 
     l = Logger(config)
@@ -68,7 +68,8 @@ def run(config):
     # Load model if exists
     model.load(sess)
     # Train the model
-    trainer.train()
+    if args.train:
+        trainer.train()
     # Test the model
     if config.trainer.test_at_end:
         trainer.test()
