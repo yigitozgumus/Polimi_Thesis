@@ -239,7 +239,7 @@ class ALAD_Trainer(BaseTrain):
             scores_l1 += self.sess.run(self.model.score_l1, feed_dict=feed_dict).tolist()
             scores_l2 += self.sess.run(self.model.score_l2, feed_dict=feed_dict).tolist()
             scores_fm += self.sess.run(self.model.score_fm, feed_dict=feed_dict).tolist()
-            summaries += self.sess.run(self.model.sum_op_im_test, feed_dict=feed_dict)
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         scores_ch = np.asarray(scores_ch)

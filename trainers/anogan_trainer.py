@@ -153,7 +153,7 @@ class ANOGAN_Trainer(BaseTrain):
             self.sess.run(self.model.reinit_test_graph_op)
             inference_time.append(time() - begin_val_batch)
             true_labels += test_labels.tolist()
-            summaries += self.sess.run(self.model.sum_op_im_test, feed_dict=feed_dict)
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")

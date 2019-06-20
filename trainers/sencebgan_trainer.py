@@ -267,6 +267,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
         scores_comb = []
         scores_final_1 = []
         scores_final_2 = []
+        summaries = []
         if self.config.trainer.enable_disc_xx:
             scores_final_3 = []
             scores_final_4 = []
@@ -277,6 +278,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
         true_labels = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in test_loop:
             test_batch_begin = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -298,6 +300,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
             scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
             scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
             scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             if self.config.trainer.enable_disc_xx:
                 # scores_final_3 += self.sess.run(
                 #     self.model.final_score_3, feed_dict=feed_dict
@@ -314,6 +317,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 ).tolist()
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         scores_im1 = np.asarray(scores_im1)
         scores_im2 = np.asarray(scores_im2)
         scores_comb = np.asarray(scores_comb)

@@ -570,10 +570,10 @@ class SENCEBGAN(BaseModel):
                     tf.summary.scalar("loss_encoder_g", self.loss_encoder_g, ["enc_g"])
                     tf.summary.scalar("loss_encoder_r", self.loss_encoder_r, ["enc_r"])
                 with tf.name_scope("img_summary"):
-                    tf.summary.image("input_image", self.image_input, 3, ["img_1"])
-                    tf.summary.image("reconstructed", self.image_gen, 3, ["img_1"])
-                    tf.summary.image("input_enc", self.image_input, 3, ["img_2"])
-                    tf.summary.image("reconstructed", self.image_gen_enc, 3, ["img_2"])
+                    tf.summary.image("input_image", self.image_input, 1, ["img_1"])
+                    tf.summary.image("reconstructed", self.image_gen, 1, ["img_1"])
+                    tf.summary.image("input_enc", self.image_input, 1, ["img_2"])
+                    tf.summary.image("reconstructed", self.image_gen_enc, 1, ["img_2"])
                     tf.summary.image("input_image",self.image_input,1,["test"])
                     tf.summary.image("reconstructed", self.image_gen_enc_r_ema,1,["test"])
                     tf.summary.image("mask", self.mask, 1, ["test"])
@@ -585,7 +585,7 @@ class SENCEBGAN(BaseModel):
             self.sum_op_enc_r = tf.summary.merge_all("enc_r")
             self.sum_op_im_1 = tf.summary.merge_all("img_1")
             self.sum_op_im_2 = tf.summary.merge_all("img_2")
-            self.sum_op_test = tf.summary.merge_all("test")
+            self.sum_op_im_test = tf.summary.merge_all("test")
             self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
 
     ###############################################################################################
