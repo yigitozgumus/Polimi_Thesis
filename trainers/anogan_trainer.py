@@ -112,9 +112,10 @@ class ANOGAN_Trainer(BaseTrain):
     def test_epoch(self):
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
-        rect_x, rec_error, latent, scores = [], [], [], []
+        rect_x, rec_error, latent, scores_1, scores_2 = [], [], [], [], []
         inference_time = []
         true_labels = []
+        summaries = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         for _ in test_loop:
@@ -133,39 +134,58 @@ class ANOGAN_Trainer(BaseTrain):
             for _ in range(self.config.trainer.steps_number):
                 _ = self.sess.run(self.model.invert_op, feed_dict=feed_dict)
 
-            brect_x, brec_error, bscores, blatent = self.sess.run(
+            brect_x, brec_error, bscores_1,bscores_2, blatent = self.sess.run(
                 [
                     self.model.rec_gen_ema,
-                    self.model.reconstruction_score,
-                    self.model.loss_invert,
+                    self.model.reconstruction_score_1,
+                    self.model.reconstruction_score_2,
+                    self.model.loss_invert_1,
+                    self.model.loss_invert_2,
                     self.model.z_optim,
                 ],
                 feed_dict=feed_dict,
             )
             rect_x.append(brect_x)
             rec_error.append(brec_error)
-            scores.append(bscores)
+            scores_1.append(bscores_1)
+            scores_2.append(bscores_2)
             latent.append(blatent)
             self.sess.run(self.model.reinit_test_graph_op)
-
             inference_time.append(time() - begin_val_batch)
             true_labels += test_labels.tolist()
+            summaries += self.sess.run(self.model.sum_op_im_test, feed_dict=feed_dict)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         rect_x = np.concatenate(rect_x, axis=0)
         rec_error = np.concatenate(rec_error, axis=0)
-        scores = np.concatenate(scores, axis=0)
+        scores_1 = np.concatenate(scores_1, axis=0)
+        scores_2 = np.concatenate(scores_2, axis=0)
         latent = np.concatenate(latent, axis=0)
         step = self.sess.run(self.model.global_step_tensor)
         percentiles = np.asarray(self.config.trainer.percentiles)
         save_results(
             self.config.log.result_dir,
-            scores,
+            scores_1,
             true_labels,
             self.config.model.name,
             self.config.data_loader.dataset_name,
-            "fm",
+            "fm_1",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_2,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "fm_2",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,
