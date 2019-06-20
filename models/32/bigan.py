@@ -315,7 +315,7 @@ class BIGAN(BaseModel):
                 with tf.name_scope("Image_Summary"):
                     tf.summary.image("reconstruct", self.reconstructed, 1, ["image"])
                     tf.summary.image("input_images", self.image_input, 1, ["image"])
-                    tf.summary.image("reconstructed", self.reconstructed_ema, 1, ["image_2"])
+                    tf.summary.image("reconstructed", self.reconstruct_ema, 1, ["image_2"])
                     tf.summary.image("input_images", self.image_input, 1, ["image_2"])
 
         if self.config.trainer.enable_early_stop:

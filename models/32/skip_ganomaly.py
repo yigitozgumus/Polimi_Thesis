@@ -173,10 +173,15 @@ class SkipGANomaly(BaseModel):
                 # Contextual Loss
                 context_layers = self.image_input - self.img_rec_ema
                 context_layers = tf.layers.Flatten()(context_layers)
-                contextual_loss_ema = tf.norm(
+                contextual_loss_ema_1 = tf.norm(
                     context_layers, ord=1, axis=1, keepdims=False, name="Contextual_Loss"
                 )
-                self.contextual_loss_ema = tf.squeeze(contextual_loss_ema)
+                self.contextual_loss_ema_1 = tf.squeeze(contextual_loss_ema_1)
+                
+                contextual_loss_ema_2 = tf.reduce_mean(tf.norm(
+                    context_layers, ord=2, axis=1, keepdims=False, name="Contextual_Loss"
+                ))
+                self.contextual_loss_ema_2 = tf.squeeze(contextual_loss_ema_2)
 
             with tf.variable_scope("Latent_Loss"):
                 # Latent Loss
@@ -187,8 +192,12 @@ class SkipGANomaly(BaseModel):
                 )
                 self.latent_loss_ema = tf.squeeze(latent_loss_ema)
 
-            self.anomaly_score = (
-                self.config.trainer.weight * self.contextual_loss_ema
+            self.anomaly_score_1 = (
+                self.config.trainer.weight * self.contextual_loss_ema_1
+                + (1 - self.config.trainer.weight) * self.latent_loss_ema
+            )
+            self.anomaly_score_2 = (
+                self.config.trainer.weight * self.contextual_loss_ema_2
                 + (1 - self.config.trainer.weight) * self.latent_loss_ema
             )
 
@@ -210,8 +219,10 @@ class SkipGANomaly(BaseModel):
                     tf.summary.scalar("loss_gen_con", self.contextual_loss, ["gen"])
                     tf.summary.scalar("loss_gen_enc", self.latent_loss, ["gen"])
                 with tf.name_scope("image_summary"):
-                    tf.summary.image("reconstruct", self.img_rec, 3, ["image"])
-                    tf.summary.image("input_images", self.image_input, 3, ["image"])
+                    tf.summary.image("reconstruct", self.img_rec, 1, ["image"])
+                    tf.summary.image("input_images", self.image_input, 1, ["image"])
+                    tf.summary.image("reconstruct", self.img_rec_ema, 1, ["image_2"])
+                    tf.summary.image("input_images", self.image_input, 1, ["image_2"])
 
         if self.config.trainer.enable_early_stop:
             with tf.name_scope("validation_summary"):
@@ -220,6 +231,7 @@ class SkipGANomaly(BaseModel):
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_im_test = tf.summary.merge_all("image_2")
         self.sum_op_valid = tf.summary.merge_all("v")
 
     def generator(self, image_input, getter=None):
