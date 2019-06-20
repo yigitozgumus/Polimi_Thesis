@@ -136,7 +136,7 @@ class BIGANTrainer(BaseTrain):
             }
             scores_1 += self.sess.run(self.model.list_scores_1, feed_dict=feed_dict).tolist()
             scores_2 += self.sess.run(self.model.list_scores_2, feed_dict=feed_dict).tolist()
-            summaries += self.sess.run(self.model.sum_op_im_test, feed_dict=feed_dict)
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         # Since the higher anomaly score indicates the anomalous one, and we inverted the labels to show that
