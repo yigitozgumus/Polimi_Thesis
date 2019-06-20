@@ -262,13 +262,20 @@ class BIGAN(BaseModel):
                 # LG(x) = ||x - G(E(x))||_1
                 delta = self.image_input - self.reconstruct_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                self.gen_score = tf.norm(
+                self.gen_score_1 = tf.norm(
                     delta_flat,
-                    ord=self.config.trainer.degree,
+                    ord=1,
                     axis=1,
                     keepdims=False,
                     name="epsilon",
                 )
+                self.gen_score_2 = tf.reduce_mean(tf.norm(
+                    delta_flat,
+                    ord=2,
+                    axis=1,
+                    keepdims=False,
+                    name="epsilon",
+                ))
             with tf.variable_scope("Discriminator_Loss"):
                 if self.config.trainer.loss_method == "cross_e":
                     self.dis_score = tf.nn.sigmoid_cross_entropy_with_logits(
@@ -282,9 +289,12 @@ class BIGAN(BaseModel):
                     )
                 self.dis_score = tf.squeeze(self.dis_score)
             with tf.variable_scope("Score"):
-                self.list_scores = (
+                self.list_scores_1 = (
                     1 - self.config.trainer.weight
-                ) * self.dis_score + self.config.trainer.weight * self.gen_score
+                ) * self.dis_score + self.config.trainer.weight * self.gen_score_1
+                self.list_scores_2 = (
+                    1 - self.config.trainer.weight
+                ) * self.dis_score + self.config.trainer.weight * self.gen_score_2
 
         if self.config.trainer.enable_early_stop:
             self.rec_error_valid = tf.reduce_mean(self.list_scores)
@@ -303,8 +313,11 @@ class BIGAN(BaseModel):
                         tf.summary.scalar("loss_generator_fm", self.loss_generator_fm, ["gen"])
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["gen"])
                 with tf.name_scope("Image_Summary"):
-                    tf.summary.image("reconstruct", self.reconstructed, 3, ["image"])
-                    tf.summary.image("input_images", self.image_input, 3, ["image"])
+                    tf.summary.image("reconstruct", self.reconstructed, 1, ["image"])
+                    tf.summary.image("input_images", self.image_input, 1, ["image"])
+                    tf.summary.image("reconstructed", self.reconstructed_ema, 1, ["image_2"])
+                    tf.summary.image("input_images", self.image_input, 1, ["image_2"])
+
         if self.config.trainer.enable_early_stop:
             with tf.name_scope("validation_summary"):
                 tf.summary.scalar("valid", self.rec_error_valid, ["v"])
@@ -313,6 +326,7 @@ class BIGAN(BaseModel):
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_im = tf.summary.merge_all("image")
         self.sum_op_valid = tf.summary.merge_all("v")
+        self.sum_op_im_test = tf.summary.merge_all("image_2")
 
     def encoder(self, image_input, getter=None):
         """Encoder architecture in tensorflow Maps the data into the latent

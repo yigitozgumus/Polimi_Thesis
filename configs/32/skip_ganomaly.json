@@ -43,7 +43,7 @@
      "loss_method": "fm",
      "noise_probability": 0.05,
     "discriminator_l_rate": 5e-6,
-    "generator_l_rate": 5e-4,
+    "generator_l_rate": 1e-5,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,

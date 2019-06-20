@@ -17,31 +17,35 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values_train = config.exp.vals_1
-    values_init = config.exp.vals_2
+    values_sn = config.exp.vals
+    values_train = config.exp.vals
+    values_init = config.exp.vals
     params = config.exp.params
     section = config.exp.section
-    # Mode
-    for i in values_train:
-        # Init
-        for j in values_init:
-            config[section][params[0]] = i
-            config[section][params[1]] = j
-            config.exp.name = args.experiment + "_{}_{}".format(i, j)
-            process_config(config)
-            create_dirs(
-                [
-                    config.log.summary_dir,
-                    config.log.checkpoint_dir,
-                    config.log.step_generation_dir,
-                    config.log.log_file_dir,
-                    config.log.codebase_dir,
-                ]
-            )
-            # Copy the model code and the trainer code to the experiment folder
-            run(config)
-            tf.reset_default_graph()
-            # Delete the session and the model
+    # Spectral Normalization
+    for i in values_sn:
+        # Mode
+        for j in values_train:
+            # Init
+            for k in values_init:
+                config[section][params[0]] = i
+                config[section][params[1]] = j
+                config[section][params[2]] = k
+                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
+                process_config(config)
+                create_dirs(
+                    [
+                        config.log.summary_dir,
+                        config.log.checkpoint_dir,
+                        config.log.step_generation_dir,
+                        config.log.log_file_dir,
+                        config.log.codebase_dir,
+                    ]
+                )
+                # Copy the model code and the trainer code to the experiment folder
+                run(config, args)
+                tf.reset_default_graph()
+                # Delete the session and the model
 
 
 def run(config):
