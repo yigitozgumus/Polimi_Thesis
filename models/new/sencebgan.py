@@ -611,7 +611,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
+                    filters=512,
                     kernel_size=5,
                     strides=2,
                     padding="same",
@@ -630,7 +630,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=64,
+                    filters=256,
                     kernel_size=5,
                     strides=2,
                     padding="same",
@@ -649,7 +649,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=32,
+                    filters=128,
                     kernel_size=5,
                     strides=2,
                     padding="same",
