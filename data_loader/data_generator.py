@@ -91,7 +91,7 @@ class DataGenerator:
                 (self.test_filenames, self.test_labels, self.ground_truth)
             )
             self.test_dataset = self.test_dataset.map(
-                map_func=self._parse_function_test,
+                map_func=self._parse_function_test_2,
                 num_parallel_calls=self.config.data_loader.num_parallel_calls,
             )
             # Shuffle the dataset
@@ -145,3 +145,22 @@ class DataGenerator:
         #image_normalized /= 255.0
 
         return image_normalized, tag
+    
+    def _parse_function_test_2(self, img_file, tag, ground):
+        # Read the image
+        img = tf.read_file(img_file)
+        ground = tf.read_file(ground)
+        # Decode the image and the label
+        img_decoded = tf.image.decode_jpeg(img)
+        ground_decoded = tf.image.decode_jpeg(ground)
+        image_resized = tf.image.resize_images(
+            img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
+        )
+        ground_resized = tf.image.resize_images(
+            ground_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
+        )
+        image_normalized = image_resized / 255.0
+        ground_normalized = tf.image.per_image_standardization(ground_resized)
+        
+
+        return image_normalized, tag, ground_normalized
