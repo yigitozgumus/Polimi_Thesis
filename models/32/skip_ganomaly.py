@@ -178,9 +178,9 @@ class SkipGANomaly(BaseModel):
                 )
                 self.contextual_loss_ema_1 = tf.squeeze(contextual_loss_ema_1)
                 
-                contextual_loss_ema_2 = tf.reduce_mean(tf.norm(
+                contextual_loss_ema_2 = tf.norm(
                     context_layers, ord=2, axis=1, keepdims=False, name="Contextual_Loss"
-                ))
+                )
                 self.contextual_loss_ema_2 = tf.squeeze(contextual_loss_ema_2)
 
             with tf.variable_scope("Latent_Loss"):

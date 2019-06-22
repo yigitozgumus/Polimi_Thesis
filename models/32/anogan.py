@@ -199,7 +199,7 @@ class ANOGAN(BaseModel):
 
         with tf.name_scope("Test_Optimizer"):
             self.invert_op = tf.train.AdamOptimizer(learning_rate_invert).minimize(
-                self.loss_invert, global_step=step_lr, var_list=[self.z_optim], name="optimizer"
+                self.loss_invert_1, global_step=step_lr, var_list=[self.z_optim], name="optimizer"
             )
             reinit_optim = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Optimizer")

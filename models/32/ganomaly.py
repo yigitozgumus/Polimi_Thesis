@@ -179,7 +179,7 @@ class GANomaly(BaseModel):
                 delta = self.noise_gen_ema - self.noise_rec_ema
                 delta = tf.layers.Flatten()(delta)
                 self.score_1 = tf.norm(delta, ord=1, axis=1, keepdims=False)
-                self.score_2 = tf.reduce_mean(tf.norm(delta, ord=2, axis=1, keepdims=False))
+                self.score_2 = tf.norm(delta, ord=2, axis=1, keepdims=False)
 
         if self.config.trainer.enable_early_stop:
             self.rec_error_valid = tf.reduce_mean(self.score)
