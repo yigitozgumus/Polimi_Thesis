@@ -27,25 +27,24 @@ def run_multi():
         for j in values_train:
             # Init
             for k in values_init:
-                if "alad" not in config.exp.name and i is not False:
-                    config[section][params[0]] = i
-                    config[section][params[1]] = j
-                    config[section][params[2]] = k
-                    config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
-                    process_config(config)
-                    create_dirs(
-                        [
-                            config.log.summary_dir,
-                            config.log.checkpoint_dir,
-                            config.log.step_generation_dir,
-                            config.log.log_file_dir,
-                            config.log.codebase_dir,
-                        ]
-                    )
-                    # Copy the model code and the trainer code to the experiment folder
-                    run(config, args)
-                    tf.reset_default_graph()
-                    # Delete the session and the model
+                config[section][params[0]] = i
+                config[section][params[1]] = j
+                config[section][params[2]] = k
+                config.exp.name = args.experiment + "_{}{}{}".format(int(i), int(j), int(k))
+                process_config(config)
+                create_dirs(
+                    [
+                        config.log.summary_dir,
+                        config.log.checkpoint_dir,
+                        config.log.step_generation_dir,
+                        config.log.log_file_dir,
+                        config.log.codebase_dir,
+                    ]
+                )
+                # Copy the model code and the trainer code to the experiment folder
+                run(config, args)
+                tf.reset_default_graph()
+                # Delete the session and the model
 
 
 def run(config,args):

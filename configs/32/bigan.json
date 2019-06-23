@@ -39,7 +39,7 @@
     "flip_labels": false,
     "noise_probability": 0.05,
     "discriminator_l_rate": 1e-6,
-    "generator_l_rate": 1e-5,
+    "generator_l_rate": 5e-5,
     "wgan_lr" : 5e-5,
     "wgan_gp_lr": 1e-4,
     "wgan_gp_lambda": 10,

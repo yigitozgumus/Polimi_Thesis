@@ -53,6 +53,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.image_input: image_eval,
                 self.model.noise_tensor: noise,
                 self.model.is_training_gen: False,
+                self.model.is_training_dis:False,
             }
             reconstruction = self.sess.run(self.model.sum_op_im_1, feed_dict=feed_dict)
             self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
