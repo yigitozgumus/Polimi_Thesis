@@ -27,9 +27,7 @@ def run_multi():
         for j in values_train:
             # Init
             for k in values_init:
-                if "alad" in config.exp.name and i == False:
-                    pass
-                else:
+                if "alad" not in config.exp.name and i is not False:
                     config[section][params[0]] = i
                     config[section][params[1]] = j
                     config[section][params[2]] = k
