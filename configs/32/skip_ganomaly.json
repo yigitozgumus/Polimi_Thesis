@@ -31,7 +31,7 @@
   },
   "trainer": {
     "name": "skip_ganomaly_trainer.SkipGANomalyTrainer",
-    "init_type": "xavier",
+    "init_type": "normal",
     "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,

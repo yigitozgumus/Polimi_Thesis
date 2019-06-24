@@ -31,7 +31,7 @@
   },
   "trainer": {
     "name": "anogan_trainer.ANOGAN_Trainer",
-    "init_type": "xavier",
+    "init_type": "normal",
     "noise_dim": 256,
     "image_dims": [
       32,
@@ -61,7 +61,8 @@
     "difference": 0.02,
     "steps_number": 500,
     "loss_method": "fm",
-    "test_at_end": true
+    "test_at_end": true,
+    "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9]
   },
   "log": {
     "name": "summarizer.Summarizer",

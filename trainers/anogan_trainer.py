@@ -112,12 +112,13 @@ class ANOGAN_Trainer(BaseTrain):
     def test_epoch(self):
         # Evaluation for the testing
         self.logger.info("Testing evaluation...")
-        rect_x, rec_error, latent, scores_1, scores_2 = [], [], [], [], []
+        rect_x, rec_error,rec_error2, latent, scores_1, scores_2 = [],[], [], [], [], []
         inference_time = []
         true_labels = []
         summaries = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in test_loop:
             begin_val_batch = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -134,7 +135,7 @@ class ANOGAN_Trainer(BaseTrain):
             for _ in range(self.config.trainer.steps_number):
                 _ = self.sess.run(self.model.invert_op, feed_dict=feed_dict)
 
-            brect_x, brec_error, bscores_1,bscores_2, blatent = self.sess.run(
+            brect_x, brec_error,brec_error2, bscores_1, bscores_2, blatent = self.sess.run(
                 [
                     self.model.rec_gen_ema,
                     self.model.reconstruction_score_1,
@@ -147,6 +148,7 @@ class ANOGAN_Trainer(BaseTrain):
             )
             rect_x.append(brect_x)
             rec_error.append(brec_error)
+            rec_error2.append(brec_error2)
             scores_1.append(bscores_1)
             scores_2.append(bscores_2)
             latent.append(blatent)
@@ -160,6 +162,7 @@ class ANOGAN_Trainer(BaseTrain):
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         rect_x = np.concatenate(rect_x, axis=0)
         rec_error = np.concatenate(rec_error, axis=0)
+        rec_error2 = np.concatenate(rec_error2, axis=0)
         scores_1 = np.concatenate(scores_1, axis=0)
         scores_2 = np.concatenate(scores_2, axis=0)
         latent = np.concatenate(latent, axis=0)
