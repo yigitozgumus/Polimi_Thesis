@@ -1,0 +1,1193 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ALAD	models/28/alad.py	/^class ALAD(BaseModel):$/;"	c
+ALAD	models/32/alad.py	/^class ALAD(BaseModel):$/;"	c
+ALAD	models/new/alad_conv.py	/^class ALAD(BaseModel):$/;"	c
+ALAD_Trainer	trainers/alad_trainer.py	/^class ALAD_Trainer(BaseTrain):$/;"	c
+ANOGAN	models/28/anogan.py	/^class ANOGAN(BaseModel):$/;"	c
+ANOGAN	models/32/anogan.py	/^class ANOGAN(BaseModel):$/;"	c
+ANOGAN_Trainer	trainers/anogan_trainer.py	/^class ANOGAN_Trainer(BaseTrain):$/;"	c
+Activation	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten$/;"	i
+AnnotationBbox	utils/evaluations.py	/^from matplotlib.offsetbox import OffsetImage, AnnotationBbox$/;"	i
+BATCH_SIZE	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^BATCH_SIZE = 256$/;"	v
+BATCH_SIZE	scripts/test_gan_mark2.py	/^BATCH_SIZE = 256$/;"	v
+BIGAN	Results/test_000/codebase/bigan.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	Results/test_standard/codebase/bigan_conv.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	Results/test_wgan-gp/codebase/bigan_conv.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	Results/test_wgan/codebase/bigan_conv.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	models/28/bigan.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	models/32/bigan.py	/^class BIGAN(BaseModel):$/;"	c
+BIGAN	models/new/bigan_conv.py	/^class BIGAN(BaseModel):$/;"	c
+BIGANTrainer	Results/test_000/codebase/bigan_trainer.py	/^class BIGANTrainer(BaseTrain):$/;"	c
+BIGANTrainer	Results/test_standard/codebase/bigan_trainer.py	/^class BIGANTrainer(BaseTrain):$/;"	c
+BIGANTrainer	Results/test_wgan-gp/codebase/bigan_trainer.py	/^class BIGANTrainer(BaseTrain):$/;"	c
+BIGANTrainer	Results/test_wgan/codebase/bigan_trainer.py	/^class BIGANTrainer(BaseTrain):$/;"	c
+BIGANTrainer	trainers/bigan_trainer.py	/^class BIGANTrainer(BaseTrain):$/;"	c
+BUFFER_SIZE	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^BUFFER_SIZE = 60000$/;"	v
+BUFFER_SIZE	scripts/test_gan_mark2.py	/^BUFFER_SIZE = 60000$/;"	v
+BaseModel	Experiments/codebase_test/codebase/gan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	Results/test_000/codebase/bigan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	Results/test_standard/codebase/bigan_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	Results/test_wgan-gp/codebase/bigan_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	Results/test_wgan/codebase/bigan_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	base/base_model.py	/^class BaseModel:$/;"	c
+BaseModel	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/alad.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/anogan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/bigan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/gan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/ganomaly.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/mark1.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/28/skip_ganomaly.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/32/alad.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/32/anogan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/32/bigan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/32/ganomaly.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/32/skip_ganomaly.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/alad_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/bigan_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/ebgan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/encebgan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/fanogan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/fencegan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/ganomaly_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/sencebgan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/new/skip_ganomaly_conv.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	models/template_model.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	scripts/gan.py	/^from base.base_model import BaseModel$/;"	i
+BaseModel	scripts/ganomaly_mark2.py	/^from base.base_model import BaseModel$/;"	i
+BaseModelEager	base/base_model_eager.py	/^class BaseModelEager:$/;"	c
+BaseModelEager	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from base.base_model_eager import BaseModelEager$/;"	i
+BaseModelKeras	base/base_model_keras.py	/^class BaseModelKeras(object):$/;"	c
+BaseTrain	Experiments/codebase_test/codebase/gan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	Results/test_000/codebase/bigan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	Results/test_standard/codebase/bigan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	Results/test_wgan/codebase/bigan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	base/.ipynb_checkpoints/base_train-checkpoint.py	/^class BaseTrain:$/;"	c
+BaseTrain	base/base_train.py	/^class BaseTrain:$/;"	c
+BaseTrain	scripts/gan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/alad_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/anogan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/bigan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/ebgan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/gan_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/ganomaly_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/mark1_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/skip_ganomaly_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrain	trainers/template_trainer.py	/^from base.base_train import BaseTrain$/;"	i
+BaseTrainEager	base/base_train_eager.py	/^class BaseTrainEager:$/;"	c
+BaseTrainKeras	base/base_train_keras.py	/^class BaseTrainKeras:$/;"	c
+BaseTrainMulti	base/base_train_multi.py	/^class BaseTrainMulti:$/;"	c
+BaseTrainMulti	trainers/encebgan_trainer.py	/^from base.base_train_multi import BaseTrainMulti$/;"	i
+BaseTrainMulti	trainers/fanogan_trainer.py	/^from base.base_train_multi import BaseTrainMulti$/;"	i
+BaseTrainSequential	trainers/sencebgan_trainer.py	/^from base.base_train_sequential import BaseTrainSequential$/;"	i
+BatchNormalization	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization$/;"	i
+Conv2D	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten$/;"	i
+Conv2DTranspose	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization$/;"	i
+DataGenerator	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^class DataGenerator():$/;"	c
+DataGenerator	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^class DataGenerator:$/;"	c
+DataGenerator	data_loader/data_generator.py	/^class DataGenerator:$/;"	c
+DataGenerator	scripts/main_gan.py	/^from data_loader.data_generator import DataGenerator$/;"	i
+DataGenerator	scripts/test_gan_mark2.py	/^class DataGenerator():$/;"	c
+DataGeneratorEager	data_loader/data_generator_eager.py	/^class DataGeneratorEager:$/;"	c
+DataGeneratorKeras	data_loader/data_generator_keras.py	/^class DataGeneratorKeras():$/;"	c
+DataGenerator_eager	data_loader/.ipynb_checkpoints/data_generator_eager-checkpoint.py	/^class DataGenerator_eager():$/;"	c
+DataLoader	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	data_loader/.ipynb_checkpoints/data_generator_eager-checkpoint.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	data_loader/data_generator.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	data_loader/data_generator_eager.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	data_loader/data_generator_keras.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	scripts/test_gan.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	scripts/test_gan_mark2.py	/^from utils.DataLoader import DataLoader$/;"	i
+DataLoader	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^class DataLoader:$/;"	c
+DataLoader	utils/DataLoader.py	/^class DataLoader:$/;"	c
+Dense	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization$/;"	i
+DotMap	utils/config.py	/^from dotmap import DotMap$/;"	i
+Dropout	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten$/;"	i
+EBGAN	models/new/ebgan.py	/^class EBGAN(BaseModel):$/;"	c
+EBGANTrainer	trainers/ebgan_trainer.py	/^class EBGANTrainer(BaseTrain):$/;"	c
+EPOCHS	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^EPOCHS = 50$/;"	v
+EPOCHS	scripts/test_gan_mark2.py	/^EPOCHS = 50$/;"	v
+EncEBGAN	models/new/encebgan.py	/^class EncEBGAN(BaseModel):$/;"	c
+EncEBGANTrainer	trainers/encebgan_trainer.py	/^class EncEBGANTrainer(BaseTrainMulti):$/;"	c
+FAnogan	models/new/fanogan.py	/^class FAnogan(BaseModel):$/;"	c
+FAnoganTrainer	trainers/fanogan_trainer.py	/^class FAnoganTrainer(BaseTrainMulti):$/;"	c
+FORMATTER	utils/logger.py	/^FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")$/;"	v
+FenceGAN	models/new/fencegan.py	/^class FenceGAN(BaseModel):$/;"	c
+FigureCanvas	utils/evaluations.py	/^from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas$/;"	i
+Flatten	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten$/;"	i
+GAN	Experiments/codebase_test/codebase/gan.py	/^class GAN(BaseModel):$/;"	c
+GAN	models/28/gan.py	/^class GAN(BaseModel):$/;"	c
+GAN	scripts/gan.py	/^class GAN(BaseModel):$/;"	c
+GAN	scripts/main_gan.py	/^from scripts.gan import GAN$/;"	i
+GAN	scripts/test_gan.py	/^def GAN(sample_size):$/;"	f
+GANTrainer	Experiments/codebase_test/codebase/gan_trainer.py	/^class GANTrainer(BaseTrain):$/;"	c
+GANTrainer	scripts/gan_trainer.py	/^class GANTrainer(BaseTrain):$/;"	c
+GANTrainer	scripts/main_gan.py	/^from scripts.gan_trainer import GANTrainer$/;"	i
+GANTrainer	trainers/gan_trainer.py	/^class GANTrainer(BaseTrain):$/;"	c
+GAN_eager	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^class GAN_eager(BaseModelEager):$/;"	c
+GANomaly	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^class GANomaly(BaseModel):$/;"	c
+GANomaly	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^class GANomaly(BaseModel):$/;"	c
+GANomaly	models/28/ganomaly.py	/^class GANomaly(BaseModel):$/;"	c
+GANomaly	models/32/ganomaly.py	/^class GANomaly(BaseModel):$/;"	c
+GANomaly	models/new/ganomaly_conv.py	/^class GANomaly(BaseModel):$/;"	c
+GANomalyTrainer	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^class GANomalyTrainer(BaseTrain):$/;"	c
+GANomalyTrainer	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^class GANomalyTrainer(BaseTrain):$/;"	c
+GANomalyTrainer	trainers/ganomaly_trainer.py	/^class GANomalyTrainer(BaseTrain):$/;"	c
+GANomaly_mark2	scripts/ganomaly_mark2.py	/^class GANomaly_mark2(BaseModel):$/;"	c
+Image	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from PIL import Image$/;"	i
+Image	utils/DataLoader.py	/^from PIL import Image$/;"	i
+Input	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization$/;"	i
+K	scripts/gan_trainer.py	/^from tensorflow.keras import backend as K$/;"	i
+LOG_FILE	utils/logger.py	/^LOG_FILE = "experiment_run.log"$/;"	v
+LeakyReLU	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import LeakyReLU, Dropout, Activation, Conv2D, Flatten$/;"	i
+Logger	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.logger import Logger$/;"	i
+Logger	base/base_model.py	/^from utils.logger import Logger$/;"	i
+Logger	base/base_model_eager.py	/^from utils.logger import Logger$/;"	i
+Logger	base/base_train.py	/^from utils.logger import Logger$/;"	i
+Logger	base/base_train_eager.py	/^from utils.logger import Logger$/;"	i
+Logger	base/base_train_multi.py	/^from utils.logger import Logger$/;"	i
+Logger	data_loader/data_generator.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_tesla.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_tesla_new.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_tesla_parameters.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_titan.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_titan_new.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_titan_parameters.py	/^from utils.logger import Logger$/;"	i
+Logger	run_on_titan_parameters_new.py	/^from utils.logger import Logger$/;"	i
+Logger	test_on_tesla.py	/^from utils.logger import Logger$/;"	i
+Logger	test_on_titan.py	/^from utils.logger import Logger$/;"	i
+Logger	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from utils.logger import Logger$/;"	i
+Logger	utils/DataLoader.py	/^from utils.logger import Logger$/;"	i
+Logger	utils/logger.py	/^class Logger:$/;"	c
+Mark1	models/28/mark1.py	/^class Mark1(BaseModel):$/;"	c
+Mark1_Trainer	trainers/mark1_trainer.py	/^class Mark1_Trainer(BaseTrain):$/;"	c
+Model	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.models import Model$/;"	i
+Namespace	utils/.ipynb_checkpoints/config-checkpoint.py	/^from argparse import Namespace$/;"	i
+Namespace	utils/.ipynb_checkpoints/utils-checkpoint.py	/^from argparse import Namespace$/;"	i
+Namespace	utils/utils.py	/^from argparse import Namespace$/;"	i
+OffsetImage	utils/evaluations.py	/^from matplotlib.offsetbox import OffsetImage, AnnotationBbox$/;"	i
+PIL	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import PIL$/;"	i
+PIL	scripts/test_gan_mark2.py	/^import PIL$/;"	i
+Reshape	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^from tensorflow.keras.layers import Input,Dense, Reshape, Conv2DTranspose, BatchNormalization$/;"	i
+SENCEBGAN	models/new/sencebgan.py	/^class SENCEBGAN(BaseModel):$/;"	c
+SENCEBGANTrainer	trainers/sencebgan_trainer.py	/^class SENCEBGANTrainer(BaseTrainSequential):$/;"	c
+SkipGANomaly	models/28/skip_ganomaly.py	/^class SkipGANomaly(BaseModel):$/;"	c
+SkipGANomaly	models/32/skip_ganomaly.py	/^class SkipGANomaly(BaseModel):$/;"	c
+SkipGANomaly	models/new/skip_ganomaly_conv.py	/^class SkipGANomaly(BaseModel):$/;"	c
+SkipGANomalyTrainer	trainers/skip_ganomaly_trainer.py	/^class SkipGANomalyTrainer(BaseTrain):$/;"	c
+Summarizer	scripts/main_gan.py	/^from utils.summarizer import Summarizer$/;"	i
+Summarizer	utils/summarizer.py	/^class Summarizer:$/;"	c
+Summarizer_eager	utils/summarizer_eager.py	/^class Summarizer_eager:$/;"	c
+TemplateModel	models/template_model.py	/^class TemplateModel(BaseModel):$/;"	c
+TemplateTrainer	trainers/template_trainer.py	/^class TemplateTrainer(BaseTrain):$/;"	c
+X	scripts/test_gan.py	/^X = d.get_original_images()$/;"	v
+ZipFile	utils/download_data.py	/^from zipfile import ZipFile$/;"	i
+__init__	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^    def __init__(self):$/;"	m	class:DataGenerator
+__init__	Experiments/codebase_test/codebase/gan.py	/^    def __init__(self, config):$/;"	m	class:GAN
+__init__	Experiments/codebase_test/codebase/gan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:GANTrainer
+__init__	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^    def __init__(self, config):$/;"	m	class:GANomaly
+__init__	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:GANomalyTrainer
+__init__	Results/test_000/codebase/bigan.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	Results/test_000/codebase/bigan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BIGANTrainer
+__init__	Results/test_standard/codebase/bigan_conv.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	Results/test_standard/codebase/bigan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BIGANTrainer
+__init__	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BIGANTrainer
+__init__	Results/test_wgan/codebase/bigan_conv.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	Results/test_wgan/codebase/bigan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BIGANTrainer
+__init__	base/.ipynb_checkpoints/base_train-checkpoint.py	/^    def __init__(self, sess, model,data, config, logger):$/;"	m	class:BaseTrain
+__init__	base/base_model.py	/^    def __init__(self, config):$/;"	m	class:BaseModel
+__init__	base/base_model_eager.py	/^    def __init__(self, config):$/;"	m	class:BaseModelEager
+__init__	base/base_model_keras.py	/^    def __init__(self, config):$/;"	m	class:BaseModelKeras
+__init__	base/base_train.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BaseTrain
+__init__	base/base_train_eager.py	/^    def __init__(self, model, data, config, summarizer):$/;"	m	class:BaseTrainEager
+__init__	base/base_train_keras.py	/^    def __init__(self,sess, model,data, config):$/;"	m	class:BaseTrainKeras
+__init__	base/base_train_multi.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BaseTrainMulti
+__init__	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^    def __init__(self, config):$/;"	m	class:DataGenerator
+__init__	data_loader/.ipynb_checkpoints/data_generator_eager-checkpoint.py	/^    def __init__(self, config):$/;"	m	class:DataGenerator_eager
+__init__	data_loader/data_generator.py	/^    def __init__(self, config):$/;"	m	class:DataGenerator
+__init__	data_loader/data_generator_eager.py	/^    def __init__(self, config):$/;"	m	class:DataGeneratorEager
+__init__	data_loader/data_generator_keras.py	/^    def __init__(self, config):$/;"	m	class:DataGeneratorKeras
+__init__	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^    def __init__(self, config):$/;"	m	class:GAN_eager
+__init__	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^    def __init__(self, config):$/;"	m	class:GANomaly
+__init__	models/28/alad.py	/^    def __init__(self, config):$/;"	m	class:ALAD
+__init__	models/28/anogan.py	/^    def __init__(self, config):$/;"	m	class:ANOGAN
+__init__	models/28/bigan.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	models/28/gan.py	/^    def __init__(self, config):$/;"	m	class:GAN
+__init__	models/28/ganomaly.py	/^    def __init__(self, config):$/;"	m	class:GANomaly
+__init__	models/28/mark1.py	/^    def __init__(self, config):$/;"	m	class:Mark1
+__init__	models/28/skip_ganomaly.py	/^    def __init__(self, config):$/;"	m	class:SkipGANomaly
+__init__	models/32/alad.py	/^    def __init__(self, config):$/;"	m	class:ALAD
+__init__	models/32/anogan.py	/^    def __init__(self, config):$/;"	m	class:ANOGAN
+__init__	models/32/bigan.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	models/32/ganomaly.py	/^    def __init__(self, config):$/;"	m	class:GANomaly
+__init__	models/32/skip_ganomaly.py	/^    def __init__(self, config):$/;"	m	class:SkipGANomaly
+__init__	models/new/alad_conv.py	/^    def __init__(self, config):$/;"	m	class:ALAD
+__init__	models/new/bigan_conv.py	/^    def __init__(self, config):$/;"	m	class:BIGAN
+__init__	models/new/ebgan.py	/^    def __init__(self, config):$/;"	m	class:EBGAN
+__init__	models/new/encebgan.py	/^    def __init__(self, config):$/;"	m	class:EncEBGAN
+__init__	models/new/fanogan.py	/^    def __init__(self, config):$/;"	m	class:FAnogan
+__init__	models/new/fencegan.py	/^    def __init__(self, config):$/;"	m	class:FenceGAN
+__init__	models/new/ganomaly_conv.py	/^    def __init__(self, config):$/;"	m	class:GANomaly
+__init__	models/new/sencebgan.py	/^    def __init__(self, config):$/;"	m	class:SENCEBGAN
+__init__	models/new/skip_ganomaly_conv.py	/^    def __init__(self, config):$/;"	m	class:SkipGANomaly
+__init__	models/template_model.py	/^    def __init__(self, config):$/;"	m	class:TemplateModel
+__init__	scripts/gan.py	/^    def __init__(self, config):$/;"	m	class:GAN
+__init__	scripts/gan_trainer.py	/^    def __init__(self, sess, model, data, config, logger):$/;"	m	class:GANTrainer
+__init__	scripts/ganomaly_mark2.py	/^    def __init__(self, config):$/;"	m	class:GANomaly_mark2
+__init__	scripts/test_gan_mark2.py	/^    def __init__(self):$/;"	m	class:DataGenerator
+__init__	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:GANomalyTrainer
+__init__	trainers/alad_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:ALAD_Trainer
+__init__	trainers/anogan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:ANOGAN_Trainer
+__init__	trainers/bigan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:BIGANTrainer
+__init__	trainers/ebgan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:EBGANTrainer
+__init__	trainers/encebgan_trainer.py	/^    def __init__(self, sess, model, data, config, logger):$/;"	m	class:EncEBGANTrainer
+__init__	trainers/fanogan_trainer.py	/^    def __init__(self, sess, model, data, config, logger):$/;"	m	class:FAnoganTrainer
+__init__	trainers/gan_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:GANTrainer
+__init__	trainers/ganomaly_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:GANomalyTrainer
+__init__	trainers/mark1_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:Mark1_Trainer
+__init__	trainers/sencebgan_trainer.py	/^    def __init__(self, sess, model, data, config, logger):$/;"	m	class:SENCEBGANTrainer
+__init__	trainers/skip_ganomaly_trainer.py	/^    def __init__(self, sess, model, data, config, summarizer):$/;"	m	class:SkipGANomalyTrainer
+__init__	trainers/template_trainer.py	/^    def __init__(self, sess, model, data, config, logger):$/;"	m	class:TemplateTrainer
+__init__	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def __init__(self, config):$/;"	m	class:DataLoader
+__init__	utils/DataLoader.py	/^    def __init__(self, config):$/;"	m	class:DataLoader
+__init__	utils/logger.py	/^    def __init__(self, config):$/;"	m	class:Logger
+__init__	utils/summarizer.py	/^    def __init__(self, sess, config):$/;"	m	class:Summarizer
+__init__	utils/summarizer_eager.py	/^    def __init__(self, config):$/;"	m	class:Summarizer_eager
+_parse_function	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGenerator
+_parse_function	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGenerator
+_parse_function	data_loader/.ipynb_checkpoints/data_generator_eager-checkpoint.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGenerator_eager
+_parse_function	data_loader/data_generator.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGenerator
+_parse_function	data_loader/data_generator_eager.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGeneratorEager
+_parse_function	data_loader/data_generator_keras.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGeneratorKeras
+_parse_function	scripts/test_gan_mark2.py	/^    def _parse_function(self, filename):$/;"	m	class:DataGenerator
+_parse_function_test	data_loader/data_generator.py	/^    def _parse_function_test(self, img_file, tag):$/;"	m	class:DataGenerator
+a	scripts/gpu_test.py	/^  a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a')$/;"	v
+add_tensorboard	utils/summarizer.py	/^    def add_tensorboard(self, step, summarizer="train", scope="", summaries=None):$/;"	m	class:Summarizer
+argparse	.ipynb_checkpoints/create_gif-checkpoint.py	/^import argparse$/;"	i
+argparse	check_training_process.py	/^import argparse$/;"	i
+argparse	create_gif.py	/^import argparse$/;"	i
+argparse	scripts/test_gan.py	/^import argparse$/;"	i
+argparse	utils/.ipynb_checkpoints/utils-checkpoint.py	/^import argparse$/;"	i
+argparse	utils/utils.py	/^import argparse$/;"	i
+args	scripts/test_gan.py	/^args = vars(parser.parse_args())$/;"	v
+auc	utils/evaluations.py	/^from sklearn.metrics import roc_curve, auc, precision_recall_fscore_support, precision_recall_curve$/;"	i
+b	scripts/gpu_test.py	/^  b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b')$/;"	v
+batch_size	scripts/test_gan.py	/^batch_size = args['sample_size']$/;"	v
+bias	utils/alad_utils.py	/^            bias = tf.get_variable("bias", [units], initializer=bias_initializer)$/;"	v
+bias	utils/alad_utils.py	/^        bias = tf.get_variable("bias", [filters], initializer=bias_initializer)$/;"	v
+build_cifar10_dataset	utils/DataLoader.py	/^    def build_cifar10_dataset(self):$/;"	m	class:DataLoader
+build_material_dataset	utils/DataLoader.py	/^    def build_material_dataset(self):$/;"	m	class:DataLoader
+build_mnist_dataset	utils/DataLoader.py	/^    def build_mnist_dataset(self):$/;"	m	class:DataLoader
+build_model	Experiments/codebase_test/codebase/gan.py	/^    def build_model(self):$/;"	m	class:GAN
+build_model	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^    def build_model(self):$/;"	m	class:GANomaly
+build_model	Results/test_000/codebase/bigan.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	Results/test_standard/codebase/bigan_conv.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	Results/test_wgan/codebase/bigan_conv.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	base/base_model.py	/^    def build_model(self):$/;"	m	class:BaseModel
+build_model	base/base_model_eager.py	/^    def build_model(self):$/;"	m	class:BaseModelEager
+build_model	base/base_model_keras.py	/^    def build_model(self):$/;"	m	class:BaseModelKeras
+build_model	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^    def build_model(self):$/;"	m	class:GAN_eager
+build_model	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^    def build_model(self):$/;"	m	class:GANomaly
+build_model	models/28/alad.py	/^    def build_model(self):$/;"	m	class:ALAD
+build_model	models/28/anogan.py	/^    def build_model(self):$/;"	m	class:ANOGAN
+build_model	models/28/bigan.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	models/28/gan.py	/^    def build_model(self):$/;"	m	class:GAN
+build_model	models/28/ganomaly.py	/^    def build_model(self):$/;"	m	class:GANomaly
+build_model	models/28/mark1.py	/^    def build_model(self):$/;"	m	class:Mark1
+build_model	models/28/skip_ganomaly.py	/^    def build_model(self):$/;"	m	class:SkipGANomaly
+build_model	models/32/alad.py	/^    def build_model(self):$/;"	m	class:ALAD
+build_model	models/32/anogan.py	/^    def build_model(self):$/;"	m	class:ANOGAN
+build_model	models/32/bigan.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	models/32/ganomaly.py	/^    def build_model(self):$/;"	m	class:GANomaly
+build_model	models/32/skip_ganomaly.py	/^    def build_model(self):$/;"	m	class:SkipGANomaly
+build_model	models/new/alad_conv.py	/^    def build_model(self):$/;"	m	class:ALAD
+build_model	models/new/bigan_conv.py	/^    def build_model(self):$/;"	m	class:BIGAN
+build_model	models/new/ebgan.py	/^    def build_model(self):$/;"	m	class:EBGAN
+build_model	models/new/encebgan.py	/^    def build_model(self):$/;"	m	class:EncEBGAN
+build_model	models/new/fanogan.py	/^    def build_model(self):$/;"	m	class:FAnogan
+build_model	models/new/fencegan.py	/^    def build_model(self):$/;"	m	class:FenceGAN
+build_model	models/new/ganomaly_conv.py	/^    def build_model(self):$/;"	m	class:GANomaly
+build_model	models/new/sencebgan.py	/^    def build_model(self):$/;"	m	class:SENCEBGAN
+build_model	models/new/skip_ganomaly_conv.py	/^    def build_model(self):$/;"	m	class:SkipGANomaly
+build_model	models/template_model.py	/^    def build_model(self):$/;"	m	class:TemplateModel
+build_model	scripts/gan.py	/^    def build_model(self):$/;"	m	class:GAN
+build_model	scripts/ganomaly_mark2.py	/^    def build_model(self):$/;"	m	class:GANomaly_mark2
+c	scripts/gpu_test.py	/^  c = tf.matmul(a, b)$/;"	v
+channels	utils/alad_utils.py	/^        channels = shape[-1]$/;"	v
+check_training_process	check_training_process.py	/^def check_training_process(args):$/;"	f
+checkpoint	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,$/;"	v
+checkpoint	scripts/test_gan_mark2.py	/^checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,$/;"	v
+checkpoint_dir	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^checkpoint_dir = '.\/training_checkpoints'$/;"	v
+checkpoint_dir	scripts/test_gan_mark2.py	/^checkpoint_dir = '.\/training_checkpoints'$/;"	v
+checkpoint_prefix	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")$/;"	v
+checkpoint_prefix	scripts/test_gan_mark2.py	/^checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")$/;"	v
+cm	utils/evaluations.py	/^import matplotlib.cm as cm$/;"	i
+contextmanager	utils/.ipynb_checkpoints/utils-checkpoint.py	/^from contextlib import contextmanager$/;"	i
+contextmanager	utils/utils.py	/^from contextlib import contextmanager$/;"	i
+conv2d	utils/alad_utils.py	/^def conv2d($/;"	f
+copy	utils/copy_codebase.py	/^from shutil import copy$/;"	i
+copy	utils/copy_codebase_new.py	/^from shutil import copy$/;"	i
+copy_codebase	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_tesla.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_tesla_new.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_tesla_parameters.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_titan.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_titan_new.py	/^from utils.copy_codebase_new import copy_codebase$/;"	i
+copy_codebase	run_on_titan_parameters.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	run_on_titan_parameters_new.py	/^from utils.copy_codebase_new import copy_codebase$/;"	i
+copy_codebase	test_on_tesla.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	test_on_titan.py	/^from utils.copy_codebase import copy_codebase$/;"	i
+copy_codebase	utils/copy_codebase.py	/^def copy_codebase(config):$/;"	f
+copy_codebase	utils/copy_codebase_new.py	/^def copy_codebase(config):$/;"	f
+create	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.factory import create$/;"	i
+create	run_on_tesla.py	/^from utils.factory import create$/;"	i
+create	run_on_tesla_new.py	/^from utils.factory import create$/;"	i
+create	run_on_tesla_parameters.py	/^from utils.factory import create$/;"	i
+create	run_on_titan.py	/^from utils.factory import create$/;"	i
+create	run_on_titan_new.py	/^from utils.factory import create$/;"	i
+create	run_on_titan_parameters.py	/^from utils.factory import create$/;"	i
+create	run_on_titan_parameters_new.py	/^from utils.factory import create$/;"	i
+create	test_on_tesla.py	/^from utils.factory import create$/;"	i
+create	test_on_titan.py	/^from utils.factory import create$/;"	i
+create	utils/factory.py	/^def create(cls):$/;"	f
+create_dirs	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_tesla.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_tesla_new.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_tesla_parameters.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_titan.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_titan_new.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_titan_parameters.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	run_on_titan_parameters_new.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	scripts/main_gan.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	test_on_tesla.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	test_on_titan.py	/^from utils.dirs import create_dirs$/;"	i
+create_dirs	utils/.ipynb_checkpoints/config-checkpoint.py	/^def create_dirs(dirs):$/;"	f
+create_dirs	utils/.ipynb_checkpoints/dirs-checkpoint.py	/^def create_dirs(dirs):$/;"	f
+create_dirs	utils/.ipynb_checkpoints/utils-checkpoint.py	/^def create_dirs(dirs):$/;"	f
+create_dirs	utils/config.py	/^def create_dirs(dirs: list) -> None:$/;"	f
+create_dirs	utils/dirs.py	/^def create_dirs(dirs):$/;"	f
+create_dirs	utils/utils.py	/^def create_dirs(dirs):$/;"	f
+create_gif	.ipynb_checkpoints/create_gif-checkpoint.py	/^def create_gif(folder_name,output_name):$/;"	f
+create_gif	create_gif.py	/^def create_gif(folder_name, output_name):$/;"	f
+create_image_array	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def create_image_array(self, img_names, save=True, file_name="Dataset"):$/;"	m	class:DataLoader
+create_image_array	utils/DataLoader.py	/^    def create_image_array(self, img_names, save=True, file_name="Dataset"):$/;"	m	class:DataLoader
+create_parameter_file	utils/config.py	/^def create_parameter_file(config: object) -> None:$/;"	f
+csv	utils/evaluations.py	/^import csv$/;"	i
+d	scripts/test_gan.py	/^d = DataLoader(data_dir)$/;"	v
+data_dir	scripts/test_gan.py	/^data_dir = "data\/cropped28\/"$/;"	v
+dataset	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^dataset = DataGenerator()$/;"	v
+dataset	scripts/test_gan_mark2.py	/^dataset = DataGenerator()$/;"	v
+dense	utils/alad_utils.py	/^def dense($/;"	f
+directory	utils/evaluations.py	/^    directory = location + "{}\/{}\/{}\/w{}\/".format(model, dataset, method, weight)$/;"	v
+disc_hidden_dim	scripts/test_gan.py	/^disc_hidden_dim = args['disc_hidden']$/;"	v
+discriminator	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^                                 discriminator=discriminator)$/;"	v
+discriminator	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^discriminator = make_discriminator_model()$/;"	v
+discriminator	Experiments/codebase_test/codebase/gan.py	/^    def discriminator(self, image, reuse=False):$/;"	m	class:GAN
+discriminator	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^    def discriminator(self, image, getter=None):$/;"	m	class:GANomaly
+discriminator	Results/test_000/codebase/bigan.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	Results/test_standard/codebase/bigan_conv.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	Results/test_wgan/codebase/bigan_conv.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^    def discriminator(self, image, getter=None):$/;"	m	class:GANomaly
+discriminator	models/28/anogan.py	/^    def discriminator(self, img_tensor, getter=None):$/;"	m	class:ANOGAN
+discriminator	models/28/bigan.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	models/28/gan.py	/^    def discriminator(self, image, reuse=False):$/;"	m	class:GAN
+discriminator	models/28/ganomaly.py	/^    def discriminator(self, image, getter=None):$/;"	m	class:GANomaly
+discriminator	models/28/skip_ganomaly.py	/^    def discriminator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+discriminator	models/32/anogan.py	/^    def discriminator(self, img_tensor, getter=None):$/;"	m	class:ANOGAN
+discriminator	models/32/bigan.py	/^    def discriminator(self, noise_input, image_input, getter=None):$/;"	m	class:BIGAN
+discriminator	models/32/ganomaly.py	/^    def discriminator(self, image, getter=None, do_spectral_norm=False):$/;"	m	class:GANomaly
+discriminator	models/32/skip_ganomaly.py	/^    def discriminator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+discriminator	models/new/bigan_conv.py	/^    def discriminator(self, noise_input, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:BIGAN
+discriminator	models/new/ebgan.py	/^    def discriminator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:EBGAN
+discriminator	models/new/encebgan.py	/^    def discriminator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:EncEBGAN
+discriminator	models/new/fanogan.py	/^    def discriminator(self, image_input, getter=None):$/;"	m	class:FAnogan
+discriminator	models/new/fencegan.py	/^    def discriminator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:FenceGAN
+discriminator	models/new/ganomaly_conv.py	/^    def discriminator(self, image, getter=None, do_spectral_norm=False):$/;"	m	class:GANomaly
+discriminator	models/new/sencebgan.py	/^    def discriminator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:SENCEBGAN
+discriminator	models/new/skip_ganomaly_conv.py	/^    def discriminator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+discriminator	scripts/ganomaly_mark2.py	/^    def discriminator(self, image, getter=None):$/;"	m	class:GANomaly_mark2
+discriminator	scripts/test_gan.py	/^    def discriminator(x, reuse=False):$/;"	f	function:GAN
+discriminator	scripts/test_gan_mark2.py	/^                                 discriminator=discriminator)$/;"	v
+discriminator	scripts/test_gan_mark2.py	/^discriminator = make_discriminator_model()$/;"	v
+discriminator_loss	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def discriminator_loss(real_output, generated_output):$/;"	f
+discriminator_loss	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^    def discriminator_loss(self,model, true_labels, generated_labels, disc_real, disc_fake):$/;"	m	class:GAN_eager
+discriminator_loss	scripts/test_gan_mark2.py	/^def discriminator_loss(real_output, generated_output):$/;"	f
+discriminator_optimizer	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^                                 discriminator_optimizer=discriminator_optimizer,$/;"	v
+discriminator_optimizer	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^discriminator_optimizer = tf.train.AdamOptimizer(1e-4)$/;"	v
+discriminator_optimizer	scripts/test_gan_mark2.py	/^                                 discriminator_optimizer=discriminator_optimizer,$/;"	v
+discriminator_optimizer	scripts/test_gan_mark2.py	/^discriminator_optimizer = tf.train.AdamOptimizer(1e-4)$/;"	v
+discriminator_xx	models/28/alad.py	/^    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_xx	models/28/mark1.py	/^    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=True):$/;"	m	class:Mark1
+discriminator_xx	models/32/alad.py	/^    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_xx	models/new/alad_conv.py	/^    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_xx	models/new/sencebgan.py	/^    def discriminator_xx(self, img_tensor, recreated_img, getter=None, do_spectral_norm=False):$/;"	m	class:SENCEBGAN
+discriminator_xz	models/28/alad.py	/^    def discriminator_xz(self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_xz	models/28/mark1.py	/^    def discriminator_xz(self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:Mark1
+discriminator_xz	models/32/alad.py	/^    def discriminator_xz(self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_xz	models/new/alad_conv.py	/^    def discriminator_xz(self, img_tensor, noise_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_zz	models/28/alad.py	/^    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_zz	models/28/mark1.py	/^    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True):$/;"	m	class:Mark1
+discriminator_zz	models/32/alad.py	/^    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_zz	models/new/alad_conv.py	/^    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+discriminator_zz	models/new/sencebgan.py	/^    def discriminator_zz(self, noise_tensor, recreated_noise, getter=None, do_spectral_norm=False):$/;"	m	class:SENCEBGAN
+display	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^from IPython import display$/;"	i
+display	scripts/test_gan_mark2.py	/^from IPython import display$/;"	i
+do_cumdist	utils/evaluations.py	/^def do_cumdist(scores, file_name="", directory="", plot=True):$/;"	f
+do_hist	utils/evaluations.py	/^def do_hist(scores, true_labels, directory, dataset, random_seed, step=None, display=False):$/;"	f
+do_hists	utils/evaluations.py	/^def do_hists(scores, true_labels, directory, dataset, random_seed, display=False):$/;"	f
+do_prc	utils/evaluations.py	/^def do_prc(scores, true_labels, file_name="", directory="", plot=True):$/;"	f
+do_roc	Results/test_000/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+do_roc	Results/test_standard/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+do_roc	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+do_roc	Results/test_wgan/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+do_roc	trainers/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+do_roc	utils/evaluations.py	/^def do_roc(scores, true_labels, file_name="", directory="", plot=True):$/;"	f
+download_data_material	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from utils.download_data import download_data_material$/;"	i
+download_data_material	utils/DataLoader.py	/^from utils.download_data import download_data_material$/;"	i
+download_data_material	utils/download_data.py	/^def download_data_material(dir_path):$/;"	f
+ema_getter	utils/alad_utils.py	/^    def ema_getter(getter, name, *args, **kwargs):$/;"	f	function:get_getter
+encoder	Results/test_000/codebase/bigan.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	Results/test_standard/codebase/bigan_conv.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	Results/test_wgan/codebase/bigan_conv.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	models/28/alad.py	/^    def encoder(self, img_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+encoder	models/28/bigan.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	models/32/alad.py	/^    def encoder(self, img_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+encoder	models/32/bigan.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:BIGAN
+encoder	models/new/alad_conv.py	/^    def encoder(self, img_tensor, getter=None, do_spectral_norm=True):$/;"	m	class:ALAD
+encoder	models/new/bigan_conv.py	/^    def encoder(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:BIGAN
+encoder	models/new/encebgan.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:EncEBGAN
+encoder	models/new/fanogan.py	/^    def encoder(self, image_input, getter=None):$/;"	m	class:FAnogan
+encoder_g	models/new/sencebgan.py	/^    def encoder_g(self, image_input, getter=None):$/;"	m	class:SENCEBGAN
+encoder_r	models/new/sencebgan.py	/^    def encoder_r(self, image_input, getter=None):$/;"	m	class:SENCEBGAN
+file_name	utils/evaluations.py	/^    file_name = "{}_step{}_rd{}".format(label, step, random_seed)$/;"	v
+filter	utils/alad_utils.py	/^            filter=spectral_norm(w),$/;"	v
+fname	utils/evaluations.py	/^            fname = directory + "{}.csv".format(label)$/;"	v
+fname	utils/evaluations.py	/^    fname = directory + "{}.csv".format(label)$/;"	v
+gen_hidden_dim	scripts/test_gan.py	/^gen_hidden_dim = args['gen_hidden']$/;"	v
+generate_and_save_images	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def generate_and_save_images(model, epoch, test_input):$/;"	f
+generate_and_save_images	scripts/test_gan_mark2.py	/^def generate_and_save_images(model, epoch, test_input):$/;"	f
+generate_labels	Experiments/codebase_test/codebase/gan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:GANTrainer
+generate_labels	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:GANomalyTrainer
+generate_labels	Results/test_000/codebase/bigan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:BIGANTrainer
+generate_labels	Results/test_standard/codebase/bigan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:BIGANTrainer
+generate_labels	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:BIGANTrainer
+generate_labels	Results/test_wgan/codebase/bigan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:BIGANTrainer
+generate_labels	scripts/gan_trainer.py	/^    def generate_labels(self):$/;"	m	class:GANTrainer
+generate_labels	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:GANomalyTrainer
+generate_labels	trainers/alad_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:ALAD_Trainer
+generate_labels	trainers/anogan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:ANOGAN_Trainer
+generate_labels	trainers/bigan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:BIGANTrainer
+generate_labels	trainers/fanogan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:FAnoganTrainer
+generate_labels	trainers/gan_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:GANTrainer
+generate_labels	trainers/ganomaly_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:GANomalyTrainer
+generate_labels	trainers/mark1_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:Mark1_Trainer
+generate_labels	trainers/skip_ganomaly_trainer.py	/^    def generate_labels(self, soft_labels, flip_labels):$/;"	m	class:SkipGANomalyTrainer
+generate_noise	Experiments/codebase_test/codebase/gan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:GANTrainer
+generate_noise	Results/test_000/codebase/bigan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:BIGANTrainer
+generate_noise	Results/test_standard/codebase/bigan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:BIGANTrainer
+generate_noise	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:BIGANTrainer
+generate_noise	Results/test_wgan/codebase/bigan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:BIGANTrainer
+generate_noise	trainers/alad_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:ALAD_Trainer
+generate_noise	trainers/anogan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:ANOGAN_Trainer
+generate_noise	trainers/bigan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:BIGANTrainer
+generate_noise	trainers/fanogan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch, batch_size):$/;"	m	class:FAnoganTrainer
+generate_noise	trainers/gan_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:GANTrainer
+generate_noise	trainers/ganomaly_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch, mode=1):$/;"	m	class:GANomalyTrainer
+generate_noise	trainers/skip_ganomaly_trainer.py	/^    def generate_noise(self, include_noise, cur_epoch):$/;"	m	class:SkipGANomalyTrainer
+generator	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^                                 generator=generator,$/;"	v
+generator	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^generator = make_generator_model()$/;"	v
+generator	Experiments/codebase_test/codebase/gan.py	/^    def generator(self, noise_tensor):$/;"	m	class:GAN
+generator	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:GANomaly
+generator	Results/test_000/codebase/bigan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	Results/test_standard/codebase/bigan_conv.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	Results/test_wgan/codebase/bigan_conv.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:GANomaly
+generator	models/28/alad.py	/^    def generator(self, noise_tensor, getter=None):$/;"	m	class:ALAD
+generator	models/28/anogan.py	/^    def generator(self, noise_tensor, getter=None):$/;"	m	class:ANOGAN
+generator	models/28/bigan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	models/28/gan.py	/^    def generator(self, noise_tensor):$/;"	m	class:GAN
+generator	models/28/ganomaly.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:GANomaly
+generator	models/28/mark1.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:Mark1
+generator	models/28/skip_ganomaly.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+generator	models/32/alad.py	/^    def generator(self, noise_tensor, getter=None):$/;"	m	class:ALAD
+generator	models/32/anogan.py	/^    def generator(self, noise_tensor, getter=None):$/;"	m	class:ANOGAN
+generator	models/32/bigan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	models/32/ganomaly.py	/^    def generator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:GANomaly
+generator	models/32/skip_ganomaly.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+generator	models/new/alad_conv.py	/^    def generator(self, noise_tensor, getter=None):$/;"	m	class:ALAD
+generator	models/new/bigan_conv.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:BIGAN
+generator	models/new/ebgan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:EBGAN
+generator	models/new/encebgan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:EncEBGAN
+generator	models/new/fanogan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:FAnogan
+generator	models/new/fencegan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:FenceGAN
+generator	models/new/ganomaly_conv.py	/^    def generator(self, image_input, getter=None, do_spectral_norm=False):$/;"	m	class:GANomaly
+generator	models/new/sencebgan.py	/^    def generator(self, noise_input, getter=None):$/;"	m	class:SENCEBGAN
+generator	models/new/skip_ganomaly_conv.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:SkipGANomaly
+generator	scripts/ganomaly_mark2.py	/^    def generator(self, image_input, getter=None):$/;"	m	class:GANomaly_mark2
+generator	scripts/test_gan.py	/^    def generator(x, reuse=False):$/;"	f	function:GAN
+generator	scripts/test_gan_mark2.py	/^                                 generator=generator,$/;"	v
+generator	scripts/test_gan_mark2.py	/^generator = make_generator_model()$/;"	v
+generator_loss	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def generator_loss(generated_output):$/;"	f
+generator_loss	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^    def generator_loss(self,model, stacked_gan):$/;"	m	class:GAN_eager
+generator_loss	scripts/test_gan_mark2.py	/^def generator_loss(generated_output):$/;"	f
+generator_optimizer	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^generator_optimizer = tf.train.AdamOptimizer(1e-4)$/;"	v
+generator_optimizer	scripts/test_gan_mark2.py	/^generator_optimizer = tf.train.AdamOptimizer(1e-4)$/;"	v
+get_args	.ipynb_checkpoints/run-checkpoint.py	/^from utils.utils import get_args$/;"	i
+get_args	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.utils import get_args$/;"	i
+get_args	run.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_tesla.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_tesla_new.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_tesla_parameters.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_titan.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_titan_new.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_titan_parameters.py	/^from utils.utils import get_args$/;"	i
+get_args	run_on_titan_parameters_new.py	/^from utils.utils import get_args$/;"	i
+get_args	test_on_tesla.py	/^from utils.utils import get_args$/;"	i
+get_args	test_on_titan.py	/^from utils.utils import get_args$/;"	i
+get_args	utils/.ipynb_checkpoints/utils-checkpoint.py	/^def get_args():$/;"	f
+get_args	utils/utils.py	/^def get_args():$/;"	f
+get_config_from_json	run_on_tesla.py	/^from utils.config import process_config, get_config_from_json$/;"	i
+get_config_from_json	run_on_tesla_new.py	/^from utils.config import process_config, get_config_from_json$/;"	i
+get_config_from_json	run_on_tesla_parameters.py	/^from utils.config import get_config_from_json$/;"	i
+get_config_from_json	run_on_titan.py	/^from utils.config import get_config_from_json$/;"	i
+get_config_from_json	run_on_titan_new.py	/^from utils.config import get_config_from_json$/;"	i
+get_config_from_json	run_on_titan_parameters.py	/^from utils.config import get_config_from_json$/;"	i
+get_config_from_json	run_on_titan_parameters_new.py	/^from utils.config import get_config_from_json$/;"	i
+get_config_from_json	utils/.ipynb_checkpoints/config-checkpoint.py	/^def get_config_from_json(json_file):$/;"	f
+get_config_from_json	utils/.ipynb_checkpoints/utils-checkpoint.py	/^def get_config_from_json(json_file):$/;"	f
+get_config_from_json	utils/config.py	/^def get_config_from_json(json_file):$/;"	f
+get_config_from_json	utils/utils.py	/^def get_config_from_json(json_file):$/;"	f
+get_console_handler	utils/logger.py	/^    def get_console_handler(self):$/;"	m	class:Logger
+get_file_handler	utils/logger.py	/^    def get_file_handler(self):$/;"	m	class:Logger
+get_getter	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	Results/test_000/codebase/bigan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	Results/test_standard/codebase/bigan_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	Results/test_wgan-gp/codebase/bigan_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	Results/test_wgan/codebase/bigan_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/28/bigan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/28/ganomaly.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/28/mark1.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/28/skip_ganomaly.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/32/bigan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/32/ganomaly.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/32/skip_ganomaly.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/bigan_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/ebgan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/encebgan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/fanogan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/fencegan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/ganomaly_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/sencebgan.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	models/new/skip_ganomaly_conv.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	scripts/ganomaly_mark2.py	/^from utils.alad_utils import get_getter$/;"	i
+get_getter	utils/alad_utils.py	/^def get_getter($/;"	f
+get_logger	utils/logger.py	/^    def get_logger(self, logger_name):$/;"	m	class:Logger
+get_percentile	utils/evaluations.py	/^def get_percentile(scores, dataset):$/;"	f
+get_test_dataset	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def get_test_dataset(self):$/;"	m	class:DataLoader
+get_test_dataset	utils/DataLoader.py	/^    def get_test_dataset(self):$/;"	m	class:DataLoader
+get_train_dataset	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def get_train_dataset(self):$/;"	m	class:DataLoader
+get_train_dataset	utils/DataLoader.py	/^    def get_train_dataset(self):$/;"	m	class:DataLoader
+get_valid_dataset	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def get_valid_dataset(self):$/;"	m	class:DataLoader
+get_valid_dataset	utils/DataLoader.py	/^    def get_valid_dataset(self):$/;"	m	class:DataLoader
+glob	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import glob$/;"	i
+glob	scripts/test_gan_mark2.py	/^import glob$/;"	i
+gridspec	scripts/test_gan.py	/^import matplotlib.gridspec as gridspec$/;"	i
+gridspec	utils/evaluations.py	/^import matplotlib.gridspec as gridspec$/;"	i
+heatmap	utils/evaluations.py	/^def heatmap(data, name=None, save=False):$/;"	f
+image_dim	scripts/test_gan.py	/^image_dim = 784$/;"	v
+imageio	.ipynb_checkpoints/create_gif-checkpoint.py	/^import imageio$/;"	i
+imageio	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import imageio$/;"	i
+imageio	create_gif.py	/^import imageio$/;"	i
+imageio	scripts/test_gan_mark2.py	/^import imageio$/;"	i
+importlib	utils/factory.py	/^import importlib$/;"	i
+increment_cur_epoch_tensor	base/base_model_eager.py	/^    def increment_cur_epoch_tensor(self):$/;"	m	class:BaseModelEager
+init_cur_epoch	base/base_model.py	/^    def init_cur_epoch(self):$/;"	m	class:BaseModel
+init_cur_epoch	base/base_model_eager.py	/^    def init_cur_epoch(self):$/;"	m	class:BaseModelEager
+init_global_step	base/base_model.py	/^    def init_global_step(self):$/;"	m	class:BaseModel
+init_global_step	base/base_model_eager.py	/^    def init_global_step(self):$/;"	m	class:BaseModelEager
+init_saver	Experiments/codebase_test/codebase/gan.py	/^    def init_saver(self):$/;"	m	class:GAN
+init_saver	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^    def init_saver(self):$/;"	m	class:GANomaly
+init_saver	Results/test_000/codebase/bigan.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	Results/test_standard/codebase/bigan_conv.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	Results/test_wgan-gp/codebase/bigan_conv.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	Results/test_wgan/codebase/bigan_conv.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	base/base_model.py	/^    def init_saver(self):$/;"	m	class:BaseModel
+init_saver	base/base_model_eager.py	/^    def init_saver(self):$/;"	m	class:BaseModelEager
+init_saver	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^    def init_saver(self):$/;"	m	class:GAN_eager
+init_saver	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^    def init_saver(self):$/;"	m	class:GANomaly
+init_saver	models/28/alad.py	/^    def init_saver(self):$/;"	m	class:ALAD
+init_saver	models/28/anogan.py	/^    def init_saver(self):$/;"	m	class:ANOGAN
+init_saver	models/28/bigan.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	models/28/gan.py	/^    def init_saver(self):$/;"	m	class:GAN
+init_saver	models/28/ganomaly.py	/^    def init_saver(self):$/;"	m	class:GANomaly
+init_saver	models/28/mark1.py	/^    def init_saver(self):$/;"	m	class:Mark1
+init_saver	models/28/skip_ganomaly.py	/^    def init_saver(self):$/;"	m	class:SkipGANomaly
+init_saver	models/32/alad.py	/^    def init_saver(self):$/;"	m	class:ALAD
+init_saver	models/32/anogan.py	/^    def init_saver(self):$/;"	m	class:ANOGAN
+init_saver	models/32/bigan.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	models/32/ganomaly.py	/^    def init_saver(self):$/;"	m	class:GANomaly
+init_saver	models/32/skip_ganomaly.py	/^    def init_saver(self):$/;"	m	class:SkipGANomaly
+init_saver	models/new/alad_conv.py	/^    def init_saver(self):$/;"	m	class:ALAD
+init_saver	models/new/bigan_conv.py	/^    def init_saver(self):$/;"	m	class:BIGAN
+init_saver	models/new/ebgan.py	/^    def init_saver(self):$/;"	m	class:EBGAN
+init_saver	models/new/encebgan.py	/^    def init_saver(self):$/;"	m	class:EncEBGAN
+init_saver	models/new/fanogan.py	/^    def init_saver(self):$/;"	m	class:FAnogan
+init_saver	models/new/fencegan.py	/^    def init_saver(self):$/;"	m	class:FenceGAN
+init_saver	models/new/ganomaly_conv.py	/^    def init_saver(self):$/;"	m	class:GANomaly
+init_saver	models/new/sencebgan.py	/^    def init_saver(self):$/;"	m	class:SENCEBGAN
+init_saver	models/new/skip_ganomaly_conv.py	/^    def init_saver(self):$/;"	m	class:SkipGANomaly
+init_saver	models/template_model.py	/^    def init_saver(self):$/;"	m	class:TemplateModel
+init_saver	scripts/gan.py	/^    def init_saver(self):$/;"	m	class:GAN
+init_saver	scripts/ganomaly_mark2.py	/^    def init_saver(self):$/;"	m	class:GANomaly_mark2
+initializer	utils/alad_utils.py	/^            initializer=kernel_initializer,$/;"	v
+input	utils/alad_utils.py	/^            input=inputs,$/;"	v
+inputs	utils/alad_utils.py	/^        inputs = tf.contrib.layers.flatten(inputs)$/;"	v
+io	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from skimage import io$/;"	i
+io	utils/DataLoader.py	/^from skimage import io$/;"	i
+json	utils/.ipynb_checkpoints/config-checkpoint.py	/^import json$/;"	i
+json	utils/.ipynb_checkpoints/utils-checkpoint.py	/^import json$/;"	i
+json	utils/config.py	/^import json$/;"	i
+json	utils/utils.py	/^import json$/;"	i
+learning_rate1	scripts/test_gan.py	/^learning_rate1 = args['lr']$/;"	v
+listdir_nohidden	.ipynb_checkpoints/create_gif-checkpoint.py	/^from utils.dirs import listdir_nohidden$/;"	i
+listdir_nohidden	check_training_process.py	/^from utils.dirs import listdir_nohidden$/;"	i
+listdir_nohidden	create_gif.py	/^from utils.dirs import listdir_nohidden$/;"	i
+listdir_nohidden	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from utils.dirs import listdir_nohidden$/;"	i
+listdir_nohidden	utils/.ipynb_checkpoints/dirs-checkpoint.py	/^def listdir_nohidden(path):$/;"	f
+listdir_nohidden	utils/DataLoader.py	/^from utils.dirs import listdir_nohidden$/;"	i
+listdir_nohidden	utils/dirs.py	/^def listdir_nohidden(path):$/;"	f
+load	base/base_model.py	/^    def load(self, sess):$/;"	m	class:BaseModel
+load	base/base_model_eager.py	/^    def load(self):$/;"	m	class:BaseModelEager
+load	base/base_model_keras.py	/^    def load(self, checkpoint_path):$/;"	m	class:BaseModelKeras
+logging	utils/logger.py	/^import logging$/;"	i
+main	.ipynb_checkpoints/create_gif-checkpoint.py	/^def main():$/;"	f
+main	.ipynb_checkpoints/run-checkpoint.py	/^from mains.main_gan import main$/;"	i
+main	check_training_process.py	/^def main():$/;"	f
+main	create_gif.py	/^def main():$/;"	f
+main	scripts/main_gan.py	/^def main(config):$/;"	f
+main_keras	run.py	/^from mains.main_gan_keras import main as main_keras$/;"	i
+main_mark2	.ipynb_checkpoints/run-checkpoint.py	/^from mains.main_gan_mark2 import main as main_mark2$/;"	i
+make_discriminator_model	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def make_discriminator_model():$/;"	f
+make_discriminator_model	scripts/test_gan_mark2.py	/^def make_discriminator_model():$/;"	f
+make_generator_model	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def make_generator_model():$/;"	f
+make_generator_model	scripts/test_gan_mark2.py	/^def make_generator_model():$/;"	f
+make_meshgrid	utils/evaluations.py	/^def make_meshgrid(x_min, x_max, y_min, y_max, h=0.02):$/;"	f
+manifold	utils/evaluations.py	/^from sklearn import manifold$/;"	i
+matplotlib	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	base/.ipynb_checkpoints/base_train-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	base/base_train.py	/^import matplotlib$/;"	i
+matplotlib	base/base_train.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	base/base_train_eager.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	base/base_train_keras.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	base/base_train_multi.py	/^import matplotlib$/;"	i
+matplotlib	base/base_train_multi.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	scripts/test_gan.py	/^import matplotlib.gridspec as gridspec$/;"	i
+matplotlib	scripts/test_gan.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	scripts/test_gan_mark2.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	utils/DataLoader.py	/^import matplotlib.pyplot as plt$/;"	i
+matplotlib	utils/evaluations.py	/^import matplotlib$/;"	i
+matplotlib	utils/evaluations.py	/^import matplotlib.cm as cm$/;"	i
+matplotlib	utils/evaluations.py	/^import matplotlib.gridspec as gridspec$/;"	i
+matplotlib	utils/evaluations.py	/^import matplotlib.pyplot as plt$/;"	i
+mean	scripts/test_gan.py	/^    def mean(x):$/;"	f	function:GAN
+mnist	scripts/test_gan.py	/^from keras.datasets import mnist$/;"	i
+mse_loss	models/new/ebgan.py	/^    def mse_loss(self, pred, data):$/;"	m	class:EBGAN
+mse_loss	models/new/encebgan.py	/^    def mse_loss(self, pred, data, mode="norm"):$/;"	m	class:EncEBGAN
+mse_loss	models/new/fanogan.py	/^    def mse_loss(self, pred, data, mode="norm"):$/;"	m	class:FAnogan
+mse_loss	models/new/sencebgan.py	/^    def mse_loss(self, pred, data, mode="norm", order=2):$/;"	m	class:SENCEBGAN
+n	scripts/test_gan.py	/^n = args['sample_size']$/;"	v
+next_batch	scripts/test_gan.py	/^    def next_batch(num, data, labels):$/;"	f	function:GAN
+noise_dim	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^noise_dim = 100$/;"	v
+noise_dim	scripts/test_gan.py	/^noise_dim = 10$/;"	v
+noise_dim	scripts/test_gan_mark2.py	/^noise_dim = 100$/;"	v
+noise_factor	scripts/test_gan.py	/^noise_factor = 0.1$/;"	v
+norm	scripts/test_gan.py	/^def norm(x):$/;"	f
+np	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import numpy as np$/;"	i
+np	Experiments/codebase_test/codebase/gan_trainer.py	/^import numpy as np$/;"	i
+np	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^import numpy as np$/;"	i
+np	Results/test_000/codebase/bigan_trainer.py	/^import numpy as np$/;"	i
+np	Results/test_standard/codebase/bigan_trainer.py	/^import numpy as np$/;"	i
+np	Results/test_wgan-gp/codebase/bigan_trainer.py	/^import numpy as np$/;"	i
+np	Results/test_wgan/codebase/bigan_trainer.py	/^import numpy as np$/;"	i
+np	base/.ipynb_checkpoints/base_train-checkpoint.py	/^import numpy as np$/;"	i
+np	base/base_train.py	/^import numpy as np$/;"	i
+np	base/base_train_eager.py	/^import numpy as np$/;"	i
+np	base/base_train_keras.py	/^import numpy as np$/;"	i
+np	base/base_train_multi.py	/^import numpy as np$/;"	i
+np	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^import numpy as np$/;"	i
+np	data_loader/data_generator.py	/^import numpy as np$/;"	i
+np	scripts/gan_trainer.py	/^import numpy as np$/;"	i
+np	scripts/test_gan.py	/^import numpy as np$/;"	i
+np	scripts/test_gan_mark2.py	/^import numpy as np$/;"	i
+np	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^import numpy as np$/;"	i
+np	trainers/alad_trainer.py	/^import numpy as np$/;"	i
+np	trainers/anogan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/bigan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/ebgan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/encebgan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/fanogan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/gan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/ganomaly_trainer.py	/^import numpy as np$/;"	i
+np	trainers/mark1_trainer.py	/^import numpy as np$/;"	i
+np	trainers/sencebgan_trainer.py	/^import numpy as np$/;"	i
+np	trainers/skip_ganomaly_trainer.py	/^import numpy as np$/;"	i
+np	trainers/template_trainer.py	/^import numpy as np$/;"	i
+np	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^import numpy as np$/;"	i
+np	utils/DataLoader.py	/^import numpy as np$/;"	i
+np	utils/evaluations.py	/^import numpy as np$/;"	i
+num_examples_to_generate	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^num_examples_to_generate = 16$/;"	v
+num_examples_to_generate	scripts/test_gan_mark2.py	/^num_examples_to_generate = 16$/;"	v
+num_steps	scripts/test_gan.py	/^num_steps = args['nb_epoch']$/;"	v
+os	.ipynb_checkpoints/create_gif-checkpoint.py	/^import os$/;"	i
+os	.ipynb_checkpoints/run-checkpoint.py	/^import os$/;"	i
+os	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^import os$/;"	i
+os	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import os$/;"	i
+os	check_training_process.py	/^import os$/;"	i
+os	create_gif.py	/^import os$/;"	i
+os	run.py	/^import os$/;"	i
+os	run_on_tesla.py	/^import os$/;"	i
+os	run_on_tesla_new.py	/^import os$/;"	i
+os	run_on_tesla_parameters.py	/^import os$/;"	i
+os	run_on_titan.py	/^import os$/;"	i
+os	run_on_titan_new.py	/^import os$/;"	i
+os	run_on_titan_parameters.py	/^import os$/;"	i
+os	run_on_titan_parameters_new.py	/^import os$/;"	i
+os	scripts/test_gan.py	/^import os$/;"	i
+os	scripts/test_gan_mark2.py	/^import os$/;"	i
+os	test_on_tesla.py	/^import os$/;"	i
+os	test_on_titan.py	/^import os$/;"	i
+os	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^import os$/;"	i
+os	utils/.ipynb_checkpoints/config-checkpoint.py	/^import os$/;"	i
+os	utils/.ipynb_checkpoints/dirs-checkpoint.py	/^import os$/;"	i
+os	utils/.ipynb_checkpoints/utils-checkpoint.py	/^import os$/;"	i
+os	utils/DataLoader.py	/^import os$/;"	i
+os	utils/config.py	/^import os$/;"	i
+os	utils/dirs.py	/^import os$/;"	i
+os	utils/download_data.py	/^import os$/;"	i
+os	utils/evaluations.py	/^import os$/;"	i
+os	utils/logger.py	/^import os$/;"	i
+os	utils/summarizer.py	/^import os$/;"	i
+os	utils/summarizer_eager.py	/^import os$/;"	i
+os	utils/utils.py	/^import os$/;"	i
+padding	utils/alad_utils.py	/^            padding=str.upper(padding),$/;"	v
+parser	scripts/test_gan.py	/^parser = argparse.ArgumentParser(description='')$/;"	v
+pd	scripts/test_gan.py	/^import pandas as pd$/;"	i
+pd	utils/evaluations.py	/^import pandas as pd$/;"	i
+per	utils/evaluations.py	/^        per = get_percentile(scores, dataset)$/;"	v
+per	utils/evaluations.py	/^        per = np.percentile(scores, percentile)$/;"	v
+plt	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	base/.ipynb_checkpoints/base_train-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	base/base_train.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	base/base_train_eager.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	base/base_train_keras.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	base/base_train_multi.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	scripts/test_gan.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	scripts/test_gan_mark2.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	utils/DataLoader.py	/^import matplotlib.pyplot as plt$/;"	i
+plt	utils/evaluations.py	/^import matplotlib.pyplot as plt$/;"	i
+populate_test	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def populate_test(self):$/;"	m	class:DataLoader
+populate_test_material	utils/DataLoader.py	/^    def populate_test_material(self):$/;"	m	class:DataLoader
+populate_train	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def populate_train(self):$/;"	m	class:DataLoader
+populate_train_material	utils/DataLoader.py	/^    def populate_train_material(self):$/;"	m	class:DataLoader
+populate_train_valid	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^    def populate_train_valid(self):$/;"	m	class:DataLoader
+populate_train_valid_material	utils/DataLoader.py	/^    def populate_train_valid_material(self):$/;"	m	class:DataLoader
+prc_auc	utils/evaluations.py	/^    prc_auc = do_prc(scores, true_labels, file_name=file_name, directory=directory)$/;"	v
+precision_recall_curve	utils/evaluations.py	/^from sklearn.metrics import roc_curve, auc, precision_recall_fscore_support, precision_recall_curve$/;"	i
+precision_recall_fscore_support	utils/evaluations.py	/^from sklearn.metrics import roc_curve, auc, precision_recall_fscore_support, precision_recall_curve$/;"	i
+predict	utils/evaluations.py	/^def predict(scores, threshold):$/;"	f
+process_config	.ipynb_checkpoints/create_gif-checkpoint.py	/^from utils.config import process_config$/;"	i
+process_config	.ipynb_checkpoints/run-checkpoint.py	/^from utils.config import process_config$/;"	i
+process_config	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^from utils.config import process_config$/;"	i
+process_config	create_gif.py	/^from utils.config import process_config$/;"	i
+process_config	run.py	/^from utils.config import process_config$/;"	i
+process_config	run_on_tesla.py	/^from utils.config import process_config, get_config_from_json$/;"	i
+process_config	run_on_tesla_new.py	/^from utils.config import process_config, get_config_from_json$/;"	i
+process_config	run_on_tesla_parameters.py	/^from utils.config import process_config$/;"	i
+process_config	run_on_titan.py	/^from utils.config import process_config$/;"	i
+process_config	run_on_titan_new.py	/^from utils.config import process_config$/;"	i
+process_config	run_on_titan_parameters.py	/^from utils.config import process_config$/;"	i
+process_config	run_on_titan_parameters_new.py	/^from utils.config import process_config$/;"	i
+process_config	test_on_tesla.py	/^from utils.config import process_config$/;"	i
+process_config	test_on_titan.py	/^from utils.config import process_config$/;"	i
+process_config	utils/.ipynb_checkpoints/config-checkpoint.py	/^def process_config(json_file):$/;"	f
+process_config	utils/config.py	/^def process_config(config) -> object:$/;"	f
+pullaway_loss	models/new/ebgan.py	/^    def pullaway_loss(self, embeddings):$/;"	m	class:EBGAN
+pullaway_loss	models/new/encebgan.py	/^    def pullaway_loss(self, embeddings):$/;"	m	class:EncEBGAN
+pullaway_loss	models/new/sencebgan.py	/^    def pullaway_loss(self, embeddings):$/;"	m	class:SENCEBGAN
+random	scripts/test_gan.py	/^import random$/;"	i
+random_vector_for_generation	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^random_vector_for_generation = tf.random_normal([num_examples_to_generate,$/;"	v
+random_vector_for_generation	scripts/test_gan_mark2.py	/^random_vector_for_generation = tf.random_normal([num_examples_to_generate,$/;"	v
+regularizer	utils/alad_utils.py	/^            regularizer=kernel_regularizer,$/;"	v
+request	utils/download_data.py	/^from urllib import request$/;"	i
+results	utils/evaluations.py	/^            results = [$/;"	v
+results	utils/evaluations.py	/^            results = [step, i, roc_auc, precision, recall, f1, random_seed]$/;"	v
+results	utils/evaluations.py	/^        results = [$/;"	v
+results	utils/evaluations.py	/^        results = [step, roc_auc, precision, recall, f1, random_seed]$/;"	v
+rmtree	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from shutil import rmtree$/;"	i
+rmtree	utils/DataLoader.py	/^from shutil import rmtree$/;"	i
+roc_auc	utils/evaluations.py	/^    roc_auc = do_roc(scores, true_labels, file_name=file_name, directory=directory)$/;"	v
+roc_curve	utils/evaluations.py	/^from sklearn.metrics import roc_curve, auc, precision_recall_fscore_support, precision_recall_curve$/;"	i
+run	.ipynb_checkpoints/run-checkpoint.py	/^def run():$/;"	f
+run	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^def run():$/;"	f
+run	run.py	/^def run():$/;"	f
+run	run_on_tesla.py	/^def run():$/;"	f
+run	run_on_tesla_new.py	/^def run():$/;"	f
+run	run_on_tesla_parameters.py	/^def run(config):$/;"	f
+run	run_on_titan.py	/^def run():$/;"	f
+run	run_on_titan_new.py	/^def run():$/;"	f
+run	run_on_titan_parameters.py	/^def run(config):$/;"	f
+run	run_on_titan_parameters_new.py	/^def run(config):$/;"	f
+run	test_on_tesla.py	/^def run():$/;"	f
+run	test_on_titan.py	/^def run():$/;"	f
+run_multi	run_on_tesla_parameters.py	/^def run_multi():$/;"	f
+run_multi	run_on_titan_parameters.py	/^def run_multi():$/;"	f
+run_multi	run_on_titan_parameters_new.py	/^def run_multi():$/;"	f
+sampler	Experiments/codebase_test/codebase/gan.py	/^    def sampler(self, noise_tensor):$/;"	m	class:GAN
+sampler	models/28/gan.py	/^    def sampler(self, noise_tensor):$/;"	m	class:GAN
+save	base/base_model.py	/^    def save(self, sess):$/;"	m	class:BaseModel
+save	base/base_model_eager.py	/^    def save(self):$/;"	m	class:BaseModelEager
+save	base/base_model_keras.py	/^    def save(self, checkpoint_path):$/;"	m	class:BaseModelKeras
+save_generated_images	base/.ipynb_checkpoints/base_train-checkpoint.py	/^    def save_generated_images(self,predictions, epoch):$/;"	m	class:BaseTrain
+save_generated_images	base/base_train.py	/^    def save_generated_images(self, predictions, epoch):$/;"	m	class:BaseTrain
+save_generated_images	base/base_train_eager.py	/^    def save_generated_images(self, predictions, epoch):$/;"	m	class:BaseTrainEager
+save_generated_images	base/base_train_keras.py	/^    def save_generated_images(self,predictions, epoch):$/;"	m	class:BaseTrainKeras
+save_generated_images	base/base_train_multi.py	/^    def save_generated_images(self, predictions, epoch):$/;"	m	class:BaseTrainMulti
+save_grid_plot	utils/evaluations.py	/^def save_grid_plot(samples, samples_rec, name_model, dataset, nb_images=50, grid_width=10):$/;"	f
+save_results	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	Results/test_000/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+save_results	Results/test_standard/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+save_results	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+save_results	Results/test_wgan/codebase/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+save_results	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/alad_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/anogan_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/bigan_trainer.py	/^from utils.evaluations import do_roc, save_results$/;"	i
+save_results	trainers/ebgan_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/encebgan_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/fanogan_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/ganomaly_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/mark1_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/sencebgan_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	trainers/skip_ganomaly_trainer.py	/^from utils.evaluations import save_results$/;"	i
+save_results	utils/evaluations.py	/^def save_results($/;"	f
+save_results_csv	utils/evaluations.py	/^def save_results_csv(fname, results, header=0):$/;"	f
+scores	utils/evaluations.py	/^    scores = np.array(scores)$/;"	v
+sel	scripts/test_gan.py	/^sel = random.sample(range(0, x_train.shape[0]), n)$/;"	v
+sess	scripts/gpu_test.py	/^sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))$/;"	v
+shape	utils/alad_utils.py	/^            shape=[kernel_size, kernel_size, inputs.get_shape()[-1], filters],$/;"	v
+shape	utils/alad_utils.py	/^        shape = inputs.get_shape().as_list()$/;"	v
+show_steps	scripts/test_gan.py	/^show_steps = 50$/;"	v
+sleep	Experiments/codebase_test/codebase/gan_trainer.py	/^from time import sleep$/;"	i
+sleep	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^from time import sleep$/;"	i
+sleep	Results/test_000/codebase/bigan_trainer.py	/^from time import sleep$/;"	i
+sleep	Results/test_standard/codebase/bigan_trainer.py	/^from time import sleep$/;"	i
+sleep	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from time import sleep$/;"	i
+sleep	Results/test_wgan/codebase/bigan_trainer.py	/^from time import sleep$/;"	i
+sleep	scripts/gan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^from time import sleep$/;"	i
+sleep	trainers/alad_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/anogan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/bigan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/ebgan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/encebgan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/fanogan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/gan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/ganomaly_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/mark1_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/sencebgan_trainer.py	/^from time import sleep$/;"	i
+sleep	trainers/skip_ganomaly_trainer.py	/^from time import sleep$/;"	i
+sn	models/28/alad.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/28/anogan.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/28/mark1.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/32/alad.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/32/anogan.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/32/ganomaly.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/alad_conv.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/bigan_conv.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/ebgan.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/encebgan.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/fencegan.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/ganomaly_conv.py	/^import utils.alad_utils as sn$/;"	i
+sn	models/new/sencebgan.py	/^import utils.alad_utils as sn$/;"	i
+sns	utils/evaluations.py	/^import seaborn as sns$/;"	i
+spectral_norm	utils/alad_utils.py	/^def spectral_norm(w, iteration=1, eps=1e-12):$/;"	f
+strides	utils/alad_utils.py	/^            strides=[1, strides, strides, 1],$/;"	v
+subprocess	check_training_process.py	/^import subprocess$/;"	i
+sys	.ipynb_checkpoints/create_gif-checkpoint.py	/^import sys$/;"	i
+sys	create_gif.py	/^import sys$/;"	i
+sys	utils/logger.py	/^import sys$/;"	i
+test	base/base_train.py	/^    def test(self):$/;"	m	class:BaseTrain
+test	base/base_train_multi.py	/^    def test(self):$/;"	m	class:BaseTrainMulti
+test_epoch	Results/test_000/codebase/bigan_trainer.py	/^    def test_epoch(self):$/;"	m	class:BIGANTrainer
+test_epoch	Results/test_standard/codebase/bigan_trainer.py	/^    def test_epoch(self):$/;"	m	class:BIGANTrainer
+test_epoch	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def test_epoch(self):$/;"	m	class:BIGANTrainer
+test_epoch	Results/test_wgan/codebase/bigan_trainer.py	/^    def test_epoch(self):$/;"	m	class:BIGANTrainer
+test_epoch	base/base_train.py	/^    def test_epoch(self):$/;"	m	class:BaseTrain
+test_epoch	base/base_train_multi.py	/^    def test_epoch(self):$/;"	m	class:BaseTrainMulti
+test_epoch	trainers/alad_trainer.py	/^    def test_epoch(self):$/;"	m	class:ALAD_Trainer
+test_epoch	trainers/anogan_trainer.py	/^    def test_epoch(self):$/;"	m	class:ANOGAN_Trainer
+test_epoch	trainers/bigan_trainer.py	/^    def test_epoch(self):$/;"	m	class:BIGANTrainer
+test_epoch	trainers/ebgan_trainer.py	/^    def test_epoch(self):$/;"	m	class:EBGANTrainer
+test_epoch	trainers/encebgan_trainer.py	/^    def test_epoch(self):$/;"	m	class:EncEBGANTrainer
+test_epoch	trainers/fanogan_trainer.py	/^    def test_epoch(self):$/;"	m	class:FAnoganTrainer
+test_epoch	trainers/ganomaly_trainer.py	/^    def test_epoch(self):$/;"	m	class:GANomalyTrainer
+test_epoch	trainers/sencebgan_trainer.py	/^    def test_epoch(self):$/;"	m	class:SENCEBGANTrainer
+tf	.ipynb_checkpoints/run-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	.ipynb_checkpoints/run_on_titan-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	Experiments/codebase_test/codebase/gan.py	/^import tensorflow as tf$/;"	i
+tf	Experiments/codebase_test/codebase/gan_trainer.py	/^import tensorflow as tf$/;"	i
+tf	Experiments/ganomaly_patch28_long/codebase/ganomaly.py	/^import tensorflow as tf$/;"	i
+tf	Results/test_000/codebase/bigan.py	/^import tensorflow as tf$/;"	i
+tf	Results/test_standard/codebase/bigan_conv.py	/^import tensorflow as tf$/;"	i
+tf	Results/test_wgan-gp/codebase/bigan_conv.py	/^import tensorflow as tf$/;"	i
+tf	Results/test_wgan/codebase/bigan_conv.py	/^import tensorflow as tf$/;"	i
+tf	base/.ipynb_checkpoints/base_train-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	base/base_model.py	/^import tensorflow as tf$/;"	i
+tf	base/base_model_eager.py	/^import tensorflow as tf$/;"	i
+tf	base/base_train.py	/^import tensorflow as tf$/;"	i
+tf	base/base_train_eager.py	/^import tensorflow as tf$/;"	i
+tf	base/base_train_keras.py	/^import tensorflow as tf$/;"	i
+tf	base/base_train_multi.py	/^import tensorflow as tf$/;"	i
+tf	data_loader/.ipynb_checkpoints/data_generator-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	data_loader/.ipynb_checkpoints/data_generator_eager-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	data_loader/data_generator.py	/^import tensorflow as tf$/;"	i
+tf	data_loader/data_generator_eager.py	/^import tensorflow as tf$/;"	i
+tf	data_loader/data_generator_keras.py	/^import tensorflow as tf$/;"	i
+tf	models/.ipynb_checkpoints/gan_eager-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	models/.ipynb_checkpoints/ganomaly-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	models/28/alad.py	/^import tensorflow as tf$/;"	i
+tf	models/28/anogan.py	/^import tensorflow as tf$/;"	i
+tf	models/28/bigan.py	/^import tensorflow as tf$/;"	i
+tf	models/28/gan.py	/^import tensorflow as tf$/;"	i
+tf	models/28/ganomaly.py	/^import tensorflow as tf$/;"	i
+tf	models/28/mark1.py	/^import tensorflow as tf$/;"	i
+tf	models/28/skip_ganomaly.py	/^import tensorflow as tf$/;"	i
+tf	models/32/alad.py	/^import tensorflow as tf$/;"	i
+tf	models/32/anogan.py	/^import tensorflow as tf$/;"	i
+tf	models/32/bigan.py	/^import tensorflow as tf$/;"	i
+tf	models/32/ganomaly.py	/^import tensorflow as tf$/;"	i
+tf	models/32/skip_ganomaly.py	/^import tensorflow as tf$/;"	i
+tf	models/new/alad_conv.py	/^import tensorflow as tf$/;"	i
+tf	models/new/bigan_conv.py	/^import tensorflow as tf$/;"	i
+tf	models/new/ebgan.py	/^import tensorflow as tf$/;"	i
+tf	models/new/encebgan.py	/^import tensorflow as tf$/;"	i
+tf	models/new/fanogan.py	/^import tensorflow as tf$/;"	i
+tf	models/new/fencegan.py	/^import tensorflow as tf$/;"	i
+tf	models/new/ganomaly_conv.py	/^import tensorflow as tf$/;"	i
+tf	models/new/sencebgan.py	/^import tensorflow as tf$/;"	i
+tf	models/new/skip_ganomaly_conv.py	/^import tensorflow as tf$/;"	i
+tf	models/template_model.py	/^import tensorflow as tf$/;"	i
+tf	run_on_tesla.py	/^import tensorflow as tf$/;"	i
+tf	run_on_tesla_new.py	/^import tensorflow as tf$/;"	i
+tf	run_on_tesla_parameters.py	/^import tensorflow as tf$/;"	i
+tf	run_on_titan.py	/^import tensorflow as tf$/;"	i
+tf	run_on_titan_new.py	/^import tensorflow as tf$/;"	i
+tf	run_on_titan_parameters.py	/^import tensorflow as tf$/;"	i
+tf	run_on_titan_parameters_new.py	/^import tensorflow as tf$/;"	i
+tf	scripts/gan.py	/^import tensorflow as tf$/;"	i
+tf	scripts/gan_trainer.py	/^import tensorflow as tf$/;"	i
+tf	scripts/ganomaly_mark2.py	/^import tensorflow as tf$/;"	i
+tf	scripts/gpu_test.py	/^import tensorflow as tf$/;"	i
+tf	scripts/main_gan.py	/^import tensorflow as tf$/;"	i
+tf	scripts/test_gan.py	/^import tensorflow as tf$/;"	i
+tf	scripts/test_gan_mark2.py	/^import tensorflow as tf$/;"	i
+tf	test_on_tesla.py	/^import tensorflow as tf$/;"	i
+tf	test_on_titan.py	/^import tensorflow as tf$/;"	i
+tf	trainers/gan_trainer.py	/^import tensorflow as tf$/;"	i
+tf	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^import tensorflow as tf$/;"	i
+tf	utils/DataLoader.py	/^import tensorflow as tf$/;"	i
+tf	utils/alad_utils.py	/^import tensorflow as tf$/;"	i
+tf	utils/summarizer.py	/^import tensorflow as tf$/;"	i
+tf	utils/summarizer_eager.py	/^import tensorflow as tf$/;"	i
+time	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^import time$/;"	i
+time	Experiments/codebase_test/codebase/gan_trainer.py	/^import time$/;"	i
+time	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^from time import time$/;"	i
+time	Results/test_000/codebase/bigan_trainer.py	/^from time import time$/;"	i
+time	Results/test_standard/codebase/bigan_trainer.py	/^from time import time$/;"	i
+time	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from time import time$/;"	i
+time	Results/test_wgan/codebase/bigan_trainer.py	/^from time import time$/;"	i
+time	scripts/gan_trainer.py	/^import time$/;"	i
+time	scripts/test_gan_mark2.py	/^import time$/;"	i
+time	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^from time import time$/;"	i
+time	trainers/alad_trainer.py	/^from time import time$/;"	i
+time	trainers/anogan_trainer.py	/^from time import time$/;"	i
+time	trainers/bigan_trainer.py	/^from time import time$/;"	i
+time	trainers/ebgan_trainer.py	/^from time import time$/;"	i
+time	trainers/encebgan_trainer.py	/^from time import time$/;"	i
+time	trainers/fanogan_trainer.py	/^from time import time$/;"	i
+time	trainers/gan_trainer.py	/^import time$/;"	i
+time	trainers/ganomaly_trainer.py	/^from time import time$/;"	i
+time	trainers/mark1_trainer.py	/^from time import time$/;"	i
+time	trainers/sencebgan_trainer.py	/^from time import time$/;"	i
+time	trainers/skip_ganomaly_trainer.py	/^from time import time$/;"	i
+time	utils/evaluations.py	/^import time$/;"	i
+tqdm	Experiments/codebase_test/codebase/gan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	Results/test_000/codebase/bigan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	Results/test_standard/codebase/bigan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	Results/test_wgan-gp/codebase/bigan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	Results/test_wgan/codebase/bigan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	base/.ipynb_checkpoints/base_train-checkpoint.py	/^from tqdm import tqdm$/;"	i
+tqdm	base/base_train.py	/^from tqdm import tqdm$/;"	i
+tqdm	base/base_train_eager.py	/^from tqdm import tqdm$/;"	i
+tqdm	base/base_train_multi.py	/^from tqdm import tqdm$/;"	i
+tqdm	scripts/gan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/alad_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/anogan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/bigan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/ebgan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/encebgan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/fanogan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/gan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/ganomaly_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/mark1_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/sencebgan_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/skip_ganomaly_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	trainers/template_trainer.py	/^from tqdm import tqdm$/;"	i
+tqdm	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from tqdm import tqdm$/;"	i
+tqdm	utils/DataLoader.py	/^from tqdm import tqdm$/;"	i
+train	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def train(dataset, epochs):  $/;"	f
+train	base/.ipynb_checkpoints/base_train-checkpoint.py	/^    def train(self):$/;"	m	class:BaseTrain
+train	base/base_train.py	/^    def train(self):$/;"	m	class:BaseTrain
+train	base/base_train_eager.py	/^    def train(self):$/;"	m	class:BaseTrainEager
+train	base/base_train_keras.py	/^    def train(self):$/;"	m	class:BaseTrainKeras
+train	base/base_train_multi.py	/^    def train(self):$/;"	m	class:BaseTrainMulti
+train	scripts/test_gan_mark2.py	/^def train(dataset, epochs):$/;"	f
+train_epoch	Experiments/codebase_test/codebase/gan_trainer.py	/^    def train_epoch(self):$/;"	m	class:GANTrainer
+train_epoch	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^    def train_epoch(self):$/;"	m	class:GANomalyTrainer
+train_epoch	Results/test_000/codebase/bigan_trainer.py	/^    def train_epoch(self):$/;"	m	class:BIGANTrainer
+train_epoch	Results/test_standard/codebase/bigan_trainer.py	/^    def train_epoch(self):$/;"	m	class:BIGANTrainer
+train_epoch	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def train_epoch(self):$/;"	m	class:BIGANTrainer
+train_epoch	Results/test_wgan/codebase/bigan_trainer.py	/^    def train_epoch(self):$/;"	m	class:BIGANTrainer
+train_epoch	base/.ipynb_checkpoints/base_train-checkpoint.py	/^    def train_epoch(self):$/;"	m	class:BaseTrain
+train_epoch	base/base_train.py	/^    def train_epoch(self):$/;"	m	class:BaseTrain
+train_epoch	base/base_train_eager.py	/^    def train_epoch(self):$/;"	m	class:BaseTrainEager
+train_epoch	scripts/gan_trainer.py	/^    def train_epoch(self):$/;"	m	class:GANTrainer
+train_epoch	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^    def train_epoch(self):$/;"	m	class:GANomalyTrainer
+train_epoch	trainers/alad_trainer.py	/^    def train_epoch(self):$/;"	m	class:ALAD_Trainer
+train_epoch	trainers/anogan_trainer.py	/^    def train_epoch(self):$/;"	m	class:ANOGAN_Trainer
+train_epoch	trainers/bigan_trainer.py	/^    def train_epoch(self):$/;"	m	class:BIGANTrainer
+train_epoch	trainers/ebgan_trainer.py	/^    def train_epoch(self):$/;"	m	class:EBGANTrainer
+train_epoch	trainers/gan_trainer.py	/^    def train_epoch(self):$/;"	m	class:GANTrainer
+train_epoch	trainers/ganomaly_trainer.py	/^    def train_epoch(self):$/;"	m	class:GANomalyTrainer
+train_epoch	trainers/mark1_trainer.py	/^    def train_epoch(self):$/;"	m	class:Mark1_Trainer
+train_epoch	trainers/skip_ganomaly_trainer.py	/^    def train_epoch(self):$/;"	m	class:SkipGANomalyTrainer
+train_epoch	trainers/template_trainer.py	/^    def train_epoch(self):$/;"	m	class:TemplateTrainer
+train_epoch_enc	base/base_train_multi.py	/^    def train_epoch_enc(self):$/;"	m	class:BaseTrainMulti
+train_epoch_enc	trainers/encebgan_trainer.py	/^    def train_epoch_enc(self):$/;"	m	class:EncEBGANTrainer
+train_epoch_enc	trainers/fanogan_trainer.py	/^    def train_epoch_enc(self):$/;"	m	class:FAnoganTrainer
+train_epoch_enc_gen	trainers/sencebgan_trainer.py	/^    def train_epoch_enc_gen(self):$/;"	m	class:SENCEBGANTrainer
+train_epoch_enc_rec	trainers/sencebgan_trainer.py	/^    def train_epoch_enc_rec(self):$/;"	m	class:SENCEBGANTrainer
+train_epoch_gan	base/base_train_multi.py	/^    def train_epoch_gan(self):$/;"	m	class:BaseTrainMulti
+train_epoch_gan	trainers/encebgan_trainer.py	/^    def train_epoch_gan(self):$/;"	m	class:EncEBGANTrainer
+train_epoch_gan	trainers/fanogan_trainer.py	/^    def train_epoch_gan(self):$/;"	m	class:FAnoganTrainer
+train_epoch_gan	trainers/sencebgan_trainer.py	/^    def train_epoch_gan(self):$/;"	m	class:SENCEBGANTrainer
+train_op_with_ema_dependency	models/28/alad.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:ALAD.build_model
+train_op_with_ema_dependency	models/28/anogan.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:ANOGAN.build_model
+train_op_with_ema_dependency	models/28/mark1.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:Mark1.build_model
+train_op_with_ema_dependency	models/32/alad.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:ALAD.build_model
+train_op_with_ema_dependency	models/32/anogan.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:ANOGAN.build_model
+train_op_with_ema_dependency	models/new/alad_conv.py	/^            def train_op_with_ema_dependency(vars, op):$/;"	f	function:ALAD.build_model
+train_step	.ipynb_checkpoints/test_gan_mark2-checkpoint.py	/^def train_step(images):$/;"	f
+train_step	Experiments/codebase_test/codebase/gan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANTrainer
+train_step	Experiments/ganomaly_patch28_long/codebase/ganomaly_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANomalyTrainer
+train_step	Results/test_000/codebase/bigan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BIGANTrainer
+train_step	Results/test_standard/codebase/bigan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BIGANTrainer
+train_step	Results/test_wgan-gp/codebase/bigan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BIGANTrainer
+train_step	Results/test_wgan/codebase/bigan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BIGANTrainer
+train_step	base/.ipynb_checkpoints/base_train-checkpoint.py	/^    def train_step(self,image, cur_epoch):$/;"	m	class:BaseTrain
+train_step	base/base_train.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BaseTrain
+train_step	base/base_train_eager.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BaseTrainEager
+train_step	scripts/gan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANTrainer
+train_step	scripts/test_gan_mark2.py	/^def train_step(images):$/;"	f
+train_step	trainers/.ipynb_checkpoints/ganomaly_trainer-checkpoint.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANomalyTrainer
+train_step	trainers/alad_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:ALAD_Trainer
+train_step	trainers/anogan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:ANOGAN_Trainer
+train_step	trainers/bigan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:BIGANTrainer
+train_step	trainers/ebgan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:EBGANTrainer
+train_step	trainers/gan_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANTrainer
+train_step	trainers/ganomaly_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:GANomalyTrainer
+train_step	trainers/mark1_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:Mark1_Trainer
+train_step	trainers/skip_ganomaly_trainer.py	/^    def train_step(self, image, cur_epoch):$/;"	m	class:SkipGANomalyTrainer
+train_step	trainers/template_trainer.py	/^    def train_step(self):$/;"	m	class:TemplateTrainer
+train_step_enc	base/base_train_multi.py	/^    def train_step_enc(self, image, cur_epoch):$/;"	m	class:BaseTrainMulti
+train_step_enc	trainers/encebgan_trainer.py	/^    def train_step_enc(self, image, cur_epoch):$/;"	m	class:EncEBGANTrainer
+train_step_enc	trainers/fanogan_trainer.py	/^    def train_step_enc(self, image, cur_epoch):$/;"	m	class:FAnoganTrainer
+train_step_enc_gen	trainers/sencebgan_trainer.py	/^    def train_step_enc_gen(self, image, cur_epoch):$/;"	m	class:SENCEBGANTrainer
+train_step_enc_rec	trainers/sencebgan_trainer.py	/^    def train_step_enc_rec(self, image, cur_epoch):$/;"	m	class:SENCEBGANTrainer
+train_step_gan	base/base_train_multi.py	/^    def train_step_gan(self, image, cur_epoch):$/;"	m	class:BaseTrainMulti
+train_step_gan	trainers/encebgan_trainer.py	/^    def train_step_gan(self, image, cur_epoch):$/;"	m	class:EncEBGANTrainer
+train_step_gan	trainers/fanogan_trainer.py	/^    def train_step_gan(self, image, cur_epoch):$/;"	m	class:FAnoganTrainer
+train_step_gan	trainers/sencebgan_trainer.py	/^    def train_step_gan(self, image, cur_epoch):$/;"	m	class:SENCEBGANTrainer
+train_test_split	scripts/test_gan.py	/^from sklearn.model_selection import train_test_split$/;"	i
+utils	models/28/alad.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/28/anogan.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/28/mark1.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/32/alad.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/32/anogan.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/32/ganomaly.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/alad_conv.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/bigan_conv.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/ebgan.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/encebgan.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/fencegan.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/ganomaly_conv.py	/^import utils.alad_utils as sn$/;"	i
+utils	models/new/sencebgan.py	/^import utils.alad_utils as sn$/;"	i
+var	scripts/test_gan.py	/^    def var(x):$/;"	f	function:GAN
+w	utils/alad_utils.py	/^        w = tf.get_variable($/;"	v
+working_directory	check_training_process.py	/^from utils.utils import working_directory$/;"	i
+working_directory	utils/.ipynb_checkpoints/DataLoader-checkpoint.py	/^from utils.utils import working_directory$/;"	i
+working_directory	utils/.ipynb_checkpoints/utils-checkpoint.py	/^def working_directory(directory):$/;"	f
+working_directory	utils/DataLoader.py	/^from utils.utils import working_directory$/;"	i
+working_directory	utils/download_data.py	/^from utils.utils import working_directory$/;"	i
+working_directory	utils/evaluations.py	/^from utils.utils import working_directory$/;"	i
+working_directory	utils/utils.py	/^def working_directory(directory):$/;"	f
+x	utils/alad_utils.py	/^            x = tf.matmul(inputs, spectral_norm(w)) + bias$/;"	v
+x	utils/alad_utils.py	/^            x = tf.matmul(inputs, spectral_norm(w))$/;"	v
+x	utils/alad_utils.py	/^            x = tf.nn.bias_add(x, bias)$/;"	v
+x	utils/alad_utils.py	/^        x = tf.nn.conv2d($/;"	v
+x_test	scripts/test_gan.py	/^x_test = x_test.astype('float32') \/ 255.$/;"	v
+x_test	scripts/test_gan.py	/^x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))$/;"	v
+x_test	scripts/test_gan.py	/^x_test = x_test[n:n + n]$/;"	v
+x_test_noisy	scripts/test_gan.py	/^x_test_noisy = norm(x_test_noisy)$/;"	v
+x_test_noisy	scripts/test_gan.py	/^x_test_noisy = np.concatenate([x_test_noisy, x_test_noisy])$/;"	v
+x_test_noisy	scripts/test_gan.py	/^x_test_noisy = x_test + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_test.shape)$/;"	v
+x_test_noisy	scripts/test_gan.py	/^x_test_noisy = x_test_noisy[sel]$/;"	v
+x_train	scripts/test_gan.py	/^x_train = norm(np.concatenate([x_train, x_train]))$/;"	v
+x_train	scripts/test_gan.py	/^x_train = np.array(x_train).astype(np.float64)$/;"	v
+x_train	scripts/test_gan.py	/^x_train = x_train.astype('float32') \/ 255.$/;"	v
+x_train	scripts/test_gan.py	/^x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))$/;"	v
+x_train	scripts/test_gan.py	/^x_train = x_train[0:n]$/;"	v
+x_train	scripts/test_gan.py	/^x_train = x_train[sel]$/;"	v
+x_train_noisy	scripts/test_gan.py	/^x_train_noisy = norm(x_train_noisy)$/;"	v
+x_train_noisy	scripts/test_gan.py	/^x_train_noisy = np.concatenate([x_train_noisy, x_train_noisy])$/;"	v
+x_train_noisy	scripts/test_gan.py	/^x_train_noisy = x_train + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=x_train.shape)$/;"	v
+x_train_noisy	scripts/test_gan.py	/^x_train_noisy = x_train_noisy.astype(np.float64)$/;"	v
+x_train_noisy	scripts/test_gan.py	/^x_train_noisy = x_train_noisy[sel]$/;"	v
+y	scripts/test_gan.py	/^y = np.ones((50000))$/;"	v
+y_test	scripts/test_gan.py	/^y_test = np.array(pd.get_dummies(y_test0))$/;"	v
+y_test	scripts/test_gan.py	/^y_test = y_test[0:n]$/;"	v
+y_test0	scripts/test_gan.py	/^y_test0 = np.concatenate([y_test, y_test])[sel]$/;"	v
+y_train	scripts/test_gan.py	/^y_train = np.array(pd.get_dummies(y_train)).astype(np.float32)$/;"	v
+y_train	scripts/test_gan.py	/^y_train = np.concatenate([y_train, y_train])[sel]$/;"	v
+y_train	scripts/test_gan.py	/^y_train = y_train[0:n]$/;"	v
