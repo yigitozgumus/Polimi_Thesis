@@ -35,7 +35,7 @@
     "name": "encebgan_trainer.EncEBGANTrainer",
     "feature_match_weight": 0.25,
     "mode": "non_standard",
-    "init_type": "normal",
+    "init_type": "xavier",
     "mse_mode" :"norm",
     "feature_layer_dim": 4096,
     "encoder_f_factor" : 0.4,
@@ -55,7 +55,7 @@
     "leakyReLU_alpha": 0.2,
     "dropout_rate": 0.5,
     "ema_decay": 0.999,
-    "do_spectral_norm": false,
+    "do_spectral_norm": true,
     "enable_early_stop": false,
     "degree": 1,
     "weight": 0.75,
@@ -72,6 +72,6 @@
     "max_to_keep": 2,
     "num_example_imgs_to_generate": 25,
     "frequency_test": 5,
-    "output_folder": "Results"
+    "output_folder": "Ablation"
   }
 }

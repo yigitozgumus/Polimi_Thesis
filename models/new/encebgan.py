@@ -157,7 +157,8 @@ class EncEBGAN(BaseModel):
                 )
             with tf.control_dependencies(self.enc_update_ops):
                 self.enc_op = self.encoder_optimizer.minimize(
-                    self.loss_encoder, var_list=self.encoder_vars
+                    self.loss_encoder, var_list=self.encoder_vars,
+                    global_step=self.global_step_tensor,
                 )
             # Exponential Moving Average for Estimation
             self.dis_ema = tf.train.ExponentialMovingAverage(decay=self.config.trainer.ema_decay)
@@ -220,13 +221,14 @@ class EncEBGAN(BaseModel):
         with tf.name_scope("Testing"):
             with tf.name_scope("Image_Based"):
                 delta = self.image_input - self.image_gen_enc_ema
+                self.rec_residual = -delta
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l1 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__1"
                 )
                 self.img_score_l1 = tf.squeeze(img_score_l1)
 
-                delta = self.embedding_enc_fake_ema - self.embedding_enc_real_ema
+                delta = self.decoded_enc_fake_ema - self.decoded_enc_real_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 img_score_l2 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
@@ -239,12 +241,12 @@ class EncEBGAN(BaseModel):
             with tf.name_scope("Noise_Based"):
                 delta = self.image_encoded_ema - self.embedding_enc_fake_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                z_score_l1 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_1")
+                z_score_l1 = tf.norm(delta_flat, ord=2, axis=1, keepdims=False, name="z_loss_1")
                 self.z_score_l1 = tf.squeeze(z_score_l1)
 
                 delta = self.embedding_enc_real_ema - self.embedding_enc_fake_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                z_score_l2 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="z_loss_2")
+                z_score_l2 = tf.norm(delta_flat, ord=2, axis=1, keepdims=False, name="z_loss_2")
                 self.z_score_l2 = tf.squeeze(z_score_l2)
 
                 self.score_comb_2 = (
@@ -264,16 +266,21 @@ class EncEBGAN(BaseModel):
                 with tf.name_scope("enc_summary"):
                     tf.summary.scalar("loss_encoder", self.loss_encoder, ["enc"])
                 with tf.name_scope("img_summary"):
-                    tf.summary.image("input_image", self.image_input, 3, ["img_1"])
-                    tf.summary.image("reconstructed", self.image_gen, 3, ["img_1"])
-                    tf.summary.image("input_enc", self.image_input, 3, ["img_2"])
-                    tf.summary.image("reconstructed", self.image_gen_enc, 3, ["img_2"])
+                    tf.summary.image("input_image", self.image_input, 1, ["img_1"])
+                    tf.summary.image("reconstructed", self.image_gen, 1, ["img_1"])
+                    tf.summary.image("input_enc", self.image_input, 1, ["img_2"])
+                    tf.summary.image("reconstructed", self.image_gen_enc, 1, ["img_2"])
+                    tf.summary.image("input_image", self.image_input, 1, ["test"])
+                     tf.summary.image("reconstructed", self.image_gen_enc_ema, 1, ["test"])
+                     tf.summary.image("residual", self.residual,1, ["test"])
+
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op_enc = tf.summary.merge_all("enc")
         self.sum_op_im_1 = tf.summary.merge_all("img_1")
         self.sum_op_im_2 = tf.summary.merge_all("img_2")
+        self.sum_op_im_test = tf.summary.merge_all("test")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
 
     def generator(self, noise_input, getter=None):
