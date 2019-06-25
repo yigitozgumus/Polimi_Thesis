@@ -218,8 +218,10 @@ class ALAD_Trainer(BaseTrain):
         scores_fm = []
         inference_time = []
         true_labels = []
+        summaries = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in test_loop:
             test_batch_begin = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -237,6 +239,7 @@ class ALAD_Trainer(BaseTrain):
             scores_l1 += self.sess.run(self.model.score_l1, feed_dict=feed_dict).tolist()
             scores_l2 += self.sess.run(self.model.score_l2, feed_dict=feed_dict).tolist()
             scores_fm += self.sess.run(self.model.score_fm, feed_dict=feed_dict).tolist()
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         scores_ch = np.asarray(scores_ch)
@@ -245,6 +248,7 @@ class ALAD_Trainer(BaseTrain):
         scores_fm = np.asarray(scores_fm)
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
         # TODO BATCH FILL ?
         model = "alad_sn{}_dzz{}".format(
@@ -263,7 +267,7 @@ class ALAD_Trainer(BaseTrain):
             "ch",
             "dzzenabled{}".format(self.config.trainer.allow_zz),
             label,
-            random_seed,
+            self.config.data_loader.random_seed,
             self.logger,
             step,
             percentile=percentiles,
@@ -277,7 +281,7 @@ class ALAD_Trainer(BaseTrain):
             "l1",
             "dzzenabled{}".format(self.config.trainer.allow_zz),
             label,
-            random_seed,
+            self.config.data_loader.random_seed,
             self.logger,
             step,
             percentile=percentiles,
@@ -291,7 +295,7 @@ class ALAD_Trainer(BaseTrain):
             "l2",
             "dzzenabled{}".format(self.config.trainer.allow_zz),
             label,
-            random_seed,
+            self.config.data_loader.random_seed,
             self.logger,
             step,
             percentile=percentiles,
@@ -305,7 +309,7 @@ class ALAD_Trainer(BaseTrain):
             "fm",
             "dzzenabled{}".format(self.config.trainer.allow_zz),
             label,
-            random_seed,
+            self.config.data_loader.random_seed,
             self.logger,
             step,
             percentile=percentiles,

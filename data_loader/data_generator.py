@@ -85,6 +85,23 @@ class DataGenerator:
             self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
             self.test_iterator = self.test_dataset.make_initializable_iterator()
             self.test_image, self.test_label = self.test_iterator.get_next()
+        if self.config.data_loader.mode == "visualization":
+            self.test_filenames, self.test_labels, self.ground_truth = d.get_test_dataset_vis()
+            self.test_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.test_filenames, self.test_labels, self.ground_truth)
+            )
+            self.test_dataset = self.test_dataset.map(
+                map_func=self._parse_function_test_2,
+                num_parallel_calls=self.config.data_loader.num_parallel_calls,
+            )
+            # Shuffle the dataset
+            # self.test_dataset = self.test_dataset.shuffle(self.config.data_loader.buffer_size)
+            # Repeat the dataset indefinitely
+            self.test_dataset = self.test_dataset.repeat()
+            # Apply batching
+            self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
+            self.test_iterator = self.test_dataset.make_initializable_iterator()
+            self.test_image, self.test_label, self.ground_truth = self.test_iterator.get_next()
 
     def _parse_function(self, filename):
         # Read the image
@@ -105,6 +122,7 @@ class DataGenerator:
         # (x - mean) / adjusted_stddev
         # adjusted_stddev = max(stddev, 1.0/sqrt(image.NumElements()))
         image_normalized = tf.image.per_image_standardization(image_resized)
+        #image_normalized = image_resized / 255.0
         # Random image flip left-right
         image_random_flip_lr = tf.image.random_flip_left_right(
             image_normalized, seed=tf.random.set_random_seed(self.config.data_loader.random_seed)
@@ -125,14 +143,25 @@ class DataGenerator:
             img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         image_normalized = tf.image.per_image_standardization(image_resized)
-        image_random_flip_lr = tf.image.random_flip_left_right(
-            image_normalized,
-            seed=tf.random.set_random_seed(self.config.data_loader.random_seed + 1234),
-        )
-        # Random image flip up-down
-        image_random_flip_ud = tf.image.random_flip_up_down(
-            image_random_flip_lr,
-            seed=tf.random.set_random_seed(self.config.data_loader.random_seed + 1234),
-        )
+        #image_normalized = image_resized / 255.0
 
-        return image_random_flip_ud, tag
+        return image_normalized, tag
+    
+    def _parse_function_test_2(self, img_file, tag, ground):
+        # Read the image
+        img = tf.read_file(img_file)
+        ground = tf.read_file(ground)
+        # Decode the image and the label
+        img_decoded = tf.image.decode_jpeg(img)
+        ground_decoded = tf.image.decode_jpeg(ground)
+        image_resized = tf.image.resize_images(
+            img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
+        )
+        ground_resized = tf.image.resize_images(
+            ground_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
+        )
+        image_normalized = image_resized / 255.0
+        ground_normalized = tf.image.per_image_standardization(ground_resized)
+        
+
+        return image_normalized, tag, ground_normalized

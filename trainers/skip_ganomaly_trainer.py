@@ -104,11 +104,14 @@ class SkipGANomalyTrainer(BaseTrain):
 
     def test_epoch(self):
         self.logger.warn("Testing evaluation...")
-        scores = []
+        scores_1 = []
+        scores_2 = []
         inference_time = []
         true_labels = []
+        summaries = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in test_loop:
             test_batch_begin = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -116,22 +119,40 @@ class SkipGANomalyTrainer(BaseTrain):
             sleep(0.01)
 
             feed_dict = {self.model.image_input: test_batch, self.model.is_training: False}
-            scores += self.sess.run(self.model.anomaly_score, feed_dict=feed_dict).tolist()
+            scores_1 += self.sess.run(self.model.anomaly_score_1, feed_dict=feed_dict).tolist()
+            scores_2 += self.sess.run(self.model.anomaly_score_2, feed_dict=feed_dict).tolist()
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         true_labels = np.asarray(true_labels)
         inference_time = np.mean(inference_time)
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
-        scores = np.asarray(scores)
+        scores_1 = np.asarray(scores_1)
+        scores_2 = np.asarray(scores_2)
         step = self.sess.run(self.model.global_step_tensor)
         percentiles = np.asarray(self.config.trainer.percentiles)
         save_results(
             self.config.log.result_dir,
-            scores,
+            scores_1,
             true_labels,
             self.config.model.name,
             self.config.data_loader.dataset_name,
-            "fm",
+            "fm_1",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_2,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "fm_2",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,

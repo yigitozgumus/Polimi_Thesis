@@ -31,7 +31,7 @@
   },
   "trainer": {
     "name": "skip_ganomaly_trainer.SkipGANomalyTrainer",
-    "init_type": "xavier",
+    "init_type": "normal",
     "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "include_noise": false,
@@ -43,7 +43,7 @@
      "loss_method": "fm",
      "noise_probability": 0.05,
     "discriminator_l_rate": 5e-6,
-    "generator_l_rate": 5e-4,
+    "generator_l_rate": 5e-5,
     "optimizer_adam_beta1": 0.5,
     "optimizer_adam_beta2": 0.999,
     "batch_momentum": 0.8,

@@ -11,6 +11,7 @@ from utils.download_data import download_data_material
 from utils.dirs import listdir_nohidden
 from utils.logger import Logger
 from shutil import rmtree
+from natsort import natsorted
 
 
 class DataLoader:
@@ -35,11 +36,14 @@ class DataLoader:
         self.data_dir = self.config.dirs.data
         self.train = "train_{}".format(self.image_size)
         self.test = "test_{}".format(self.image_size)
+        self.test_vis = "test_vis"
         self.valid = "valid_{}".format(self.image_size)
         self.train_dataset = os.path.join(self.data_dir, self.train)
         self.valid_dataset = os.path.join(self.data_dir, self.valid)
         self.img_location = os.path.join(self.data_dir, self.test, "imgs/")
+        self.img_location_vis = os.path.join(self.data_dir, self.test_vis, "imgs/")
         self.tag_location = os.path.join(self.data_dir, self.test, "labels/")
+        self.tag_location_vis = os.path.join(self.data_dir, self.test_vis, "labels/")
         if not os.path.exists(self.data_dir):
             self.logger.info("Dataset is not present. Download is started.")
             download_data_material(self.data_dir)
@@ -70,6 +74,8 @@ class DataLoader:
             self.populate_train_valid_material()
         if self.config.data_loader.mode == "anomaly":
             self.populate_test_material()
+        if self.config.data_loader.mode == "visualization":
+            self.populate_test_material_vis()
 
     def build_cifar10_dataset(self):
         pass
@@ -194,6 +200,57 @@ class DataLoader:
                         )
                     )
 
+    def populate_test_material_vis(self):
+        if self.test_vis in self.dir_names:
+            self.logger.info("Test Dataset is already populated")
+        else:
+            self.logger.info("Test Dataset will be populated")
+            size = self.config.data_loader.image_size
+            folder_name = self.test_vis
+            first_level = os.path.join(self.data_dir, folder_name)
+            if not os.path.exists(first_level):
+                os.mkdir(first_level)
+            img_files = []
+            tag_files = []
+            for img_, tag_ in self.image_tag_list:
+                h, w = img_.shape[:2]
+                self.w_turns = (w // size)
+                self.h_turns = (h // size)
+                slide = int(size)
+                for adv_h in range(self.h_turns):
+                    for adv_w in range(self.w_turns):
+                        image = img_[
+                            adv_h * slide : size + ((adv_h) * slide),
+                            adv_w * slide : ((adv_w) * slide) + size,
+                        ]
+                        tag = tag_[
+                            adv_h * slide : size + ((adv_h) * slide),
+                            adv_w * slide : ((adv_w) * slide) + size,
+                        ]
+                        img_files.append(image)
+                        tag_files.append(tag)
+            self.test_size_per_img = self.w_turns * self.h_turns
+            if not os.path.exists(self.img_location_vis):
+                os.mkdir(self.img_location_vis)
+            with working_directory(self.img_location_vis):
+                for idx, img in enumerate(img_files):
+                    im = Image.fromarray(img)
+                    im.save(
+                        "{}.jpg".format(
+                            idx
+                        )
+                    )
+            if not os.path.exists(self.tag_location_vis):
+                os.mkdir(self.tag_location_vis)
+            with working_directory(self.tag_location_vis):
+                for idx, tag in enumerate(tag_files):
+                    im = Image.fromarray(tag)
+                    im.save(
+                        "{}.jpg".format(
+                            idx
+                        )
+                    )
+
     def create_image_array(self, img_names, save=True, file_name="Dataset"):
         """
         Args:
@@ -244,3 +301,22 @@ class DataLoader:
         labels_f = tf.constant(labels)
 
         return [img_names, labels_f]
+
+    def get_test_dataset_vis(self):
+        """
+        :param size: size of the image
+        :return: numpy array of images and corresponding labels
+        """
+        img_list = listdir_nohidden(self.img_location_vis)
+        img_list = natsorted(img_list)
+        img_names = tf.constant([os.path.join(self.img_location_vis, x) for x in img_list])
+        tag_list = listdir_nohidden(self.tag_location_vis)
+        tag_list = natsorted(tag_list)
+        tag_list_merged = [os.path.join(self.tag_location_vis, x) for x in tag_list]
+        labels = []
+        for label in tag_list_merged:
+            im2arr = io.imread(label)
+            labels.append(1) if np.sum(im2arr) > 5100 else labels.append(0)
+        labels_f = tf.constant(labels)
+
+        return [img_names, labels_f, tag_list_merged]

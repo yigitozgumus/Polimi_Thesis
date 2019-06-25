@@ -149,9 +149,16 @@ class ANOGAN(BaseModel):
             with tf.variable_scope("Reconstruction_Loss"):
                 delta = self.image_input - self.rec_gen_ema
                 delta_flat = tf.layers.Flatten()(delta)
-                self.reconstruction_score = tf.norm(
+                self.reconstruction_score_1 = tf.norm(
                     delta_flat,
-                    ord=self.config.trainer.degree,
+                    ord=1,
+                    axis=1,
+                    keepdims=False,
+                    name="epsilon",
+                )
+                self.reconstruction_score_2 = tf.norm(
+                    delta_flat,
+                    ord=2,
                     axis=1,
                     keepdims=False,
                     name="epsilon",
@@ -172,8 +179,12 @@ class ANOGAN(BaseModel):
                 self.dis_score = tf.squeeze(dis_score)
 
             with tf.variable_scope("Score"):
-                self.loss_invert = (
-                    self.config.trainer.weight * self.reconstruction_score
+                self.loss_invert_1 = (
+                    self.config.trainer.weight * self.reconstruction_score_1
+                    + (1 - self.config.trainer.weight) * self.dis_score
+                )
+                self.loss_invert_2 = (
+                    self.config.trainer.weight * self.reconstruction_score_2
                     + (1 - self.config.trainer.weight) * self.dis_score
                 )
 
@@ -188,7 +199,7 @@ class ANOGAN(BaseModel):
 
         with tf.name_scope("Test_Optimizer"):
             self.invert_op = tf.train.AdamOptimizer(learning_rate_invert).minimize(
-                self.loss_invert, global_step=step_lr, var_list=[self.z_optim], name="optimizer"
+                self.loss_invert_1, global_step=step_lr, var_list=[self.z_optim], name="optimizer"
             )
             reinit_optim = tf.variables_initializer(
                 tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="Test_Optimizer")
@@ -197,7 +208,7 @@ class ANOGAN(BaseModel):
         self.reinit_test_graph_op = [reinit_z, reinit_lr, reinit_optim]
 
         with tf.name_scope("Scores"):
-            self.list_scores = self.loss_invert
+            self.list_scores = self.loss_invert_1
 
         if self.config.log.enable_summary:
             with tf.name_scope("Training_Summary"):
@@ -219,13 +230,16 @@ class ANOGAN(BaseModel):
                 tf.summary.scalar("valid", self.rec_error_valid, ["v"])
 
             with tf.name_scope("image_summary"):
-                tf.summary.image("reconstruct", self.img_gen, 3, ["image"])
-                tf.summary.image("input_images", self.image_input, 3, ["image"])
+                tf.summary.image("reconstruct", self.img_gen, 1, ["image"])
+                tf.summary.image("input_images", self.image_input, 1, ["image"])
+                tf.summary.image("reconstruct",self.rec_gen_ema,1,["image_2"])
+                tf.summary.image("input_images", self.image_input, 1, ["image_2"])
 
             self.sum_op_dis = tf.summary.merge_all("dis")
             self.sum_op_gen = tf.summary.merge_all("gen")
             self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
             self.sum_op_im = tf.summary.merge_all("image")
+            self.sum_op_im_test = tf.summary.merge_all("image_2")
             self.sum_op_valid = tf.summary.merge_all("v")
 
     def generator(self, noise_tensor, getter=None):

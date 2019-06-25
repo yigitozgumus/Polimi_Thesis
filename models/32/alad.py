@@ -338,8 +338,13 @@ class ALAD(BaseModel):
                     self.sum_op_latent = tf.summary.image("heatmap_latent", heatmap_pl_latent)
 
                 with tf.name_scope("image_summary"):
-                    tf.summary.image("reconstruct", self.rec_img, 3, ["image"])
-                    tf.summary.image("input_images", self.image_tensor, 3, ["image"])
+                    tf.summary.image("reconstruct", self.rec_img, 1, ["image"])
+                    tf.summary.image("input_image", self.image_tensor, 1, ["image"])
+                    tf.summary.image("image_gen", self.img_gen,1, ["image"])
+                    tf.summary.image("input_image", self.image_tensor, 1, ["image_2"])
+                    tf.summary.image("reconstruct",self.rec_x_ema, 1, ["image_2"])
+
+
 
         if self.config.trainer.enable_early_stop:
             with tf.name_scope("validation_summary"):
@@ -349,6 +354,7 @@ class ALAD(BaseModel):
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
         self.sum_op_im = tf.summary.merge_all("image")
+        self.sum_op_im_test = tf.summary.merge_all("image_2")
         self.sum_op_valid = tf.summary.merge_all("v")
 
     def encoder(self, img_tensor, getter=None, do_spectral_norm=True):
