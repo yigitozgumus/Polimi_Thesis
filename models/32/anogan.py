@@ -208,7 +208,7 @@ class ANOGAN(BaseModel):
         self.reinit_test_graph_op = [reinit_z, reinit_lr, reinit_optim]
 
         with tf.name_scope("Scores"):
-            self.list_scores = self.loss_invert
+            self.list_scores = self.loss_invert_1
 
         if self.config.log.enable_summary:
             with tf.name_scope("Training_Summary"):
@@ -232,7 +232,7 @@ class ANOGAN(BaseModel):
             with tf.name_scope("image_summary"):
                 tf.summary.image("reconstruct", self.img_gen, 1, ["image"])
                 tf.summary.image("input_images", self.image_input, 1, ["image"])
-                tf.summary.iamge("reconstruct",self.rec_gen_ema,1,["image_2"])
+                tf.summary.image("reconstruct",self.rec_gen_ema,1,["image_2"])
                 tf.summary.image("input_images", self.image_input, 1, ["image_2"])
 
             self.sum_op_dis = tf.summary.merge_all("dis")

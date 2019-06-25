@@ -121,7 +121,7 @@ class SkipGANomalyTrainer(BaseTrain):
             feed_dict = {self.model.image_input: test_batch, self.model.is_training: False}
             scores_1 += self.sess.run(self.model.anomaly_score_1, feed_dict=feed_dict).tolist()
             scores_2 += self.sess.run(self.model.anomaly_score_2, feed_dict=feed_dict).tolist()
-            summaries += self.sess.run(self.model.sum_op_im_test, feed_dict=feed_dict)
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
         true_labels = np.asarray(true_labels)
