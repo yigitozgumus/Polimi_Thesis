@@ -39,7 +39,7 @@
     "init_type": "xavier",
     "mse_mode" :"norm",
     "feature_layer_dim": 4096,
-    "encoder_f_factor" : 0.75,
+    "encoder_f_factor" : 0.4,
     "noise_dim": 256,
     "image_dims": [32, 32, 1],
     "noise_probability": 0.05,
