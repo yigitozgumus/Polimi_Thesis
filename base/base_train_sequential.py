@@ -31,8 +31,8 @@ class BaseTrainSequential:
         ):
             self.train_epoch_gan()
             self.sess.run(self.model.increment_cur_epoch_tensor)
-
-        self.sess.run(self.model.reset_cur_epoch_tensor)
+        if self.config.trainer.reset_first_counter:
+            self.sess.run(self.model.reset_cur_epoch_tensor)
 
         self.logger.info("Training of Generator Encoder is started")
         for cur_epoch in range(
