@@ -216,6 +216,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
 
     def train_step_enc_gen(self, image, cur_epoch):
         image_eval = self.sess.run(image)
+        ld_t, lg_t, sm_g, sm_d = [], [], None, None
         noise = np.random.normal(loc=0.0, scale=1.0, size=[self.batch_size, self.noise_dim])
         ldxx = 0
         feed_dict = {

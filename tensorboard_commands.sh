@@ -53,5 +53,8 @@ then
 sencebgan1:Ablation/sencebgan_abl_last_False_true,sencebgan2:Ablation/sencebgan_abl_last_True_False,\
 sencebgan3:Ablation/sencebgan_abl_last_True_True
 
+elif [ $1 == 'comparison' ]
+then
+    tensorboard --logdir=anogan:Ablation/anogan_abl_last_000,bigan:Ablation/bigan_abl_last_000,alad:Ablation/alad_abl_last_000
 fi
 

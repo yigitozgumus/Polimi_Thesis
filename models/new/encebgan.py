@@ -271,8 +271,8 @@ class EncEBGAN(BaseModel):
                     tf.summary.image("input_enc", self.image_input, 1, ["img_2"])
                     tf.summary.image("reconstructed", self.image_gen_enc, 1, ["img_2"])
                     tf.summary.image("input_image", self.image_input, 1, ["test"])
-                     tf.summary.image("reconstructed", self.image_gen_enc_ema, 1, ["test"])
-                     tf.summary.image("residual", self.residual,1, ["test"])
+                    tf.summary.image("reconstructed", self.image_gen_enc_ema, 1, ["test"])
+                    tf.summary.image("residual", self.rec_residual,1, ["test"])
 
 
         self.sum_op_dis = tf.summary.merge_all("dis")
