@@ -74,10 +74,6 @@ class SENCEBGANTrainer(BaseTrainSequential):
         enc_losses = []
         disc_xx_losses = []
         summaries = []
-        # New Part
-        gen_losses = []
-        disc_losses = []
-        #------------
         image = self.data.image
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
@@ -89,12 +85,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
             if self.config.trainer.enable_disc_xx:
                 disc_xx_losses.append(ldxx)
             summaries.append(sum_e)
-            # New Part
-            gen_losses.append(lg)
-            disc_losses.append(ld)
-            summaries.append(sum_g)
-            summaries.append(sum_d)
-            # ------------------
+
         self.logger.info("Epoch {} terminated".format(cur_epoch))
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid")
         # Check for reconstruction
@@ -222,8 +213,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
             # Modified
-            self.model.is_training_gen: True,
-            self.model.is_training_dis: True,
+            self.model.is_training_gen: False,
+            self.model.is_training_dis: False,
             self.model.is_training_enc_g: True,
             self.model.is_training_enc_r: False,
         }
@@ -235,36 +226,14 @@ class SENCEBGANTrainer(BaseTrainSequential):
             _, ldxx = self.sess.run(
                 [self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict
             )
-            # New part
-            _, ld, sm_d = self.sess.run(
-                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
-                feed_dict=feed_dict,
-            )
-            ld_t.append(ld)
-            _, lg, sm_g = self.sess.run(
-                [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
-                feed_dict=feed_dict,
-            )
-            lg_t.append(lg)
         else:
 
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
                 feed_dict=feed_dict,
             )
-            # New part
-            _, ld, sm_d = self.sess.run(
-                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
-                feed_dict=feed_dict,
-            )
-            ld_t.append(ld)
-            _, lg, sm_g = self.sess.run(
-                [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
-                feed_dict=feed_dict,
-            )
-            lg_t.append(lg)
 
-        return le, sm_e, ldxx, np.mean(lg_t), np.mean(ld_t), sm_g, sm_d
+        return le, sm_e, ldxx
 
     def train_step_enc_rec(self, image, cur_epoch):
         image_eval = self.sess.run(image)
@@ -297,7 +266,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
         self.logger.warn("Testing evaluation...")
         scores_im1 = []
         scores_im2 = []
-        scores_comb = []
+        scores_comb_im = []
+        scores_comb_z = []
         scores_final_1 = []
         scores_final_2 = []
         scores_final_3 = []
@@ -320,6 +290,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
             noise = np.random.normal(
                 loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
             )
+            feature_match1 = self.config.trainer.feature_match_weight
+            feature_match2 = self.config.trainer.feature_match_weight_2
             feed_dict = {
                 self.model.image_input: test_batch,
                 self.model.noise_tensor: noise,
@@ -327,10 +299,13 @@ class SENCEBGANTrainer(BaseTrainSequential):
                 self.model.is_training_dis: False,
                 self.model.is_training_enc_g: False,
                 self.model.is_training_enc_r: False,
+                self.model.feature_match1 : feature_match1,
+                self.model.feature_match2 : feature_match2,
             }
             scores_im1 += self.sess.run(self.model.img_score_l1, feed_dict=feed_dict).tolist()
             scores_im2 += self.sess.run(self.model.img_score_l2, feed_dict=feed_dict).tolist()
-            scores_comb += self.sess.run(self.model.score_comb, feed_dict=feed_dict).tolist()
+            scores_comb_im += self.sess.run(self.model.score_comb_im, feed_dict=feed_dict).tolist()
+            scores_comb_z += self.sess.run(self.model.score_comb_z, feed_dict=feed_dict).tolist()
             scores_final_1 += self.sess.run(self.model.final_score_1, feed_dict=feed_dict).tolist()
             scores_final_2 += self.sess.run(self.model.final_score_2, feed_dict=feed_dict).tolist()
             scores_final_3 += self.sess.run(self.model.final_score_3, feed_dict=feed_dict).tolist()
@@ -351,7 +326,8 @@ class SENCEBGANTrainer(BaseTrainSequential):
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         scores_im1 = np.asarray(scores_im1)
         scores_im2 = np.asarray(scores_im2)
-        scores_comb = np.asarray(scores_comb)
+        scores_comb_im = np.asarray(scores_comb_im)
+        scores_comb_z = np.asarray(scores_comb_z)
         scores_final_1 = np.asarray(scores_final_1)
         scores_final_2 = np.asarray(scores_final_2)
         scores_final_3 = np.asarray(scores_final_3)
@@ -395,11 +371,25 @@ class SENCEBGANTrainer(BaseTrainSequential):
         )
         save_results(
             self.config.log.result_dir,
-            scores_comb,
+            scores_comb_im,
             true_labels,
             self.config.model.name,
             self.config.data_loader.dataset_name,
-            "comb",
+            "comb_im",
+            "paper",
+            self.config.trainer.label,
+            self.config.data_loader.random_seed,
+            self.logger,
+            step,
+            percentile=percentiles,
+        )
+        save_results(
+            self.config.log.result_dir,
+            scores_comb_z,
+            true_labels,
+            self.config.model.name,
+            self.config.data_loader.dataset_name,
+            "comb_z",
             "paper",
             self.config.trainer.label,
             self.config.data_loader.random_seed,

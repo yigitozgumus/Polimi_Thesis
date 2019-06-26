@@ -245,6 +245,7 @@ def save_results(
     logger,
     step=-1,
     percentile=90,
+    postfix="",
 ):
     directory = location + "{}/{}/{}/w{}/".format(model, dataset, method, weight)
     if not os.path.exists(directory):
@@ -293,7 +294,7 @@ def save_results(
             random_seed,
             time.ctime(),
         ]
-        save_results_csv(location + "results.csv", results, header=0)
+        save_results_csv(location + "results{}.csv".format(postfix), results, header=0)
 
         results = [step, roc_auc, precision, recall, f1, random_seed]
         save_results_csv(fname, results, header=2)

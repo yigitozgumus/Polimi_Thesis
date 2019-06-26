@@ -33,7 +33,7 @@
   },
   "trainer": {
     "name": "encebgan_trainer.EncEBGANTrainer",
-    "feature_match_weight": 0.25,
+    "feature_match_weight": 0.45,
     "mode": "non_standard",
     "init_type": "xavier",
     "mse_mode" :"norm",

@@ -27,6 +27,8 @@ class SENCEBGAN(BaseModel):
         self.is_training_dis = tf.placeholder(tf.bool)
         self.is_training_enc_g = tf.placeholder(tf.bool)
         self.is_training_enc_r = tf.placeholder(tf.bool)
+        self.feature_match1 = tf.placeholder(tf.float32)
+        self.feature_match2 = tf.placeholder(tf.float32)
         self.image_input = tf.placeholder(
             tf.float32, shape=[None] + self.config.trainer.image_dims, name="x"
         )
@@ -501,20 +503,20 @@ class SENCEBGAN(BaseModel):
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
                 )
                 self.img_score_l2 = tf.squeeze(img_score_l2)
-                self.score_comb = (
-                    (1 - self.config.trainer.feature_match_weight) * self.img_score_l1
-                    + self.config.trainer.feature_match_weight * self.img_score_l2
+                self.score_comb_im = (
+                    (1 - self.feature_match1) * self.img_score_l1
+                    + self.feature_match1 * self.img_score_l2
                 )
             with tf.name_scope("Noise_Based"):
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 final_score_1 = tf.norm(
-                    delta_flat, ord=1, axis=1, keepdims=False, name="final_score_1"
+                    delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1"
                 )
                 self.final_score_1 = tf.squeeze(final_score_1)
 
-                delta = self.image_encoded_r_ema - self.image_ege_ema
+                delta = self.image_encoded_r_ema - self.embedding_enc_fake_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 final_score_2 = tf.norm(
                     delta_flat, ord=2, axis=1, keepdims=False, name="final_score_2"
@@ -528,6 +530,15 @@ class SENCEBGAN(BaseModel):
                 )
                 self.final_score_3 = tf.squeeze(final_score_3)
 
+                # Combo 1
+                self.score_comb_z = (
+                    (1 - self.feature_match2) * self.final_score_2
+                    + self.feature_match2 * self.final_score_3
+                )
+
+                # Combo 2
+
+
                 if self.config.trainer.enable_disc_xx:
 
                     delta = self.im_f_real_ema - self.im_f_fake_ema
@@ -536,12 +547,6 @@ class SENCEBGAN(BaseModel):
                         delta_flat, ord=1, axis=1, keepdims=False, name="final_score_4"
                     )
                     self.final_score_4 = tf.squeeze(final_score_4)
-
-                if self.config.trainer.enable_disc_zz:
-                    # delta = self.z_logit_real_ema - self.z_logit_fake_ema
-                    # delta_flat = tf.layers.Flatten()(delta)
-                    # final_score_5 = tf.norm(delta_flat, ord=1, axis=1, keepdims=False, name="final_score_5")
-                    # self.final_score_5 = tf.squeeze(final_score_5)
 
                     delta = self.z_f_real_ema - self.z_f_fake_ema
                     delta_flat = tf.layers.Flatten()(delta)

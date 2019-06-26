@@ -34,7 +34,8 @@
   },
   "trainer": {
     "name": "sencebgan_trainer.SENCEBGANTrainer",
-    "feature_match_weight": 0.25,
+    "feature_match_weight": 0.45,
+    "feature_match_weight_2": 0.45,
     "mode": "non_standard",
     "init_type": "xavier",
     "mse_mode" :"norm",
