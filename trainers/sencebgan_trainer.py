@@ -74,17 +74,27 @@ class SENCEBGANTrainer(BaseTrainSequential):
         enc_losses = []
         disc_xx_losses = []
         summaries = []
+        # New Part
+        gen_losses = []
+        disc_losses = []
+        #------------
         image = self.data.image
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in loop:
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            le, sum_e, ldxx = self.train_step_enc_gen(image, cur_epoch)
+            le, sum_e, ldxx, lg, ld, sum_g, sum_d = self.train_step_enc_gen(image, cur_epoch)
             enc_losses.append(le)
             if self.config.trainer.enable_disc_xx:
                 disc_xx_losses.append(ldxx)
             summaries.append(sum_e)
+            # New Part
+            gen_losses.append(lg)
+            disc_losses.append(ld)
+            summaries.append(sum_g)
+            summaries.append(sum_d)
+            # ------------------
         self.logger.info("Epoch {} terminated".format(cur_epoch))
         self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="valid")
         # Check for reconstruction
@@ -211,8 +221,9 @@ class SENCEBGANTrainer(BaseTrainSequential):
         feed_dict = {
             self.model.image_input: image_eval,
             self.model.noise_tensor: noise,
-            self.model.is_training_gen: False,
-            self.model.is_training_dis: False,
+            # Modified
+            self.model.is_training_gen: True,
+            self.model.is_training_dis: True,
             self.model.is_training_enc_g: True,
             self.model.is_training_enc_r: False,
         }
@@ -224,15 +235,36 @@ class SENCEBGANTrainer(BaseTrainSequential):
             _, ldxx = self.sess.run(
                 [self.model.train_dis_op_xx, self.model.dis_loss_xx], feed_dict=feed_dict
             )
-            # Additional generator discriminator training
-        # _ = self.sess.run([self.model.train_gen_op], feed_dict=feed_dict)
-        # _ = self.sess.run([self.model.train_dis_op], feed_dict=feed_dict)
+            # New part
+            _, ld, sm_d = self.sess.run(
+                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
+                feed_dict=feed_dict,
+            )
+            ld_t.append(ld)
+            _, lg, sm_g = self.sess.run(
+                [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
+                feed_dict=feed_dict,
+            )
+            lg_t.append(lg)
         else:
+
             _, le, sm_e = self.sess.run(
                 [self.model.train_enc_g_op, self.model.loss_encoder_g, self.model.sum_op_enc_g],
                 feed_dict=feed_dict,
             )
-        return le, sm_e, ldxx
+            # New part
+            _, ld, sm_d = self.sess.run(
+                [self.model.train_dis_op, self.model.loss_discriminator, self.model.sum_op_dis],
+                feed_dict=feed_dict,
+            )
+            ld_t.append(ld)
+            _, lg, sm_g = self.sess.run(
+                [self.model.train_gen_op, self.model.loss_generator, self.model.sum_op_gen],
+                feed_dict=feed_dict,
+            )
+            lg_t.append(lg)
+
+        return le, sm_e, ldxx, np.mean(lg_t), np.mean(ld_t), sm_g, sm_d
 
     def train_step_enc_rec(self, image, cur_epoch):
         image_eval = self.sess.run(image)
