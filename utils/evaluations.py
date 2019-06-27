@@ -328,7 +328,7 @@ def save_results(
                 random_seed,
                 time.ctime(),
             ]
-            save_results_csv(location + "results.csv", results, header=0)
+            save_results_csv(location + "results{}.csv".format(postfix), results, header=0)
 
             results = [step, i, roc_auc, precision, recall, f1, random_seed]
             fname = directory + "{}.csv".format(label)
