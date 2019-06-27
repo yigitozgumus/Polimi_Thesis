@@ -679,28 +679,9 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_5"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=32,
-                    kernel_size=3,
-                    strides=2,
-                    padding="same",
-                    kernel_initializer=self.init_kernel,
-                    name="conv2t",
-                )(x_g)
-                x_g = tf.layers.batch_normalization(
-                    x_g,
-                    momentum=self.config.trainer.batch_momentum,
-                    training=self.is_training_gen,
-                    name="batch_normalization",
-                )
-                x_g = tf.nn.leaky_relu(
-                    features=x_g, alpha=self.config.trainer.leakyReLU_alpha, name="relu"
-                )
-            net_name = "Layer_5"
-            with tf.variable_scope(net_name):
-                x_g = tf.layers.Conv2DTranspose(
                     filters=1,
-                    kernel_size=3,
-                    strides=1,
+                    kernel_size=5,
+                    strides=2,
                     padding="same",
                     kernel_initializer=self.init_kernel,
                     name="conv2t",

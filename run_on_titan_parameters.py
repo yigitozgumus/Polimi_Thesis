@@ -16,7 +16,7 @@ def run_multi():
     # Get the arguments
     args = get_args()
     config, _ = get_config_from_json(args.config)
-    values_sn = config.exp.vals
+    values_sn = config.exp.vals_2
     values_train = config.exp.vals
     values_init = config.exp.vals
     params = config.exp.params

@@ -80,7 +80,7 @@ class SENCEBGANTrainer(BaseTrainSequential):
             loop.set_description("Epoch:{}".format(cur_epoch + 1))
             loop.refresh()  # to show immediately the update
             sleep(0.01)
-            le, sum_e, ldxx, lg, ld, sum_g, sum_d = self.train_step_enc_gen(image, cur_epoch)
+            le, sum_e, ldxx = self.train_step_enc_gen(image, cur_epoch)
             enc_losses.append(le)
             if self.config.trainer.enable_disc_xx:
                 disc_xx_losses.append(ldxx)
