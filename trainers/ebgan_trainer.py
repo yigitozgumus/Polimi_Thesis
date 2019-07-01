@@ -76,8 +76,10 @@ class EBGANTrainer(BaseTrain):
         scores_z2 = []
         inference_time = []
         true_labels = []
+        summaries = []
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
+        cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
         for _ in test_loop:
             test_batch_begin = time()
             test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -95,8 +97,10 @@ class EBGANTrainer(BaseTrain):
             scores_im2 += self.sess.run(self.model.img_score_l2, feed_dict=feed_dict).tolist()
             scores_z1 += self.sess.run(self.model.z_score_l1, feed_dict=feed_dict).tolist()
             scores_z2 += self.sess.run(self.model.z_score_l2, feed_dict=feed_dict).tolist()
+            summaries += self.sess.run([self.model.sum_op_im_test], feed_dict=feed_dict)
             inference_time.append(time() - test_batch_begin)
             true_labels += test_labels.tolist()
+        self.summarizer.add_tensorboard(step=cur_epoch, summaries=summaries, summarizer="test")
         scores_im1 = np.asarray(scores_im1)
         scores_im2 = np.asarray(scores_im2)
         scores_z1 = np.asarray(scores_z1)
