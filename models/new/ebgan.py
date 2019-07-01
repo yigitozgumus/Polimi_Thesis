@@ -173,13 +173,16 @@ class EBGAN(BaseModel):
                 with tf.name_scope("gen_summary"):
                     tf.summary.scalar("loss_generator", self.loss_generator, ["gen"])
                 with tf.name_scope("img_summary"):
-                    tf.summary.image("input_image", self.image_input, 3, ["img"])
-                    tf.summary.image("reconstructed", self.image_gen, 3, ["img"])
+                    tf.summary.image("input_image", self.image_input, 1, ["img"])
+                    tf.summary.image("reconstructed", self.image_gen, 1, ["img"])
+                    tf.summary.image("input_image", self.image_input, 1, ["test"])
+                    tf.summary.image("reconstructed", self.image_gen_ema, 1, ["test"])
 
         self.sum_op_dis = tf.summary.merge_all("dis")
         self.sum_op_gen = tf.summary.merge_all("gen")
         self.sum_op = tf.summary.merge([self.sum_op_dis, self.sum_op_gen])
         self.sum_op_im = tf.summary.merge_all("img")
+        self.sum_op_im_test = tf.summary.merge_all("test")
 
     def generator(self, noise_input, getter=None):
         with tf.variable_scope("Generator", custom_getter=getter, reuse=tf.AUTO_REUSE):
