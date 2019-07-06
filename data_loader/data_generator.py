@@ -102,6 +102,23 @@ class DataGenerator:
             self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
             self.test_iterator = self.test_dataset.make_initializable_iterator()
             self.test_image, self.test_label, self.ground_truth = self.test_iterator.get_next()
+        if self.config.data_loader.mode == "visualization_big":
+            self.test_filenames, self.test_labels, self.ground_truth = d.get_test_dataset_vis_big()
+            self.test_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.test_filenames, self.test_labels, self.ground_truth)
+            )
+            self.test_dataset = self.test_dataset.map(
+                map_func=self._parse_function_test_2,
+                num_parallel_calls=self.config.data_loader.num_parallel_calls,
+            )
+            # Shuffle the dataset
+            # self.test_dataset = self.test_dataset.shuffle(self.config.data_loader.buffer_size)
+            # Repeat the dataset indefinitely
+            self.test_dataset = self.test_dataset.repeat()
+            # Apply batching
+            self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
+            self.test_iterator = self.test_dataset.make_initializable_iterator()
+            self.test_image, self.test_label, self.ground_truth = self.test_iterator.get_next()
 
     def _parse_function(self, filename):
         # Read the image
