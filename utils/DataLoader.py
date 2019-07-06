@@ -268,7 +268,9 @@ class DataLoader:
                 os.mkdir(first_level)
             img_files = []
             tag_files = []
-            for img_, tag_ in self.image_tag_list:
+            index_list = [0,6,7,8,9,10,11,15]
+            image_tags = [self.image_tag_list[i] for i in index_list]
+            for img_, tag_ in image_tags:
                 h, w = img_.shape[:2]
                 self.w_turns = w - size + 1
                 self.h_turns = h - size + 1
