@@ -283,8 +283,17 @@ class SENCEBGANTrainerFactor(BaseTrainSequential):
         # Create the scores
         test_loop = tqdm(range(self.config.data_loader.num_iter_per_test))
         cur_epoch = self.model.cur_epoch_tensor.eval(self.sess)
-        factor_list = self.config.trainer.feature_match_weight
+        factor_list = self.config.trainer.feature_match_weight_2
         for f in factor_list:
+            scores_im1 = []
+            scores_im2 = []
+            scores_comb_im = []
+            scores_comb_z = []
+            scores_final_1 = []
+            scores_final_2 = []
+            scores_final_3 = []
+            inference_time = []
+            true_labels = []
             for _ in test_loop:
                 test_batch_begin = time()
                 test_batch, test_labels = self.sess.run([self.data.test_image, self.data.test_label])
@@ -294,7 +303,7 @@ class SENCEBGANTrainerFactor(BaseTrainSequential):
                     loc=0.0, scale=1.0, size=[self.config.data_loader.test_batch, self.noise_dim]
                 )
                 feature_match1 = f
-                feature_match2 = self.config.trainer.feature_match_weight_2
+                feature_match2 = self.config.trainer.feature_match_weight
                 feed_dict = {
                     self.model.image_input: test_batch,
                     self.model.noise_tensor: noise,
@@ -344,7 +353,7 @@ class SENCEBGANTrainerFactor(BaseTrainSequential):
             self.logger.info("Testing: Mean inference time is {:4f}".format(inference_time))
             step = self.sess.run(self.model.global_step_tensor)
             percentiles = np.asarray(self.config.trainer.percentiles)
-            postfix = "_{}".format(str(f))
+            postfix = "_2_{}".format(str(f))
             save_results(
                 self.config.log.result_dir,
                 scores_im1,
@@ -495,3 +504,4 @@ class SENCEBGANTrainerFactor(BaseTrainSequential):
                     step,
                     percentile=percentiles,
                 )
+            

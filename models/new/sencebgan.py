@@ -503,10 +503,7 @@ class SENCEBGAN(BaseModel):
                     delta_flat, ord=2, axis=1, keepdims=False, name="img_loss__2"
                 )
                 self.img_score_l2 = tf.squeeze(img_score_l2)
-                self.score_comb_im = (
-                    (1 - self.feature_match1) * self.img_score_l1
-                    + self.feature_match1 * self.img_score_l2
-                )
+                
             with tf.name_scope("Noise_Based"):
 
                 delta = self.image_encoded_r_ema - self.image_ege_ema
@@ -515,7 +512,10 @@ class SENCEBGAN(BaseModel):
                     delta_flat, ord=2, axis=1, keepdims=False, name="final_score_1"
                 )
                 self.final_score_1 = tf.squeeze(final_score_1)
-
+                self.score_comb_im = (
+                    1 * self.img_score_l1
+                    + self.feature_match1 * self.final_score_1
+                )
                 delta = self.image_encoded_r_ema - self.embedding_enc_fake_ema
                 delta_flat = tf.layers.Flatten()(delta)
                 final_score_2 = tf.norm(
@@ -622,7 +622,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_2"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=256,
+                    filters=128,
                     kernel_size=5,
                     strides=2,
                     padding="same",
@@ -641,7 +641,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_3"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=128,
+                    filters=64,
                     kernel_size=5,
                     strides=2,
                     padding="same",
@@ -660,7 +660,7 @@ class SENCEBGAN(BaseModel):
             net_name = "Layer_4"
             with tf.variable_scope(net_name):
                 x_g = tf.layers.Conv2DTranspose(
-                    filters=64,
+                    filters=32,
                     kernel_size=5,
                     strides=2,
                     padding="same",

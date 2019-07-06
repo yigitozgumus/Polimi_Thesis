@@ -18,9 +18,9 @@
     "random_seed": 652016,
     "buffer_size": 51200,
     "image_size": 32,
-    "batch_size": 32,
-    "num_epochs_gan": 50,
-    "num_epochs_enc_gen": 150,
+    "batch_size": 64,
+    "num_epochs_gan": 500,
+    "num_epochs_enc_gen": 200,
     "num_epochs_enc_rec": 400,
     "num_iter_per_epoch": 1600,
     "num_parallel_calls": 8,
@@ -34,7 +34,7 @@
   },
   "trainer": {
     "name": "sencebgan_trainer.SENCEBGANTrainer",
-    "feature_match_weight": 0.45,
+    "feature_match_weight": 0.25,
     "feature_match_weight_2": 0.45,
     "mode": "non_standard",
     "init_type": "xavier",
@@ -48,7 +48,7 @@
     "standard_lr_enc": 5e-5,
     "standard_lr_dis": 5e-6,
     "critic_iters": 1,
-    "disc_margin": 25,
+    "disc_margin": 20,
     "pt_weight": 0.25,
     "pullaway": true,
     "optimizer_adam_beta1": 0.5,
@@ -68,7 +68,7 @@
     "patience": 10,
     "test_at_end": true,
     "percentiles": [80, 85, 90, 95, 96, 97, 98, 99, 99.1, 99.2, 99.3, 99.4, 99.5, 99.6, 99.7, 99.8, 99.9],
-      "reset_first_counter":true
+    "reset_first_counter":true
   },
   "log": {
     "name": "summarizer.Summarizer",

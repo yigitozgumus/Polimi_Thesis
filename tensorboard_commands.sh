@@ -55,6 +55,6 @@ sencebgan3:Ablation/sencebgan_abl_last_True_True
 
 elif [ $1 == 'comparison' ]
 then
-    tensorboard --logdir=anogan:Ablation/anogan_abl_last_000,bigan:Ablation/bigan_abl_last_000,alad:Ablation/alad_abl_last_000
+    tensorboard --logdir=encebgan:Ablation/encebgan_new,ebgan:Ablation/ebgan_standard,sencebgan:Ablation/sencebgan_standard --samples_per_plugin images=50
 fi
 
