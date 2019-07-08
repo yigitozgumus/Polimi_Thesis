@@ -24,6 +24,7 @@ python3 run.py -c ./configs/\<CONFIGFILE\> -e \<EXPERIMENTNAME\>
 * To perform tests with the model from a specific experiment
 ```bash
 python3 run.py -c ./configs/\<CONFIG_FILE\> -e \<EXPERIMENT_NAME\> --test
+```
 
 ## Example from the dataset 
 
