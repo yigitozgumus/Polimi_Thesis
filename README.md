@@ -18,7 +18,7 @@ conda create --name myenv -f environment.yml
 * To run the model:
 
 ```bash
-python3 run.py -c ./configs/\<CONFIGFILE\> -e \<EXPERIMENTNAME\>
+python3 run.py -c ./configs/\<CONFIG_FILE\> -e \<EXPERIMENT_NAME\> --train
 ```
 
 * To perform tests with the model from a specific experiment
