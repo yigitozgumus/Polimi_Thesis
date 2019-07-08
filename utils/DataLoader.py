@@ -268,6 +268,7 @@ class DataLoader:
                 os.mkdir(first_level)
             img_files = []
             tag_files = []
+            #index_list = [0,6,7,8,9,10,11,15]
             index_list = [0,6,7,8,9,10,11,15]
             image_tags = [self.image_tag_list[i] for i in index_list]
             for img_, tag_ in image_tags:
@@ -288,8 +289,8 @@ class DataLoader:
                         img_files.append(image)
                         tag_files.append(tag)
             self.test_size_per_img = self.w_turns * self.h_turns
-            if not os.path.exists(self.img_location_vis):
-                os.mkdir(self.img_location_vis)
+            if not os.path.exists(self.img_location_vis_big):
+                os.mkdir(self.img_location_vis_big)
             with working_directory(self.img_location_vis_big):
                 for idx, img in enumerate(img_files):
                     im = Image.fromarray(img)
@@ -299,7 +300,7 @@ class DataLoader:
                         )
                     )
             if not os.path.exists(self.tag_location_vis_big):
-                os.mkdir(self.tag_location_vis)
+                os.mkdir(self.tag_location_vis_big)
             with working_directory(self.tag_location_vis_big):
                 for idx, tag in enumerate(tag_files):
                     im = Image.fromarray(tag)
@@ -357,7 +358,7 @@ class DataLoader:
             im2arr = io.imread(label)
             labels.append(1) if np.sum(im2arr) > 5100 else labels.append(0)
         labels_f = tf.constant(labels)
-
+        self.logger.info("Test Dataset is Loaded")
         return [img_names, labels_f]
 
     def get_test_dataset_vis(self):
@@ -376,7 +377,7 @@ class DataLoader:
             im2arr = io.imread(label)
             labels.append(1) if np.sum(im2arr) > 5100 else labels.append(0)
         labels_f = tf.constant(labels)
-
+        self.logger.info("Test Dataset is Loaded")
         return [img_names, labels_f, tag_list_merged]
     
     def get_test_dataset_vis_big(self):
@@ -386,14 +387,16 @@ class DataLoader:
         """
         img_list = listdir_nohidden(self.img_location_vis_big)
         img_list = natsorted(img_list)
+        #img_list = img_list[660345:660345 * 2]
         img_names = tf.constant([os.path.join(self.img_location_vis_big, x) for x in img_list])
         tag_list = listdir_nohidden(self.tag_location_vis_big)
         tag_list = natsorted(tag_list)
+        #tag_list = tag_list[660345:660345* 2]
         tag_list_merged = [os.path.join(self.tag_location_vis_big, x) for x in tag_list]
         labels = []
         for label in tag_list_merged:
             im2arr = io.imread(label)
             labels.append(1) if np.sum(im2arr) > 5100 else labels.append(0)
         labels_f = tf.constant(labels)
-
+        self.logger.info("Test Dataset is Loaded")
         return [img_names, labels_f, tag_list_merged]

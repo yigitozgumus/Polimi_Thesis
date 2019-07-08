@@ -17,15 +17,18 @@ def make_3_channel(image):
 
 
 def add_color_red_2d(image):
-    return np.array([[[0.7, s, s] for s in r] for r in image], dtype="u1")
+    #return np.array([[[0.7, s, s] for s in r] for r in image], dtype="u1")
+    return np.array([[[s, 0, 0] for s in r] for r in image], dtype="u1")
 
 
 def add_color_green_2d(image):
-    return np.array([[[0.4, s, 0.9] for s in r] for r in image], dtype="u1")
+    #return np.array([[[0.4, s, 0.9] for s in r] for r in image], dtype="u1")
+    return np.array([[[0, s, 0] for s in r] for r in image], dtype="u1")
 
 
-def add_color_yellow_2d(image):
-    return np.array([[[s, 0.3, 0.3] for s in r] for r in image], dtype="u1")
+def add_color_blue_2d(image):
+    #return np.array([[[s, 0.3, 0.3] for s in r] for r in image], dtype="u1")
+    return np.array([[[0, 0, s] for s in r] for r in image], dtype="u1")
 
 
 def paint_image_anomalies(image_list, true_labels, pred_labels):
@@ -81,7 +84,7 @@ def paint_anomalies(num, patches, scores_pred, tl_bool, statistics=False, show=F
                 add = add_color_red_2d(tests[index] * 255)
                 fps += 1
             elif real[index]:  # False Negative
-                add = add_color_yellow_2d(tests[index] * 255)
+                add = add_color_blue_2d(tests[index] * 255)
                 fns += 1
             else:
                 add = make_3_channel(tests[index] * 255)
@@ -117,11 +120,11 @@ def paint_anomalies_pixelwise(num, patches, scores_pred, true_scores, statistics
                 add = add_color_red_2d(tests[index][15:16, 16:17] * 255)
                 fps += 1
             elif real[index]:
-                add = add_color_yellow_2d(tests[index][15:16, 16:17] * 255)
+                add = add_color_blue_2d(tests[index][15:16, 16:17] * 255)
                 fns += 1
             else:
                 add = make_3_channel(tests[index][15:16, 16:17] * 255)
-            patch_image[i : (i + 1), j : (j + 1)] += add
+            patch_image[h : (h + 1), w : (w + 1)] += add
     if statistics:
         print("true predictions: {}".format(trues))
         print("False Positives: {}".format(fps))
