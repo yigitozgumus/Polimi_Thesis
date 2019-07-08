@@ -14,7 +14,6 @@ Ablation/
 tags/
 # Auxilary
 Logs/
-Experiments/
 .DS_Store
 Results/
 # Distribution / packaging

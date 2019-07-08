@@ -26,6 +26,10 @@ python3 run.py -c ./configs/\<CONFIGFILE\> -e \<EXPERIMENTNAME\>
 python3 run.py -c ./configs/\<CONFIG_FILE\> -e \<EXPERIMENT_NAME\> --test
 ```
 
+## Model Overview
+
+![](Experiments/sencebgan.png)
+
 ## Example from the dataset 
 
-![](test.png)
+![](Experiments/test.png)
