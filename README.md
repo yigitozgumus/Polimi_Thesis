@@ -1,28 +1,30 @@
 # Polimi Thesis
 This is the repository for the Master's thesis titled "Anomaly Detection using Generative Adversarial Networks"
 
-### Project Structure
+## Project Structure
 
 The project and the hierarchy of the files are structured using [this](https://github.com/MrGemy95/Tensorflow-Project-Template) Github Project.
 
-### How to run the models
+## Instructions
 
-Every configuration file has a value for the implemented class name. You can use 
+- If you don't have the data folder, in the first run model will download and create the dataset.
+- All the experiment configurations and model parameters can be changed from the related config files.
+* To create the same environment used in the project: 
+
+```bash
+conda create --name myenv -f environment.yml
 ```
-python run.py -c <path_to_config_file>
+
+* To run the model:
+
+```bash
+python3 run.py -c ./configs/\<CONFIGFILE\> -e \<EXPERIMENTNAME\>
 ```
 
-### Reading resources
+* To perform tests with the model from a specific experiment
+```bash
+python3 run.py -c ./configs/\<CONFIG_FILE\> -e \<EXPERIMENT_NAME\> --test
 
-These are the papers that are used for the research purposes
+## Example from the dataset 
 
-* [Generative Adversarial Networks](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf)
-* [Adversarial Feature Learning](https://arxiv.org/abs/1605.09782)
-* [Adversarially Learned Interface](https://arxiv.org/abs/1606.00704)
-* [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)
-* [Adversarially Learned Anomaly Detection](https://arxiv.org/abs/1812.02288)
-* [Deep Structured Energy Based Models for Anomaly Detection](https://arxiv.org/abs/1605.07717)
-* [Energy Based Generative Adversarial Networks](https://arxiv.org/abs/1609.03126)
-* [Semi Supervised Learning with Bidirectional Generative Adversarial Networks](https://arxiv.org/abs/1811.11426)
-* [Unsupervised Anomaly Detection with Generative Adversarial Networks to Guide Marker Discovery](https://arxiv.org/abs/1703.05921)
-* [GANomaly: Semi-Supervised Anomaly Detection via Adversarial Training](https://www.groundai.com/project/ganomaly-semi-supervised-anomaly-detection-via-adversarial-training/)
+![](test.png)
