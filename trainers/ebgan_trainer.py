@@ -56,6 +56,26 @@ class EBGANTrainer(BaseTrain):
             }
             reconstruction = self.sess.run(self.model.sum_op_im, feed_dict=feed_dict)
             self.summarizer.add_tensorboard(step=cur_epoch, summaries=[reconstruction])
+            # For saving GIF
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[self.config.log.num_example_imgs_to_generate, self.noise_dim]
+            )
+            feed_dict = {
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            imgs_25 = self.sess.run(self.model.img_gen,feed_dict=feed_dict)
+            self.save_generated_images(imgs_25, cur_epoch,num=self.config.log.num_example_imgs_to_generate,row=5)
+            noise = np.random.normal(
+                loc=0.0, scale=1.0, size=[1, self.noise_dim]
+            )
+            feed_dict = {
+                self.model.noise_tensor: noise,
+                self.model.is_training: False,
+            }
+            imgs_25 = self.sess.run(self.model.img_gen,feed_dict=feed_dict)
+            self.save_generated_images(imgs_25, cur_epoch,num=1,row=1)
+
         # Get the means of the loss values to display
         gen_m = np.mean(gen_losses)
         dis_m = np.mean(disc_losses)

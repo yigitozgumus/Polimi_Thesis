@@ -56,15 +56,15 @@ class BaseTrain:
         """
         raise NotImplementedError
 
-    def save_generated_images(self, predictions, epoch):
+    def save_generated_images(self, predictions, epoch,num=25,row=5):
         # make sure the training parameter is set to False because we
         # don't want to train the batchnorm layer when doing inference.
         predictions = np.asarray(predictions)[0]
-        fig = plt.figure(figsize=(self.rows, self.rows))
+        fig = plt.figure(figsize=(row, row))
         for i in range(predictions.shape[0]):
-            plt.subplot(self.rows, self.rows, i + 1)
+            plt.subplot(row, row, i + 1)
             plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap="gray")
             plt.axis("off")
 
-        plt.savefig(self.config.log.step_generation_dir + "image_at_epoch_{:04d}.png".format(epoch))
+        plt.savefig(self.config.log.step_generation_dir + "{}_image_at_epoch_{:04d}.png".format(num, epoch))
         plt.close()
