@@ -1,5 +1,5 @@
-# Polimi Thesis
-This is the repository for the Master's thesis titled "Anomaly Detection using Generative Adversarial Networks"
+# Politecnico di Milano - Thesis Repository
+This is the code repository of my master's thesis titled "Adversarially Learned Anomaly Detection using Generative Adversarial Networks"
 
 ## Project Structure
 
