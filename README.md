@@ -30,6 +30,10 @@ python3 run.py -c ./configs/<CONFIG_FILE> -e <EXPERIMENT_NAME> --test
 
 ![](Experiments/sencebgan.png)
 
-## Example from the dataset 
+## Generation samples of Generator Network
+
+![](Experiments/presentation_25_101.gif)
+
+## Anomaly detection examples from the dataset 
 
 ![](Experiments/test.png)
