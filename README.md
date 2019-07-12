@@ -25,6 +25,12 @@ python3 run.py -c ./configs/<CONFIG_FILE> -e <EXPERIMENT_NAME> --train
 ```bash
 python3 run.py -c ./configs/<CONFIG_FILE> -e <EXPERIMENT_NAME> --test
 ```
+* Using the __save_generated_images__ function in the __base_train.py__ you can create gifs from the GAN generations.
+You should get the generated image with an inference mode and use the function to save to __generated__ folder (or you can rename that folder). Then use the __create_gif.py__ in the __scripts__ folder like this:
+```bash
+python3 create_gif.py -e <EXPERIMENT_NAME> -n <GIF_NAME> -r <TOTAL_IMG>
+```
+If you create only 5x5 or 6x6 pictures, use the total number of images for that case
 
 ## Model Overview
 
