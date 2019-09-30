@@ -13,7 +13,7 @@ def create_gif(folder_name, output_name, num):
     images = []
     for filename in files:
         images.append(imageio.imread(folder_name + "/" + filename))
-    imageio.mimsave(output_name + "_" + str(num_epochs) + ".gif", images)
+    imageio.mimsave(output_name + "_" + str(num_epochs) + ".gif", images, duration=0.5)
 
 
 def main():
