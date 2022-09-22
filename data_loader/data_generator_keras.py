@@ -43,11 +43,11 @@ class DataGeneratorKeras():
         """
 
         # Read the image file
-        image_file = tf.read_file(filename)
+        image_file = tf.io.read_file(filename)
         # Decode the image
         image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
-        image_resized = tf.image.resize_images(image_decoded, [self.config.image_size, self.config.image_size])
+        image_resized = tf.image.resize(image_decoded, [self.config.image_size, self.config.image_size])
         # Normalize the values of the pixels. The function that is applied is below
         # (x - mean) / adjusted_stddev
         # adjusted_stddev = max(stddev, 1.0/sqrt(image.NumElements()))

@@ -45,12 +45,12 @@ class DataGenerator():
 
     def _parse_function(self, filename):
         # Read the image
-        image_string = tf.read_file(filename)
+        image_string = tf.io.read_file(filename)
         # Decode the image
         image_decoded = tf.image.decode_jpeg(image_string)
         # Resize the image --> 28 is default
         # TODO
-        image_resized = tf.image.resize_images(image_decoded, [28, 28])
+        image_resized = tf.image.resize(image_decoded, [28, 28])
         # Normalize the values of the pixels
         image_normalized = tf.image.convert_image_dtype(image_resized, dtype=float, name="scaling")
         # Random image flip left-right

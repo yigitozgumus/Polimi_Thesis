@@ -43,7 +43,8 @@ class DataGenerator:
         # Applying prefetch to increase the performance
         # Prefetch the next 10 batches
         self.dataset = self.dataset.prefetch(buffer_size=10 * self.config.data_loader.batch_size)
-        self.iterator = self.dataset.make_initializable_iterator()
+        # self.iterator = self.dataset.make_initializable_iterator()
+        self.iterator = tf.compat.v1.data.make_initializable_iterator(self.dataset)
         self.image = self.iterator.get_next()
 
         # Validation Dataset
@@ -83,7 +84,7 @@ class DataGenerator:
             self.test_dataset = self.test_dataset.repeat()
             # Apply batching
             self.test_dataset = self.test_dataset.batch(self.config.data_loader.test_batch)
-            self.test_iterator = self.test_dataset.make_initializable_iterator()
+            self.test_iterator = tf.compat.v1.data.make_initializable_iterator(self.test_dataset)
             self.test_image, self.test_label = self.test_iterator.get_next()
         if self.config.data_loader.mode == "visualization":
             self.test_filenames, self.test_labels, self.ground_truth = d.get_test_dataset_vis()
@@ -153,10 +154,10 @@ class DataGenerator:
 
     def _parse_function_test(self, img_file, tag):
         # Read the image
-        img = tf.read_file(img_file)
+        img = tf.io.read_file(img_file)
         # Decode the image and the label
         img_decoded = tf.image.decode_jpeg(img)
-        image_resized = tf.image.resize_images(
+        image_resized = tf.image.resize(
             img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         image_normalized = tf.image.per_image_standardization(image_resized)
@@ -166,15 +167,15 @@ class DataGenerator:
     
     def _parse_function_test_2(self, img_file, tag, ground):
         # Read the image
-        img = tf.read_file(img_file)
-        ground = tf.read_file(ground)
+        img = tf.io.read_file(img_file)
+        ground = tf.io.read_file(ground)
         # Decode the image and the label
         img_decoded = tf.image.decode_jpeg(img)
         ground_decoded = tf.image.decode_jpeg(ground)
-        image_resized = tf.image.resize_images(
+        image_resized = tf.image.resize(
             img_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
-        ground_resized = tf.image.resize_images(
+        ground_resized = tf.image.resize(
             ground_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         image_normalized = image_resized / 255.0

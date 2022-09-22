@@ -32,7 +32,7 @@ def run():
 
     # Copy the model code and the trainer code to the experiment folder
     copy_codebase(config)
-
+    tf.compat.v1.disable_eager_execution()
     l = Logger(config)
     logger = l.get_logger(__name__)
     # Set the random seed
