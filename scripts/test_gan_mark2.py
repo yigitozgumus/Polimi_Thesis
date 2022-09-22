@@ -54,9 +54,9 @@ class DataGenerator():
         # Normalize the values of the pixels
         image_normalized = tf.image.convert_image_dtype(image_resized, dtype=float, name="scaling")
         # Random image flip left-right
-        image_random_flip_lr = tf.image.random_flip_left_right(image_normalized, seed=tf.random.set_random_seed(1234))
+        image_random_flip_lr = tf.image.random_flip_left_right(image_normalized, seed=tf.random.set_seed(1234))
         # Random image flip up-down
-        image_random_flip_ud = tf.image.random_flip_up_down(image_random_flip_lr, seed=tf.random.set_random_seed(1234))
+        image_random_flip_ud = tf.image.random_flip_up_down(image_random_flip_lr, seed=tf.random.set_seed(1234))
         return image_random_flip_ud
 
 

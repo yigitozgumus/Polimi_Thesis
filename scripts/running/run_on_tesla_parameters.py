@@ -54,7 +54,7 @@ def run(config,args):
     l = Logger(config)
     logger = l.get_logger(__name__)
     # Set the random seed
-    tf.random.set_random_seed(config.data_loader.random_seed)
+    tf.random.set_seed(config.data_loader.random_seed)
     # Create the tensorflow session
     sess = tf.Session()
     # Create the dataloader

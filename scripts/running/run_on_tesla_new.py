@@ -20,7 +20,7 @@ def run():
     config.exp.name = args.experiment
     config = process_config(config)
     # Set the random seed
-    tf.random.set_random_seed(config.data_loader.random_seed)
+    tf.random.set_seed(config.data_loader.random_seed)
     # create the experiments dirs
     create_dirs(
         [

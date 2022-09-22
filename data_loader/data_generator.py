@@ -128,11 +128,11 @@ class DataGenerator:
         """
 
         # Read the image file
-        image_file = tf.read_file(filename)
+        image_file = tf.io.read_file(filename)
         # Decode the image
         image_decoded = tf.image.decode_jpeg(image_file)
         # Resize the image --> 28 is default
-        image_resized = tf.image.resize_images(
+        image_resized = tf.image.resize(
             image_decoded, [self.config.data_loader.image_size, self.config.data_loader.image_size]
         )
         # Normalize the values of the pixels. The function that is applied is below
@@ -142,12 +142,12 @@ class DataGenerator:
         #image_normalized = image_resized / 255.0
         # Random image flip left-right
         image_random_flip_lr = tf.image.random_flip_left_right(
-            image_normalized, seed=tf.random.set_random_seed(self.config.data_loader.random_seed)
+            image_normalized, seed=tf.random.set_seed(self.config.data_loader.random_seed)
         )
         # Random image flip up-down
         image_random_flip_ud = tf.image.random_flip_up_down(
             image_random_flip_lr,
-            seed=tf.random.set_random_seed(self.config.data_loader.random_seed),
+            seed=tf.random.set_seed(self.config.data_loader.random_seed),
         )
         return image_random_flip_ud
 
